@@ -4,13 +4,17 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "async": "^2.6.0",
     "chai": "^4.1.2",
     "express": "^4.16.2",
     "http-status": "^1.0.1",
+    "mongod": "^2.0.0",
+    "mongoose": "^5.0.6",
+    "sanitize-html": "^1.18.2",
     "superagent": "^3.8.2"
   },
   "devDependencies": {
-    "mocha": "^5.0.0"
+    "mocha": "^5.0.1"
   },
   "scripts": {
     "test": "mocha"
