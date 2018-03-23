@@ -15,6 +15,7 @@
   "dependencies": {
     "express": "^4.16.3",
     "http-status": "^1.0.1",
+    "path": "^0.12.7",
     "superagent": "^3.8.2"
   }
 }
