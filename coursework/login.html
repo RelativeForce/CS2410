@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>CS2410 Coursework</title>
+<link href="default.css" rel="stylesheet" type="text/html" />
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+
+	<h1>Aston Events Login</h1>
+	<p>What do you want fam!!!</p>
+
+	<form onsubmit="validate()" method="GET">
+		Username: <input type="text" name="username" /><br> Password: <input
+			type="password" name="password" /><br> <input type="submit"
+			value="Login" />
+	</form>
+	<script type="text/javascript">
+
+		const apiRoot = 'http://localhost/CS2410/coursework/:3000';
+
+		function validate() {
+
+			// Make a GET request to the API Root
+			get(apiRoot, function(err, res) {
+
+				// If there are errors, handle them. Otherwise handle the response.
+				if (err) {
+					console.log("There was an Error: " + err.message);
+				} else {
+					console.log("There was no error, you are the GOAT");
+				}
+			})
+		}
+		
+		function get(theUrl, callback)
+		{
+		    var xmlHttp = new XMLHttpRequest();
+		    xmlHttp.onreadystatechange = function() { 
+		        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+		            callback(xmlHttp.responseText);
+		    }
+		    xmlHttp.open("GET", theUrl, true); // true for asynchronous 
+		    xmlHttp.send();
+		}
+
+</script>
+
+</body>
+</html>
