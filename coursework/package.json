@@ -1,0 +1,19 @@
+{
+  "name": "coursework",
+  "version": "1.0.0",
+  "description": "CS2410 coursework website",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://www.github.com/RelativeForce/CS2410.git"
+  },
+  "author": "Joshua Eddy",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.3",
+    "http-status": "^1.0.1"
+  }
+}
