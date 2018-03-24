@@ -3,14 +3,8 @@
 	padding-top: 150px;
 }
 
-.navbar {
-	margin-bottom: 0;
-}
-
 body {
-	display: block;
-	overflow: hidden;
-	margin: 0%;
+	margin: 0 auto;
 }
 
 #main-title {
@@ -21,7 +15,6 @@ body {
 	background-position: center;
 	background-repeat: no-repeat;
 	background-size: cover;
-	line-height: 150px;
 	vertical-align: middle;
 	text-align: center;
 	color: white;
