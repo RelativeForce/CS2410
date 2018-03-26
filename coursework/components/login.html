@@ -1,5 +1,32 @@
-<div id="main-title" class="sm-col-12">
-	<h1>Aston Events Login</h1>
-</div>
+<form name="login form" action="/CS2410/coursework/login"
+	onsubmit="return validate()" method="post">
+	Username:<br> <input type="text" name="username" /><br>
+	Password:<br> <input type="password" name="password" id="password"/> <br>
+	<input type="submit" value="Submit" />
+</form>
 
-<p>Login booiiiii</p>
+<script>
+	function validate() {
+
+		var username = document.forms["login form"]["username"].value;
+		var password = document.forms["login form"]["password"].value;
+
+		if (username == "") {
+			alert("Username must be filled out");
+			return false;
+		} else if (password == "") {
+			alert("Password must be filled out");
+			return false;
+		} else if (password.length < 8) {
+			alert("Password must be at least 8 charaters long.");
+			return false;
+		} else if (password.length > 30) {
+			alert("Password must be less than 30 charaters long.");
+			return false;
+		}
+
+		document.getElementById("password").value = calcMD5(password);
+		
+		return true;
+	}
+</script>

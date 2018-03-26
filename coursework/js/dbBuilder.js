@@ -12,6 +12,7 @@ function users(database){
 	sql+='dob TEXT NOT NULL,';
 	sql+='picture TEXT NOT NULL,';
 	sql+='password TEXT NOT NULL,';
+	sql+='salt TEXT NOT NULL,';
 	sql+='email TEXT NOT NULL,';
 	sql+='telephone TEXT NOT NULL';
 	sql+=');';

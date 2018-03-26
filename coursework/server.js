@@ -3,15 +3,19 @@ const express = require('express');
 const status = require('http-status');
 const path = require('path');
 const fs = require('fs');
-const port = 3000;
 const app = express();
 const builder = require('./js/pageBuilder');
 const sqlite3 = require('sqlite3').verbose();
+const bodyParser = require('body-parser');
+
+const port = 3000;
+
 
 var database;
 
 // Add /public as the static assets folder
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(bodyParser.urlencoded({ extended: false }));
 
 app.get('/CS2410/coursework/login', function(req, res) {
 
@@ -29,6 +33,12 @@ app.get('/CS2410/coursework/login', function(req, res) {
 		res.end();
 		
 	});
+	
+});
+
+app.post('/CS2410/coursework/login', function(req, res) {
+
+	console.log(req.body);
 	
 });
 
