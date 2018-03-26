@@ -63,19 +63,6 @@ const server = app.listen(port, function() {
 	});
 	
 	
-	var sql = 'CREATE TABLE Users (';
-	sql+='user_id INTEGER PRIMARY KEY,';
-	sql+='name TEXT NOT NULL,';
-	sql+='dob TEXT NOT NULL,';
-	sql+='picture TEXT NOT NULL,';
-	sql+='password TEXT NOT NULL,';
-	sql+='email TEXT NOT NULL,';
-	sql+='telephone TEXT NOT NULL';
-	sql+=');';
-	
-	
-	// database.run(sql);
-	
 	
 	var insert = "INSERT INTO Users('user_id', 'name', 'dob', 'picture','password','email','telephone')";
 	insert += " VALUES (0,'Terry','11/05/2018', 'oomoo.png', '#nothashedyet', 'death@aids.com', '12348997577');";
@@ -83,14 +70,7 @@ const server = app.listen(port, function() {
 	// database.run(insert);
 		
 	
-	database.serialize(() => {
-		database.each(`SELECT * FROM Users`, (err, row) => {
-			if (err) {
-				console.error(err.message);
-			}
-			console.log(row.user_id + "\t" + row.name);
-		});
-	});
+	
 	
 });
 
