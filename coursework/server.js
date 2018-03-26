@@ -6,8 +6,9 @@ const fs = require('fs');
 const port = 3000;
 const app = express();
 const builder = require('./js/pageBuilder');
+const sqlite3 = require('sqlite3').verbose();
 
-const loginPage = "";
+var database;
 
 // Add /public as the static assets folder
 app.use(express.static(path.join(__dirname, 'public')));
@@ -53,10 +54,47 @@ app.post('/CS2410/coursework', function(req, res) {
 	res.sendStatus(status.OK);
 });
 
-app.listen(port, function() {
+const server = app.listen(port, function() {
 	console.log('Listening on port ' + port);
+	
+	// Connect to the database.
+	database = new sqlite3.Database('./db/aston_events.sqlite3', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, function (err) {
+	    if (err) console.log(err.message);
+	});
+	
+	
+	var sql = 'CREATE TABLE Users (';
+	sql+='user_id INTEGER PRIMARY KEY,';
+	sql+='name TEXT NOT NULL,';
+	sql+='dob TEXT NOT NULL,';
+	sql+='picture TEXT NOT NULL,';
+	sql+='password TEXT NOT NULL,';
+	sql+='email TEXT NOT NULL,';
+	sql+='telephone TEXT NOT NULL';
+	sql+=');';
+	
+	
+	// database.run(sql);
+	
+	
+	
+	
+	database.run();
+	
+	
+	
+//	
+// database.serialize(() => {
+// database.each(`SELECT PlaylistId as id, Name as name FROM playlists`, (err,
+// row) => {
+// if (err) {
+// console.error(err.message);
+// }
+// console.log(row.id + "\t" + row.name);
+// });
+// });
+	
 });
-
 
 /*
  * This reads the specifed content file then preforms the specifed call back
