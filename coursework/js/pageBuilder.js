@@ -41,19 +41,8 @@ function navbar(navElements) {
 
 }
 
-function login() {
-
-	var login = '';
-
-	login += '<li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Login<span class="caret"></span></a>';
-	login += '	<ul class="dropdown-menu">';
-	login += '		<li><a href="coursework/login-student">Student Login</a></li>';
-	login += '		<li><a href="coursework/login-organiser">Organiser Login</a></li>';
-	login += '	</ul>';
-	login += '</li>';
-
-	return login;
-
+function navbarLink(link, label) {
+	return '<li><a href="' + link + '">' + label + '</a></li>';
 }
 
 function body(navbar, content) {
@@ -96,8 +85,8 @@ module.exports = {
 	page : function(head, body) {
 		return page(head, body);
 	},
-	login : function() {
-		return login();
+	navbarLink : function(link, label) {
+		return navbarLink(link, label);
 	}
 
 };

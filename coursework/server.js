@@ -2,39 +2,73 @@
 const express = require('express');
 const status = require('http-status');
 const path = require('path');
+const fs = require('fs');
 const port = 3000;
 const app = express();
 const builder = require('./js/pageBuilder');
 
+const loginPage = "";
+
 // Add /public as the static assets folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/CS2410/coursework/login-student', function(req, res) {
+app.get('/CS2410/coursework/login', function(req, res) {
+
+	// Builds the student login page
+	buildPage('login', function(content){
 		
-	var login = builder.login();
-	var navbar = builder.navbar([login]);
-	var head = builder.head("Student Login");
-	var body = builder.body(navbar, "no content");
-	var page = builder.page(head, body);
+		var home = builder.navbarLink("/CS2410/coursework", "Home");
+		var navbar = builder.navbar([home]);
+		var head = builder.head("Login");
+		var body = builder.body(navbar, content);
+		var page = builder.page(head, body);
+		
+		res.writeHead(200, {'Content-Type':'text/html'});
+		res.write(page);
+		res.end();
+		
+	});
 	
-	res.writeHead(200, {'Content-Type':'text/html'});
-	res.write(page);
-	res.end();
+});
+
+app.get('/CS2410/coursework', function(req, res) {
 	
+	buildPage('landing', function(content){
+		
+		var login = builder.navbarLink("/CS2410/coursework/login", "Login");
+		var navbar = builder.navbar([login]);
+		var head = builder.head("Aston Events");
+		var body = builder.body(navbar, content);
+		var page = builder.page(head, body);
+		
+		res.writeHead(200, {'Content-Type':'text/html'});
+		res.write(page);
+		res.end();
+		
+	});
+
 });
 
-app.get('/CS2410/coursework/login-organiser', function(req, res) {
-	res.sendFile('C:/xampp/htdocs/CS2410/coursework/components/login-organiser.html');
-});
-
-app.get('/CS2410/coursework/', function(req, res) {
-	res.sendFile('C:/xampp/htdocs/CS2410/coursework/components/landing.html');
-});
-
-app.post('/CS2410/coursework/', function(req, res) {
+app.post('/CS2410/coursework', function(req, res) {
 	res.sendStatus(status.OK);
 });
 
 app.listen(port, function() {
 	console.log('Listening on port ' + port);
 });
+
+
+/*
+ * This reads the specifed content file then preforms the specifed call back
+ * function which should have one parameter which will be the contents of the
+ * specifed file.
+ */
+function buildPage(contentFile, callback){
+	
+	fs.readFile(path.join(__dirname, 'components/' + contentFile + '.html'), function(err, content){
+	    if (err) {
+	       throw err;
+	    }
+	    callback(content);
+	});
+}
