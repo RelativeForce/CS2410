@@ -77,22 +77,20 @@ const server = app.listen(port, function() {
 	// database.run(sql);
 	
 	
+	var insert = "INSERT INTO Users('user_id', 'name', 'dob', 'picture','password','email','telephone')";
+	insert += " VALUES (0,'Terry','11/05/2018', 'oomoo.png', '#nothashedyet', 'death@aids.com', '12348997577');";
 	
+	// database.run(insert);
+		
 	
-	database.run();
-	
-	
-	
-//	
-// database.serialize(() => {
-// database.each(`SELECT PlaylistId as id, Name as name FROM playlists`, (err,
-// row) => {
-// if (err) {
-// console.error(err.message);
-// }
-// console.log(row.id + "\t" + row.name);
-// });
-// });
+	database.serialize(() => {
+		database.each(`SELECT * FROM Users`, (err, row) => {
+			if (err) {
+				console.error(err.message);
+			}
+			console.log(row.user_id + "\t" + row.name);
+		});
+	});
 	
 });
 
