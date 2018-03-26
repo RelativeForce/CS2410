@@ -1,4 +1,4 @@
-#main-title h1 {
+header h1 {
 	color: #FF771E;
 	padding-top: 100px;
 	font-size: 50px;
@@ -10,7 +10,7 @@
 	padding-bottom: 0pn !important;
 }
 
-header {
+nav {
 	margin: 0;
 	padding-bottom: 0;
 }
@@ -19,7 +19,7 @@ section {
 	padding: 5%;
 }
 
-#main-title {
+header {
 	margin: 0;
 	color: white;
 	width: 100%;
