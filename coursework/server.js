@@ -8,6 +8,7 @@ const fs = require('fs');
 const app = express();
 const dbHelper = require('./js/dbHelper.js');
 const builder = require('./js/pageBuilder');
+const MD5 = require('./public/MD5');
 const sqlite3 = require('sqlite3').verbose();
 const bodyParser = require('body-parser');
 const server = app.listen(port, startServer);
@@ -25,11 +26,24 @@ app.post('/CS2410/coursework', post_landing);
 
 function get_landing(request, response){
 	
+	buildPage('landing', function(content){
 	
-buildPage('landing', function(content){
+		var navbar;
 		
-		var login = builder.navbarLink("/CS2410/coursework/login", "Login");
-		var navbar = builder.navbar([login]);
+		if(request.body.email){
+		
+			var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
+			var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
+			var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
+			var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
+		
+			navbar = builder.navbar([newEvent,myEvents,search,logout]);
+		
+		}else{
+			var login = builder.navbarLink("/CS2410/coursework/login", "Login");
+			navbar = builder.navbar([login]);
+		}
+	
 		var head = builder.head("Aston Events");
 		var body = builder.body(navbar, content);
 		var page = builder.page(head, body);
@@ -44,47 +58,19 @@ buildPage('landing', function(content){
 }
 
 function get_login(request, response){
-	
-	// Builds the student login page
-	buildPage('login', function(content){
-		
-		var home = builder.navbarLink("/CS2410/coursework", "Home");
-		var navbar = builder.navbar([home]);
-		var head = builder.head("Login");
-		var body = builder.body(navbar, content);
-		var page = builder.page(head, body);
-		
-		response.writeHead(200, {'Content-Type':'text/html'});
-		response.write(page);
-		response.end();
-		
-	});
-	
+	 build_login(request, response,"");
 }
 
 function post_landing(request, response){
 	response.sendStatus(status.OK);
 }
 
-function post_login(request, response){
-	
-	console.log(request.body.username);
-	
-	
-	
-	
-	
-	// var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
-	// var newEvent = builder.navbarLink("/CS2410/coursework/organise",
-	// "Orgainse
-	// Event");
-	// var search = builder.navbarLink("/CS2410/coursework/search", "Search
-	// Events");
-	// var myEvents = builder.navbarLink("/CS2410/coursework/events", "My
-	// Events");
-
-	
-	
+function post_login(request, response){	
+	if(request.body.status === "login"){
+		login(request, response);
+	}else if(request.body.status === "signup"){
+		signup(request, response);
+	}
 }
 
 function startServer(){
@@ -114,42 +100,57 @@ function login(request, response){
 	
 	// Sterilise the username and password
 	var email = encodeHTML(request.body.email);
-	var inputtedPassword = encodeHTML(request.body.password);
+	var password = encodeHTML(request.body.password);
 	
 	var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 	
 	query.each(email, function(err, row) {
-		console.log(row.name, row.email);
+			
+		var salted = MD5.hash(password + row.salt);
 		
-		// Process valid name
-		
-		
+		if(salted === row.password){
+			
+			console.log(row.name + " has logged in.");
+			response.redirect('/CS2410/coursework?email='+row.email);
+			
+		}else{
+			
+			// Invalid
+			var error = builder.error("Password is incorrect.");
+			build_login(request, response, error);
+		}
+
 		
 	},function(err, count) {
 		  query.finalize();
 		  
-		  // Invalid Usernanm
+		  // Invalid email
 		  if(count == 0){
 			  
-			console.log("Invalid email");
+			  var error = builder.error("<strong>" + email + "</strong> is not a valid email.");
 			  
-			// Builds the student login page
-			buildPage('login', function(content){
-					
-				var home = builder.navbarLink("/CS2410/coursework", "Home");
-				var navbar = builder.navbar([home]);
-				var head = builder.head("Login");
-				var error = builder.error("<strong>" + email + "</strong> is not a valid username.");
-				var body = builder.body(navbar, error + content);
-				var page = builder.page(head, body);
-					
-				response.writeHead(200, {'Content-Type':'text/html'});
-				response.write(page);
-				response.end();
-					
-			});
+			  build_login(request, response, error);
 			  
 		  }
+	});
+	
+}
+
+function build_login(request, response,error){
+	
+	// Builds the student login page
+	buildPage('login', function(content){
+			
+		var home = builder.navbarLink("/CS2410/coursework", "Home");
+		var navbar = builder.navbar([home]);
+		var head = builder.head("Login");
+		var body = builder.body(navbar, error + content);
+		var page = builder.page(head, body);
+			
+		response.writeHead(200, {'Content-Type':'text/html'});
+		response.write(page);
+		response.end();
+			
 	});
 	
 }
