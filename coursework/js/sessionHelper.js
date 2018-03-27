@@ -45,6 +45,27 @@ function contains(check) {
 	return false;
 }
 
+function endSession(token) {
+
+	var removed = false;
+
+	for (var i = 0; i < sessions.length && !removed; i++) {
+
+		var session = sessions[i];
+
+		if (session["token"] === token) {
+
+			sessions.splice(i, 1);
+
+			console.log("End Session: " + token);
+			
+			removed = true;
+		}
+
+	}
+
+}
+
 function uniqueToken() {
 
 	var isUnique = false;
@@ -87,5 +108,8 @@ module.exports = {
 	},
 	addSession : function(token, userEmail) {
 		return addSession(token, userEmail);
+	},
+	endSession : function(token) {
+		return endSession(token);
 	}
 };

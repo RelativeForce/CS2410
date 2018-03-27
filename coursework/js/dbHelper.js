@@ -1,20 +1,15 @@
-function create(database){
-
-	users(database);
-
-}
-
 function users(database){
 	
 	var sql = 'CREATE TABLE Users (';
-	sql+='email TEXT PRIMARY KEY,';
-	sql+='name TEXT NOT NULL,';
-	sql+='dob TEXT NOT NULL,';
-	sql+='picture TEXT NOT NULL,';
-	sql+='password TEXT NOT NULL,';
-	sql+='salt TEXT NOT NULL,';
-	sql+='telephone TEXT NOT NULL';
-	sql+=');';
+	sql +='email TEXT PRIMARY KEY,';
+	sql +='name TEXT NOT NULL,';
+	sql +='dob TEXT NOT NULL,';
+	sql +='organiser TEXT NOT NULL,';
+	sql +='picture TEXT NOT NULL,';
+	sql +='password TEXT NOT NULL,';
+	sql +='salt TEXT NOT NULL,';
+	sql +='telephone TEXT NOT NULL';
+	sql +=');';
 	
 	database.run(sql);
 	
@@ -32,6 +27,7 @@ function forEach(database, query, callback){
 	});
 	
 }
+
 
 module.exports = {
 	forEach : function(database, query, callback) {

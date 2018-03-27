@@ -23,31 +23,40 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.get('/CS2410/coursework/login', get_login);
+app.get('/CS2410/coursework/logout', get_logout);
 app.get('/CS2410/coursework', get_landing);
 app.post('/CS2410/coursework/login', post_login);
 app.post('/CS2410/coursework', post_landing);
 
+/*
+ * This method processes GET requests to the server for the landing page. The request cookies may
+ * contain a session cookie whihc is used to determine which client is which and
+ * also how long their session has been active for.
+ */
 function get_landing(request, response){
 	
+	// Construct the landing page 
 	buildPage('landing', function(content){
 	
+		// The html for the nav bar at the top of the landing page
 		var navbar;
 		
+		// Check for the session cookie and wherther it is active.
 		var sessionToken = request.cookies[cookieName];
-		
 		var validSession = sessions.contains(function(session){
 			return session["token"] === sessionToken;
 		});
 		
-		// If there is a valid session
+		// If there is a active session build the nav bar with the user options
 		if(validSession){
 		
 			var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
+			var profile = builder.navbarLink("/CS2410/coursework/profile", "My Profile");
 			var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
 			var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
 			var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
 		
-			navbar = builder.navbar([newEvent,myEvents,search,logout]);
+			navbar = builder.navbar([newEvent, myEvents, search, profile, logout]);
 		
 		}else{
 			var login = builder.navbarLink("/CS2410/coursework/login", "Login");
@@ -67,10 +76,35 @@ function get_landing(request, response){
 	
 }
 
+/*
+ * This method processes GET requests to the server for the login page.
+ */
 function get_login(request, response){
 	 build_login(request, response,"");
 }
 
+function get_logout(request, response){
+	
+	
+	// Check for the session cookie and wherther it is active.
+	var sessionToken = request.cookies[cookieName];
+	var validSession = sessions.contains(function(session){
+		return session["token"] === sessionToken;
+	});
+	
+	// If there is a active session build the nav bar with the user options
+	if(validSession){
+		
+		sessions.endSession(sessionToken);
+		response.clearCookie(cookieName);		
+		response.redirect('/CS2410/coursework');
+	}
+
+}
+
+/*
+ * 
+ */
 function post_landing(request, response){
 	response.sendStatus(status.OK);
 }
@@ -95,16 +129,6 @@ console.log('Listening on port ' + port);
 	// dbHelper.users(database);
 	
 	// database.run("DELETE FROM Users WHERE email = 'eddyjic@aston.ac.uk'");
-	
-	// add();
-	
-}
-
-function add(){
-	
-	var insert = database.prepare("INSERT INTO Users('email', 'name', 'dob', 'picture','password', 'salt', 'telephone') VALUES (?, ?, ?, ?, ?, ?, ?);");
-	insert.run(['death@aids.com','Terry','11/05/2018', 'oomoo.png', 'password', 'saltySalt', '12348997577']);
-	insert.finalize();
 	
 }
 
@@ -194,11 +218,11 @@ function signup(request, response){
 		  // User does not exist already
 		if(count == 0){
 			  
-			var insert = database.prepare("INSERT INTO Users('email', 'name', 'dob', 'picture','password', 'salt', 'telephone') VALUES (?, ?, ?, ?, ?, ?, ?);");
-			insert.run([email,name,dob, picture, saltedPassword, salt, telephone]);
+			var insert = database.prepare("INSERT INTO Users('email', 'name', 'dob', 'organiser' ,'picture','password', 'salt', 'telephone') VALUES (?, ?, ?, ?, ?, ?, ?, ?);");
+			insert.run([email, name, dob, 'false', picture, saltedPassword, salt, telephone]);
 			insert.finalize();
 				
-			console.log("User created: ["+email+","+name+","+dob+","+ picture+","+ saltedPassword+","+ salt+","+ telephone+"]");
+			console.log("User created: ["+email+", "+name+", "+dob+", false, "+ picture+", "+ saltedPassword+", "+ salt+", "+ telephone+"]");
 			  
 			var token = sessions.uniqueToken();
 			
