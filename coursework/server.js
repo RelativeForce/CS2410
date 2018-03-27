@@ -1,4 +1,5 @@
 const port = 3000;
+const cookieName = 'AstonEvents';
 
 // Import requestuired packages
 const express = require('express');
@@ -11,13 +12,15 @@ const builder = require('./js/pageBuilder');
 const MD5 = require('./public/MD5');
 const sqlite3 = require('sqlite3').verbose();
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const server = app.listen(port, startServer);
 
 var database;
+var sessions = [];
 
-// Add /public as the static assets folder
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cookieParser());
 
 app.get('/CS2410/coursework/login', get_login);
 app.get('/CS2410/coursework', get_landing);
@@ -30,7 +33,14 @@ function get_landing(request, response){
 	
 		var navbar;
 		
-		if(request.body.token){
+		var sessionToken = request.cookies[cookieName];
+		
+		var validSession = contains(function(session){
+			return session["token"] === sessionToken;
+		});
+		
+		// If there is a valid session
+		if(validSession){
 		
 			var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
 			var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
@@ -55,6 +65,70 @@ function get_landing(request, response){
 	});
 	
 	
+}
+
+function addSession(token, userEmail){
+	
+	// Check if the user is already logged in.
+	var userLoggedIn = contains(function(session){
+		return session[email] === userEmail;
+	});
+	
+	// If the user is already logged in the do not add the session.
+	if(userLoggedIn){
+		console.log("Session exists.");
+		
+		return false;
+	}
+		
+	var dateTime = new Date();
+	dateTime.setHours(dateTime.getHours() + 2);
+	
+	var session = {
+		"token" : token,
+		"email" : userEmail,
+		"maxAge" : dateTime
+	};
+	
+	sessions.push(session);
+	
+	console.log("New Session: " + token);
+	
+	return true;
+}
+
+function contains(check){
+	
+	for(var i = 0; i < sessions.length; i++ ){
+		
+		var session = sessions[i];
+		
+		if(check(session)){
+			return true;
+		}
+		
+	}
+	
+	return false;
+}
+
+function uniqueToken(){
+	
+	var isUnique = false;
+	var token = null;
+	
+	while(!isUnique){
+		
+		token = generateToken();
+		
+		isUnique = !contains(function(session){
+			return session["token"] === token;
+		});
+		
+	}
+	
+	return token;
+
 }
 
 function get_login(request, response){
@@ -113,11 +187,21 @@ function login(request, response){
 		if(salted === row.password){
 			
 			console.log(row.name + " has logged in.");
-			response.redirect('/CS2410/coursework?email='+row.email);
 			
+			var token = uniqueToken();
+			
+			// If the session is added redirct the client.
+			if(addSession(token, email)){
+				response.cookie(cookieName , token, {maxAge : 999999});
+				response.redirect('/CS2410/coursework');
+			}else{
+				// Session alread exists.
+				var error = builder.error("Session exists elsewhere. Please sign out in the other location.");
+				build_login(request, response, error);
+			}
 		}else{
 			
-			// Invalid
+			// Invalid password
 			var error = builder.error("Password is incorrect.");
 			build_login(request, response, error);
 		}
@@ -128,11 +212,8 @@ function login(request, response){
 		  
 		  // Invalid email
 		  if(count == 0){
-			  
 			  var error = builder.error("<strong>" + email + "</strong> is not a valid email.");
-			  
 			  build_login(request, response, error);
-			  
 		  }
 	});
 	
@@ -159,7 +240,7 @@ function build_login(request, response, error){
 
 function signup(request, response){
 	
-	var salt = generateSalt();
+	var salt = generateToken();
 	var email = request.body.email;
 	var password = request.body.password;
 	var name = request.body.name;
@@ -177,16 +258,18 @@ function signup(request, response){
 		  query.finalize();
 		  
 		  // User does not exist already
-		  if(count == 0){
+		if(count == 0){
 			  
-			  var insert = database.prepare("INSERT INTO Users('email', 'name', 'dob', 'picture','password', 'salt', 'telephone') VALUES (?, ?, ?, ?, ?, ?, ?);");
-			  insert.run([email,name,dob, picture, saltedPassword, salt, telephone]);
-			  insert.finalize();
+			var insert = database.prepare("INSERT INTO Users('email', 'name', 'dob', 'picture','password', 'salt', 'telephone') VALUES (?, ?, ?, ?, ?, ?, ?);");
+			insert.run([email,name,dob, picture, saltedPassword, salt, telephone]);
+			insert.finalize();
 				
-			  console.log("User created: ["+email+","+name+","+dob+","+ picture+","+ saltedPassword+","+ salt+","+ telephone+"]");
+			console.log("User created: ["+email+","+name+","+dob+","+ picture+","+ saltedPassword+","+ salt+","+ telephone+"]");
 			  
-			  console.log(row.name + " has logged in.");
-			  response.redirect('/CS2410/coursework?token='+row.email);
+			addSession(token, email);
+			response.cookie(cookieName , token, {maxAge : 999999});
+			response.redirect('/CS2410/coursework');
+			
 			 
 		  }else{
 			  
@@ -195,10 +278,6 @@ function signup(request, response){
 			  
 		  }
 	});
-	
-	
-	
-	
 }
 
 function encodeHTML(html) {
@@ -220,7 +299,7 @@ function buildPage(contentFile, callback){
 	});
 }
 
-function generateSalt() {
+function generateToken() {
 	
 	const saltLength = 30;
 	
