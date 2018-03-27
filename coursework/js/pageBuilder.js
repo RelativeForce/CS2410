@@ -42,6 +42,17 @@ function navbar(navElements) {
 
 }
 
+function error(message) {
+
+	var error = '';
+
+	error += '<div class="alert alert-danger">';
+	error += message;
+	error += '</div>';
+
+	return error
+}
+
 function navbarLink(link, label) {
 	return '<li><a href="' + link + '">' + label + '</a></li>';
 }
@@ -88,6 +99,9 @@ module.exports = {
 	},
 	navbarLink : function(link, label) {
 		return navbarLink(link, label);
+	},
+	error : function(message) {
+		return error(message);
 	}
 
 };
