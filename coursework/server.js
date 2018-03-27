@@ -7,8 +7,9 @@ const status = require('http-status');
 const path = require('path');
 const fs = require('fs');
 const app = express();
-const dbHelper = require('./js/dbHelper.js');
+const dbHelper = require('./js/dbHelper');
 const builder = require('./js/pageBuilder');
+const sessions = require('./js/sessionHelper');
 const MD5 = require('./public/MD5');
 const sqlite3 = require('sqlite3').verbose();
 const bodyParser = require('body-parser');
@@ -16,7 +17,6 @@ const cookieParser = require('cookie-parser');
 const server = app.listen(port, startServer);
 
 var database;
-var sessions = [];
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -35,7 +35,7 @@ function get_landing(request, response){
 		
 		var sessionToken = request.cookies[cookieName];
 		
-		var validSession = contains(function(session){
+		var validSession = sessions.contains(function(session){
 			return session["token"] === sessionToken;
 		});
 		
@@ -65,70 +65,6 @@ function get_landing(request, response){
 	});
 	
 	
-}
-
-function addSession(token, userEmail){
-	
-	// Check if the user is already logged in.
-	var userLoggedIn = contains(function(session){
-		return session[email] === userEmail;
-	});
-	
-	// If the user is already logged in the do not add the session.
-	if(userLoggedIn){
-		console.log("Session exists.");
-		
-		return false;
-	}
-		
-	var dateTime = new Date();
-	dateTime.setHours(dateTime.getHours() + 2);
-	
-	var session = {
-		"token" : token,
-		"email" : userEmail,
-		"maxAge" : dateTime
-	};
-	
-	sessions.push(session);
-	
-	console.log("New Session: " + token);
-	
-	return true;
-}
-
-function contains(check){
-	
-	for(var i = 0; i < sessions.length; i++ ){
-		
-		var session = sessions[i];
-		
-		if(check(session)){
-			return true;
-		}
-		
-	}
-	
-	return false;
-}
-
-function uniqueToken(){
-	
-	var isUnique = false;
-	var token = null;
-	
-	while(!isUnique){
-		
-		token = generateToken();
-		
-		isUnique = !contains(function(session){
-			return session["token"] === token;
-		});
-		
-	}
-	
-	return token;
-
 }
 
 function get_login(request, response){
@@ -186,12 +122,10 @@ function login(request, response){
 		
 		if(salted === row.password){
 			
-			console.log(row.name + " has logged in.");
-			
-			var token = uniqueToken();
+			var token = sessions.uniqueToken();
 			
 			// If the session is added redirct the client.
-			if(addSession(token, email)){
+			if(sessions.addSession(token, email)){
 				response.cookie(cookieName , token, {maxAge : 999999});
 				response.redirect('/CS2410/coursework');
 			}else{
@@ -240,7 +174,7 @@ function build_login(request, response, error){
 
 function signup(request, response){
 	
-	var salt = generateToken();
+	var salt = generateSalt();
 	var email = request.body.email;
 	var password = request.body.password;
 	var name = request.body.name;
@@ -266,7 +200,9 @@ function signup(request, response){
 				
 			console.log("User created: ["+email+","+name+","+dob+","+ picture+","+ saltedPassword+","+ salt+","+ telephone+"]");
 			  
-			addSession(token, email);
+			var token = sessions.uniqueToken();
+			
+			sessions.addSession(token, email);
 			response.cookie(cookieName , token, {maxAge : 999999});
 			response.redirect('/CS2410/coursework');
 			
@@ -299,7 +235,7 @@ function buildPage(contentFile, callback){
 	});
 }
 
-function generateToken() {
+function generateSalt() {
 	
 	const saltLength = 30;
 	
