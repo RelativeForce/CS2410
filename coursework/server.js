@@ -30,7 +30,7 @@ function get_landing(request, response){
 	
 		var navbar;
 		
-		if(request.body.email){
+		if(request.body.token){
 		
 			var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
 			var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
@@ -84,6 +84,8 @@ console.log('Listening on port ' + port);
 	
 	// dbHelper.users(database);
 	
+	// database.run("DELETE FROM Users WHERE email = 'eddyjic@aston.ac.uk'");
+	
 	// add();
 	
 }
@@ -136,7 +138,7 @@ function login(request, response){
 	
 }
 
-function build_login(request, response,error){
+function build_login(request, response, error){
 	
 	// Builds the student login page
 	buildPage('login', function(content){
@@ -156,6 +158,44 @@ function build_login(request, response,error){
 }
 
 function signup(request, response){
+	
+	var salt = generateSalt();
+	var email = request.body.email;
+	var password = request.body.password;
+	var name = request.body.name;
+	var dob = request.body.dob;
+	var telephone = request.body.telephone;
+	var picture = "none";
+	
+	var saltedPassword = MD5.hash(password + salt);
+	
+	var query = database.prepare("SELECT * FROM Users WHERE email = ?");
+	
+	query.each(email, function(err, row) {	
+		// Do nothing
+	},function(err, count) {
+		  query.finalize();
+		  
+		  // User does not exist already
+		  if(count == 0){
+			  
+			  var insert = database.prepare("INSERT INTO Users('email', 'name', 'dob', 'picture','password', 'salt', 'telephone') VALUES (?, ?, ?, ?, ?, ?, ?);");
+			  insert.run([email,name,dob, picture, saltedPassword, salt, telephone]);
+			  insert.finalize();
+				
+			  console.log("User created: ["+email+","+name+","+dob+","+ picture+","+ saltedPassword+","+ salt+","+ telephone+"]");
+			  
+			  console.log(row.name + " has logged in.");
+			  response.redirect('/CS2410/coursework?token='+row.email);
+			 
+		  }else{
+			  
+			  var error = builder.error("A user with Email: <strong>" + email + "</strong> already exists.");
+			  build_login(request, response, error);
+			  
+		  }
+	});
+	
 	
 	
 	
@@ -178,4 +218,18 @@ function buildPage(contentFile, callback){
 	    }
 	    callback(content);
 	});
+}
+
+function generateSalt() {
+	
+	const saltLength = 30;
+	
+	var salt = "";
+	var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+	for (var i = 0; i < saltLength; i++){
+		salt += possible.charAt(Math.floor(Math.random() * possible.length));
+	}
+
+	return salt;
 }

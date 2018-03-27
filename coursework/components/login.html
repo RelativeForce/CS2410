@@ -3,56 +3,72 @@
 </header>
 <div class="container">
 	<div class="row">
-		<div class="panel panel-default col-sm-5 pull-left">
+		<div class="panel panel-default col-xs-12 col-md-5 pull-left">
 			<div class="panel-heading">Login</div>
 			<div class="panel-body">
 				<form id="login" name="login" action="/CS2410/coursework/login"
 					onsubmit="return validateLogin()" method="post">
-					<input hidden type="text" name="status" value="login"/>
+					
+					<input hidden type="text" name="status" value="login" />
+					
 					<div class="form-group">
 						<label for="login_email">Email:</label> <input type="email"
 							class="form-control" name="email" id="login_email" />
 					</div>
 
 					<div class="form-group">
-						<label for="login_password">Password:</label> <input type="password"
-							name="password" id="login_password" class="form-control" />
+						<label for="login_password">Password:</label> <input
+							type="password" name="password" id="login_password"
+							class="form-control" />
 					</div>
 
 					<button class="btn btn-primary" type="submit" form="login"
 						value="Submit">Submit</button>
 				</form>
-
 			</div>
 		</div>
-		<div class="panel panel-default col-sm-5 pull-right">
+		<div class="panel panel-default col-xs-12 col-md-5 pull-right">
 			<div class="panel-heading">New Student?</div>
 			<div class="panel-body">
-				<form id="signup" name="signup"
-					action="/CS2410/coursework/login" onsubmit="return validateSignup()"
-					method="post">
-					<input hidden type="text" name="status" value="signup"/>
+				<form id="signup" name="signup" action="/CS2410/coursework/login"
+					onsubmit="return validateSignup()" method="post">
+
+					<input hidden type="text" name="status" value="signup" />
+
 					<div class="form-group">
 						<label for="signup_email">Email:</label> <input type="email"
 							name="email" id="signup_email" class="form-control" />
 					</div>
+					
+					<div class="form-group">
+						<label for="signup_name">Full Name:</label> <input type="text"
+							name="name" id="signup_name" class="form-control" />
+					</div>
 
 					<div class="form-group">
-						<label for="signup_password">Password:</label> <input type="password"
-							name="password" id="signup_password" class="form-control" />
+						<label for="signup_password">Password:</label> <input
+							type="password" name="password" id="signup_password"
+							class="form-control" />
 					</div>
-					
+
 					<div class="form-group">
-						<label for="signup_repassword">Retype Password:</label> <input type="password"
-							name="repassword" id="signup_repassword" class="form-control" />
+						<label for="signup_repassword">Retype Password:</label> <input
+							type="password" name="repassword" id="signup_repassword"
+							class="form-control" />
 					</div>
-					
+
 					<div class="form-group">
 						<label for="signup_dob">Data Of Birth:</label> <input type="date"
 							name="dob" id="signup_dob" class="form-control" />
 					</div>
 
-					<button class="btn btn-primary" type="submit" form="login form"
+					<div class="form-group">
+						<label for="signup_telephone">Telephone:</label> <input
+							type="text" name="telephone" id="signup_telephone"
+							class="form-control" />
+					</div>
+
+					<button class="btn btn-primary" type="submit" form="signup"
 						value="Submit">Submit</button>
 				</form>
 
@@ -72,13 +88,19 @@
 		if (email == "") {
 			alert("Email must be filled out");
 			return false;
-		} else if (password == "") {
+		}
+		
+		if (password == "") {
 			alert("Password must be filled out");
 			return false;
-		} else if (password.length < 8) {
+		}
+		
+		if (password.length < 8) {
 			alert("Password must be at least 8 charaters long.");
 			return false;
-		} else if (password.length > 30) {
+		}
+		
+		if (password.length > 30) {
 			alert("Password must be less than 30 charaters long.");
 			return false;
 		}
@@ -87,24 +109,59 @@
 
 		return true;
 	}
-	
-	function validateSignup(){
-		
-		var email = document.getElementById("signup_email").value;
-		var password = document.getElementById("signup_passowrd").value;
 
-		console.log(username);
+	function validateSignup() {
+
+		var email = document.getElementById("signup_email").value;
+		var password = document.getElementById("signup_password").value;
+		var repassword = document.getElementById("signup_repassword").value;
+		var name = document.getElementById("signup_name").value;
+		var dob = document.getElementById("signup_dob").value;
+		var telephone = document.getElementById("signup_telephone").value;
 
 		if (email == "") {
 			alert("Email must be filled out");
 			return false;
-		} else if (password == "") {
+		}
+		
+		if (password == "") {
 			alert("Password must be filled out");
 			return false;
-		} else if (password.length < 8) {
+		}
+		
+		if (repassword == "") {
+			alert("Retype Password must be filled out");
+			return false;
+		}
+		
+		if (name == "") {
+			alert("Full name must be filled out");
+			return false;
+		}
+		
+		if (dob == "") {
+			alert("Data of birth must be filled out");
+			return false;
+		}
+		
+		if (telephone == "") {
+			alert("Telephone number must be filled out");
+			return false;
+		}
+		
+		var phoneRegex = /^[0-9]{11}$/;
+		
+		if(!telephone.toString().test(phoneRegex)){
+			alert("Telephone number must be valid.");
+			return false;
+		}
+		
+		if (password.length < 8) {
 			alert("Password must be at least 8 charaters long.");
 			return false;
-		} else if (password.length > 30) {
+		}
+		
+		if (password.length > 30) {
 			alert("Password must be less than 30 charaters long.");
 			return false;
 		}
@@ -112,6 +169,6 @@
 		document.getElementById("password").value = calcMD5(password);
 
 		return true;
-		
+
 	}
 </script>
