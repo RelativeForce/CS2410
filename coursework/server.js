@@ -29,9 +29,9 @@ app.post('/CS2410/coursework/login', post_login);
 app.post('/CS2410/coursework', post_landing);
 
 /*
- * This method processes GET requests to the server for the landing page. The request cookies may
- * contain a session cookie whihc is used to determine which client is which and
- * also how long their session has been active for.
+ * This method processes GET requests to the server for the landing page. The
+ * request cookies may contain a session cookie whihc is used to determine which
+ * client is which and also how long their session has been active for.
  */
 function get_landing(request, response){
 	
@@ -51,7 +51,7 @@ function get_landing(request, response){
 
 			if(row.organiser === "true"){
 			
-				// Construct the organiser home page 
+				// Construct the organiser home page
 				buildPage('home-organiser', function(content){
 					
 					var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
@@ -76,7 +76,7 @@ function get_landing(request, response){
 				
 			}else{
 
-				// Construct the student home page 
+				// Construct the student home page
 				buildPage('home-student', function(content){
 					
 					var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
@@ -87,8 +87,18 @@ function get_landing(request, response){
 					
 					var	navbar = builder.navbar([search, profile, logout]);	
 				
+					var events = [{
+						"name" : "",
+						"id" : "",
+						"location" : "",
+						"time" : "",
+						"organiser" : ""
+					}];
+					
+					var eventsTable = builder.eventsTable(events, "Upcoming Events");
+					
 					var head = builder.head("Aston Events");
-					var body = builder.body(navbar, content);
+					var body = builder.body(navbar, content + eventsTable);
 					var page = builder.page(head, body);
 					
 					response.writeHead(200, {'Content-Type':'text/html'});
@@ -109,7 +119,7 @@ function get_landing(request, response){
 		
 	}else{
 		
-		// Construct the landing page 
+		// Construct the landing page
 		buildPage('landing', function(content){
 		
 			var login = builder.navbarLink("/CS2410/coursework/login", "Login");

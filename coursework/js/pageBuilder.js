@@ -84,34 +84,41 @@ function page(head, body) {
 	return document;
 }
 
-function generalEventsList(events, title) {
+function eventsTable(events, title) {
 
 	var eventsList = '';
 
 	eventsList += '<div class="container">';
-	eventsList += '		<div class="panel" style="text-align: center">';
+	eventsList += '		<div class="panel panel-default">';
 	eventsList += '			<div class="panel-heading">' + title + '</div>';
 	eventsList += '			<div class="panel-body">';
-	eventsList += '				<div class="row">';
-	eventsList += '					<div class="col-xs-6 pull-left"><strong>Name</strong></div>';
-	eventsList += '					<div class="col-xs-3"><strong>Location</strong></div>';
-	eventsList += '					<div class="col-xs-3 pull-right"><strong>Time</strong></div>';
-	eventsList += '				</div>';
+	eventsList += '				<table class="table table-striped">';
+	eventsList += '					<thead>';
+	eventsList += '						<tr>';
+	eventsList += '							<th>Name</th>';
+	eventsList += '							<th>Location</th>';
+	eventsList += '							<th>Time</th>';
+	eventsList += '							<th>Organiser Email</th>';
+	eventsList += '						</tr>';
+	eventsList += '					</thead>';
+	eventsList += '					<tbody>';
 
 	for (var i = 0; i < events.length; i++) {
 
 		var event = events[i];
 
-		eventsList += '<div class="row">';
-		eventsList += '		<div class="col-xs-6 pull-left">';
-		eventsList += '			<a href="/CS2410/coursework/event?id=' + event.id + '">' + event.name + '</a></div>';
-		eventsList += '		<div class="col-xs-3">' + event.location + '</div>';
-		eventsList += '		<div class="col-xs-3 pull-right">' + event.time + '</div>';
-		eventsList += '</div>';
+		eventsList += '<tr>';
+		eventsList += '		<td>';
+		eventsList += '			<a href="/CS2410/coursework/event?id=' + event.id
+				+ '">' + event.name + '</a></td>';
+		eventsList += '		<td>' + event.location + '</td>';
+		eventsList += '		<td>' + event.time + '</td>';
+		eventsList += '		<td>' + event.organiser + '</td>';
+		eventsList += '</tr>';
 
 	}
 
-	eventsList += '</div></div></div>';
+	eventsList += '</tbody></table></div></div></div>';
 
 	return eventsList;
 }
@@ -134,6 +141,8 @@ module.exports = {
 	},
 	error : function(message) {
 		return error(message);
+	},
+	eventsTable : function(events, title) {
+		return eventsTable(events, title);
 	}
-
 };

@@ -9,7 +9,7 @@ header h1 {
 	padding: 2%;
 }
 
-.panel {
+.panel-body {
 	padding: 2%;
 }
 
@@ -39,4 +39,5 @@ header {
 	background-repeat: no-repeat;
 	background-attachment: fixed;
 	background-position: center;
+	margin-bottom: 20px;
 }
