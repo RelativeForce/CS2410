@@ -187,8 +187,11 @@ console.log('Listening on port ' + port);
 	});
 	
 	// dbHelper.users(database);
+	// dbHelper.events(database);
+	// dbHelper.interest(database);
+	// dbHelper.pictures(database);
 	
-	// database.run("DELETE FROM Users WHERE email = 'eddyjic@aston.ac.uk'");
+	// database.run("DROP TABLE Interest");
 	
 }
 
