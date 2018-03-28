@@ -84,6 +84,38 @@ function page(head, body) {
 	return document;
 }
 
+function generalEventsList(events, title) {
+
+	var eventsList = '';
+
+	eventsList += '<div class="container">';
+	eventsList += '		<div class="panel" style="text-align: center">';
+	eventsList += '			<div class="panel-heading">' + title + '</div>';
+	eventsList += '			<div class="panel-body">';
+	eventsList += '				<div class="row">';
+	eventsList += '					<div class="col-xs-6 pull-left"><strong>Name</strong></div>';
+	eventsList += '					<div class="col-xs-3"><strong>Location</strong></div>';
+	eventsList += '					<div class="col-xs-3 pull-right"><strong>Time</strong></div>';
+	eventsList += '				</div>';
+
+	for (var i = 0; i < events.length; i++) {
+
+		var event = events[i];
+
+		eventsList += '<div class="row">';
+		eventsList += '		<div class="col-xs-6 pull-left">';
+		eventsList += '			<a href="/CS2410/coursework/event?id=' + event.id + '">' + event.name + '</a></div>';
+		eventsList += '		<div class="col-xs-3">' + event.location + '</div>';
+		eventsList += '		<div class="col-xs-3 pull-right">' + event.time + '</div>';
+		eventsList += '</div>';
+
+	}
+
+	eventsList += '</div></div></div>';
+
+	return eventsList;
+}
+
 module.exports = {
 	navbar : function(navElements) {
 		return navbar(navElements);

@@ -58,7 +58,7 @@ function endSession(token) {
 			sessions.splice(i, 1);
 
 			console.log("End Session: " + token);
-			
+
 			removed = true;
 		}
 
@@ -99,6 +99,22 @@ function generateToken() {
 	return token;
 }
 
+function getEmail(token){
+	
+	for (var i = 0; i < sessions.length; i++) {
+
+		var session = sessions[i];
+
+		if (session.token === token) {
+			return session.email;
+		}
+
+	}
+
+	return null;
+	
+}
+
 module.exports = {
 	uniqueToken : function() {
 		return uniqueToken();
@@ -111,5 +127,8 @@ module.exports = {
 	},
 	endSession : function(token) {
 		return endSession(token);
+	},
+	getEmail : function(token) {
+		return getEmail(token);
 	}
 };

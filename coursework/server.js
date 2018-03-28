@@ -35,45 +35,96 @@ app.post('/CS2410/coursework', post_landing);
  */
 function get_landing(request, response){
 	
-	// Construct the landing page 
-	buildPage('landing', function(content){
-	
-		// The html for the nav bar at the top of the landing page
-		var navbar;
-		
-		// Check for the session cookie and wherther it is active.
-		var sessionToken = request.cookies[cookieName];
-		var validSession = sessions.contains(function(session){
-			return session["token"] === sessionToken;
-		});
-		
-		// If there is a active session build the nav bar with the user options
-		if(validSession){
-		
-			var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
-			var profile = builder.navbarLink("/CS2410/coursework/profile", "My Profile");
-			var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
-			var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
-			var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
-		
-			navbar = builder.navbar([newEvent, myEvents, search, profile, logout]);
-		
-		}else{
-			var login = builder.navbarLink("/CS2410/coursework/login", "Login");
-			navbar = builder.navbar([login]);
-		}
-	
-		var head = builder.head("Aston Events");
-		var body = builder.body(navbar, content);
-		var page = builder.page(head, body);
-		
-		response.writeHead(200, {'Content-Type':'text/html'});
-		response.write(page);
-		response.end();
-		
+	// Check for the session cookie and wherther it is active.
+	var sessionToken = request.cookies[cookieName];
+	var validSession = sessions.contains(function(session){
+		return session["token"] === sessionToken;
 	});
 	
-	
+	// If there is a active session build the nav bar with the user options
+	if(validSession){
+		
+		var email = sessions.getEmail(sessionToken);
+		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
+		
+		query.each(email, function(err, row) {
+
+			if(row.organiser === "true"){
+			
+				// Construct the organiser home page 
+				buildPage('home-organiser', function(content){
+					
+					var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
+					var profile = builder.navbarLink("/CS2410/coursework/profile", "My Profile");
+					var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
+					var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
+					var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
+					
+					var	navbar = builder.navbar([newEvent, myEvents, search, profile, logout]);	
+					
+					var head = builder.head("Aston Events");
+					var body = builder.body(navbar, content);
+					var page = builder.page(head, body);
+					
+					response.writeHead(200, {'Content-Type':'text/html'});
+					response.write(page);
+					response.end();
+					
+					
+				});
+				
+				
+			}else{
+
+				// Construct the student home page 
+				buildPage('home-student', function(content){
+					
+					var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
+					var profile = builder.navbarLink("/CS2410/coursework/profile", "My Profile");
+					var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
+					var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
+					var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
+					
+					var	navbar = builder.navbar([search, profile, logout]);	
+				
+					var head = builder.head("Aston Events");
+					var body = builder.body(navbar, content);
+					var page = builder.page(head, body);
+					
+					response.writeHead(200, {'Content-Type':'text/html'});
+					response.write(page);
+					response.end();
+					
+				});
+			}
+			
+		},function(err, count) {
+			  query.finalize();
+			  
+			  // If there is no user with that email.
+			  if(count == 0){
+				  
+			  }
+		});
+		
+	}else{
+		
+		// Construct the landing page 
+		buildPage('landing', function(content){
+		
+			var login = builder.navbarLink("/CS2410/coursework/login", "Login");
+			var navbar = builder.navbar([login]);
+			
+			var head = builder.head("Aston Events");
+			var body = builder.body(navbar, content);
+			var page = builder.page(head, body);
+			
+			response.writeHead(200, {'Content-Type':'text/html'});
+			response.write(page);
+			response.end();
+
+		});
+	}
 }
 
 /*
