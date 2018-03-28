@@ -85,20 +85,19 @@ function get_login(request, response){
 
 function get_logout(request, response){
 	
-	
 	// Check for the session cookie and wherther it is active.
 	var sessionToken = request.cookies[cookieName];
 	var validSession = sessions.contains(function(session){
 		return session["token"] === sessionToken;
 	});
 	
-	// If there is a active session build the nav bar with the user options
+	// If there is a active session end it.
 	if(validSession){
-		
-		sessions.endSession(sessionToken);
-		response.clearCookie(cookieName);		
-		response.redirect('/CS2410/coursework');
+		sessions.endSession(sessionToken);		
 	}
+	
+	response.clearCookie(cookieName);
+	response.redirect('/CS2410/coursework');
 
 }
 
