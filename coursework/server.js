@@ -33,12 +33,9 @@ function get_profile(request, response){
 	
 	// Check for the session cookie and wherther it is active.
 	var sessionToken = request.cookies[cookieName];
-	var validSession = sessions.contains(function(session){
-		return session["token"] === sessionToken;
-	});
 	
 	// If there is a active session build the nav bar with the user options
-	if(validSession){
+	if(sessions.validSession(sessionToken)){
 		
 		var email = sessions.getEmail(sessionToken);
 		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
@@ -81,9 +78,7 @@ function get_profile(request, response){
 	}else{
 		response.sendStatus(500);	
 	}
-	
-	
-	
+		
 }
 
 /*
@@ -95,12 +90,9 @@ function get_landing(request, response){
 	
 	// Check for the session cookie and wherther it is active.
 	var sessionToken = request.cookies[cookieName];
-	var validSession = sessions.contains(function(session){
-		return session["token"] === sessionToken;
-	});
 	
 	// If there is a active session build the nav bar with the user options
-	if(validSession){
+	if(sessions.validSession(sessionToken)){
 		
 		var email = sessions.getEmail(sessionToken);
 		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
@@ -220,12 +212,9 @@ function get_logout(request, response){
 	
 	// Check for the session cookie and wherther it is active.
 	var sessionToken = request.cookies[cookieName];
-	var validSession = sessions.contains(function(session){
-		return session["token"] === sessionToken;
-	});
-	
+
 	// If there is a active session end it.
-	if(validSession){
+	if(sessions.validSession(sessionToken)){
 		sessions.endSession(sessionToken);		
 	}
 	

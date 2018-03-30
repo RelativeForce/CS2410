@@ -45,6 +45,12 @@ function contains(check) {
 	return false;
 }
 
+function validSession(token) {
+	return sessions.contains(function(session) {
+		return session["token"] === sessionToken;
+	});
+}
+
 function endSession(token) {
 
 	var removed = false;
@@ -99,8 +105,8 @@ function generateToken() {
 	return token;
 }
 
-function getEmail(token){
-	
+function getEmail(token) {
+
 	for (var i = 0; i < sessions.length; i++) {
 
 		var session = sessions[i];
@@ -112,7 +118,7 @@ function getEmail(token){
 	}
 
 	return null;
-	
+
 }
 
 module.exports = {
@@ -130,5 +136,8 @@ module.exports = {
 	},
 	getEmail : function(token) {
 		return getEmail(token);
+	},
+	validSession : function(token) {
+		return validSession(token);
 	}
 };
