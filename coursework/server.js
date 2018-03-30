@@ -24,9 +24,67 @@ app.use(cookieParser());
 
 app.get('/CS2410/coursework/login', get_login);
 app.get('/CS2410/coursework/logout', get_logout);
+app.get('/CS2410/coursework/profile', get_profile);
 app.get('/CS2410/coursework', get_landing);
 app.post('/CS2410/coursework/login', post_login);
 app.post('/CS2410/coursework', post_landing);
+
+function get_profile(request, response){
+	
+	// Check for the session cookie and wherther it is active.
+	var sessionToken = request.cookies[cookieName];
+	var validSession = sessions.contains(function(session){
+		return session["token"] === sessionToken;
+	});
+	
+	// If there is a active session build the nav bar with the user options
+	if(validSession){
+		
+		var email = sessions.getEmail(sessionToken);
+		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
+		
+		query.each(email, function(err, row) {
+			
+			// Construct the organiser home page
+			buildPage('profile', function(content){
+				
+				var home = builder.navbarLink("/CS2410/coursework", "Home");
+				var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
+				var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
+				var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
+				var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
+				
+				var	navbar = builder.navbar([home, newEvent, myEvents, search, logout]);	
+				
+				var profile = builder.profile(row);
+				
+				var head = builder.head("Aston Events");
+				var body = builder.body(navbar, profile + content);
+				var page = builder.page(head, body);
+				
+				response.writeHead(200, {'Content-Type':'text/html'});
+				response.write(page);
+				response.end();
+				
+			});
+			
+			
+		},function(err, count) {
+			  query.finalize();
+			  
+			  // If there is no user with that email.
+			  if(count == 0){
+				  response.sendStatus(500);
+			  }
+		});
+		
+	}else{
+		response.sendStatus(500);	
+	}
+	
+	
+	
+}
 
 /*
  * This method processes GET requests to the server for the landing page. The
@@ -70,7 +128,6 @@ function get_landing(request, response){
 					response.write(page);
 					response.end();
 					
-					
 				});
 				
 				
@@ -86,6 +143,21 @@ function get_landing(request, response){
 					var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
 					
 					var	navbar = builder.navbar([search, profile, logout]);	
+					
+//					var query = database.prepare("SELECT * FROM Users WHERE email = ?");
+//					
+//					query.each(email, function(err, row) {
+//						
+//						
+//						
+//					},function(err, count) {
+//						  query.finalize();
+//						  
+//						  // If there is no user with that email.
+//						  if(count == 0){
+//							  
+//						  }
+//					});
 				
 					var events = [{
 						"name" : "",
@@ -179,7 +251,7 @@ function post_login(request, response){
 
 function startServer(){
 	
-console.log('Listening on port ' + port);
+	console.log('Listening on port ' + port);
 	
 	// Connect to the database.
 	database = new sqlite3.Database('./db/aston_events.sqlite3', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, function (err) {

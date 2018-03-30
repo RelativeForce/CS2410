@@ -27,7 +27,7 @@ function navbar(navElements) {
 	nav += '				<span class="icon-bar"></span>';
 	nav += '				<span class="icon-bar"></span>';
 	nav += '			</button>';
-	nav += '			<img class="pull-left navbar-brand" src="/aston-logo.png" style="padding-top: 10px; padding-bottom: 10px; height: 50px" />';
+	nav += '			<img class="pull-left navbar-brand" src="/assets/aston-logo.png" style="padding-top: 10px; padding-bottom: 10px; height: 50px" />';
 	nav += '		</div>';
 	nav += '		<div id="navbar" class="navbar-collapse collapse">';
 	nav += '			<ul class="nav navbar-nav">';
@@ -123,6 +123,59 @@ function eventsTable(events, title) {
 	return eventsList;
 }
 
+function profile(userDetails) {
+
+	var profile = '';
+
+	profile += '<div class="container">';
+	profile += '	<div class="panel panel-default">';
+	profile += '		<div class="panel-heading">';
+	profile += '			<h2 id="title">Profile: ' + userDetails.name + '</h2>';
+	profile += '		</div>';
+	profile += '		<div class="panel-body">';
+	profile += '			<div class="col-xs-12 col-sm-5">';
+	profile += '				<div class="panel panel-default">';
+	profile += '					<div class="panel-heading">';
+	profile += '						Picture';
+	profile += '					</div>';
+	profile += '					<div class="panel-body">';
+	profile += picture(userDetails.picture);
+	profile += '					</div>';
+	profile += '				</div>';
+	profile += '			</div>';
+	profile += '			<div class="col-xs-12 col-sm-7">';
+	profile += '				<div class="panel panel-default">';
+	profile += '					<div class="panel-heading">';
+	profile += '						Information';
+	profile += '					</div>';
+	profile += '					<div class="panel-body">';
+	profile += profileInformation(userDetails);
+	profile += '					</div>';
+	profile += '				</div>';
+	profile += '			</div>';
+	profile += '		</div>';
+	profile += '	</div>';
+	profile += '</div>';
+
+	return profile;
+}
+
+function picture(picturePath) {
+
+	var picture = '';
+
+	picture += '<form id="pictureForm" class="">';
+	picture += '	<input type="file" id="imgInput" class="form-control"/> ';
+	picture += '	<img id="preview" src="#" alt="profile picture" style="width: 100%; height: 100%"/>';
+	picture += '</form>';
+
+	return picture;
+}
+
+function profileInformation(userDetails) {
+
+}
+
 module.exports = {
 	navbar : function(navElements) {
 		return navbar(navElements);
@@ -144,5 +197,8 @@ module.exports = {
 	},
 	eventsTable : function(events, title) {
 		return eventsTable(events, title);
+	},
+	profile : function(userDetails) {
+		return profile(userDetails);
 	}
 };

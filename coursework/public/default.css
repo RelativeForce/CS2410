@@ -5,12 +5,8 @@ header h1 {
 	margin: 0;
 }
 
-.row {
-	padding: 2%;
-}
-
 .panel-body {
-	padding: 2%;
+	word-break:break-all;
 }
 
 .navbar {
@@ -35,7 +31,7 @@ header {
 	text-align: center;
 	vertical-align: middle;
 	background-size: cover;
-	background-image: url("aston.jpg");
+	background-image: url("assets/aston.jpg");
 	background-repeat: no-repeat;
 	background-attachment: fixed;
 	background-position: center;
