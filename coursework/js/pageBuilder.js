@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 function head(title) {
 
 	var head = '';
@@ -133,26 +135,28 @@ function profile(userDetails) {
 	profile += '			<h2 id="title">Profile: ' + userDetails.name + '</h2>';
 	profile += '		</div>';
 	profile += '		<div class="panel-body">';
-	profile += '			<div class="col-xs-12 col-sm-5">';
-	profile += '				<div class="panel panel-default">';
-	profile += '					<div class="panel-heading">';
-	profile += '						Picture';
-	profile += '					</div>';
-	profile += '					<div class="panel-body">';
+	profile += '			<form id="information" name="information" action="/CS2410/coursework/profile" onsubmit="return validateProfile()" method="post">';
+	profile += '				<div class="col-xs-12 col-sm-5">';
+	profile += '					<div class="panel panel-default">';
+	profile += '						<div class="panel-heading">';
+	profile += '							Picture';
+	profile += '						</div>';
+	profile += '						<div class="panel-body">';
 	profile += picture(userDetails.picture);
+	profile += '						</div>';
 	profile += '					</div>';
 	profile += '				</div>';
-	profile += '			</div>';
-	profile += '			<div class="col-xs-12 col-sm-7">';
-	profile += '				<div class="panel panel-default">';
-	profile += '					<div class="panel-heading">';
-	profile += '						Information';
-	profile += '					</div>';
-	profile += '					<div class="panel-body">';
+	profile += '				<div class="col-xs-12 col-sm-7">';
+	profile += '					<div class="panel panel-default">';
+	profile += '						<div class="panel-heading">';
+	profile += '							Information';
+	profile += '						</div>';
+	profile += '						<div class="panel-body">';
 	profile += profileInformation(userDetails);
+	profile += '						</div>';
 	profile += '					</div>';
 	profile += '				</div>';
-	profile += '			</div>';
+	profile += '			</form>';
 	profile += '		</div>';
 	profile += '	</div>';
 	profile += '</div>';
@@ -164,15 +168,50 @@ function picture(picturePath) {
 
 	var picture = '';
 
-	picture += '<form id="pictureForm" class="">';
 	picture += '	<input type="file" id="imgInput" class="form-control"/> ';
-	picture += '	<img id="preview" src="#" alt="profile picture" style="width: 100%; height: 100%"/>';
-	picture += '</form>';
+
+	if (fs.existsSync(picturePath)) {
+		picture += '	<img id="preview" src="' + picturePath
+				+ '" alt="profile picture" style="width: 100%; height: 100%"/>';
+	} else {
+		picture += '	<img id="preview" src="No Picture" alt="profile picture" style="width: 100%; height: 100%"/>';
+	}
 
 	return picture;
 }
 
 function profileInformation(userDetails) {
+
+	var information = '';
+
+	information += '	<div class="form-group">';
+	information += '		<label for="name">Full Name:</label>';
+	information += '		<input type="text"	name="name" id="name" class="form-control" value="'
+			+ userDetails.name + '" />';
+	information += '	</div>';
+	information += '	<div class="form-group">';
+	information += '		<label for="password">Password:</label> ';
+	information += '		<input type="password" name="password" id="password" class="form-control"/>';
+	information += '	</div>';
+	information += '	<div class="form-group">';
+	information += '		<label for="repassword">Retype Password:</label> ';
+	information += '		<input type="password" name="repassword" id="repassword" class="form-control"/>';
+	information += '	</div>';
+	information += '	<div class="form-group">';
+	information += '		<label for="telephone">Telephone:</label> ';
+	information += '		<input type="text" name="telephone" id="telephone" class="form-control" value="'
+			+ userDetails.telephone + '"/>';
+	information += '	</div>';
+	information += '	<div class="form-check">';
+	information += '		<input class="form-check-input" type="checkbox" name="organiser" id="organiser" '
+			+ (userDetails.organiser === 'true' ? 'checked' : 'unchecked')
+			+ '/>';
+
+	information += '		<label for="organiser">Event Organiser</label> ';
+	information += '	</div>';
+	information += '	<button class="btn btn-primary" type="submit" form="information" value="Save Changes">Save Changes</button>';
+
+	return information;
 
 }
 

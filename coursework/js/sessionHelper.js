@@ -46,8 +46,8 @@ function contains(check) {
 }
 
 function validSession(token) {
-	return sessions.contains(function(session) {
-		return session["token"] === sessionToken;
+	return contains(function(session) {
+		return session["token"] === token;
 	});
 }
 
