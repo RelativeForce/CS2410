@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 
 function head(title) {
 
@@ -52,7 +53,7 @@ function error(message) {
 	error += message;
 	error += '</div>';
 
-	return error
+	return error;
 }
 
 function navbarLink(link, label) {
@@ -135,7 +136,7 @@ function profile(userDetails) {
 	profile += '			<h2 id="title">Profile: ' + userDetails.name + '</h2>';
 	profile += '		</div>';
 	profile += '		<div class="panel-body">';
-	profile += '			<form id="information" name="information" action="/CS2410/coursework/profile" onsubmit="return validateProfile()" method="post">';
+	profile += '			<form id="information" enctype="multipart/form-data" name="information" action="/CS2410/coursework/profile" onsubmit="return validateProfile()" method="post">';
 	profile += '				<div class="col-xs-12 col-sm-5">';
 	profile += '					<div class="panel panel-default">';
 	profile += '						<div class="panel-heading">';
@@ -168,10 +169,10 @@ function picture(picturePath) {
 
 	var picture = '';
 
-	picture += '	<input type="file" id="imgInput" class="form-control"/> ';
+	picture += '	<input type="file" id="picture" name="picture" class="form-control"/> ';
 
-	if (fs.existsSync(picturePath)) {
-		picture += '	<img id="preview" src="' + picturePath
+	if (fs.existsSync(path.resolve('./public/uploaded/' + picturePath))) {
+		picture += '	<img id="preview" src="/uploaded/' + picturePath
 				+ '" alt="profile picture" style="width: 100%; height: 100%"/>';
 	} else {
 		picture += '	<img id="preview" src="No Picture" alt="profile picture" style="width: 100%; height: 100%"/>';
@@ -215,6 +216,18 @@ function profileInformation(userDetails) {
 
 }
 
+function response(message){
+	
+	var response = '';
+
+	response += '<div class="alert alert-info">';
+	response += message;
+	response += '</div>';
+
+	return response;
+	
+}
+
 module.exports = {
 	navbar : function(navElements) {
 		return navbar(navElements);
@@ -239,5 +252,8 @@ module.exports = {
 	},
 	profile : function(userDetails) {
 		return profile(userDetails);
+	},
+	response : function(message){
+		return response(message);
 	}
 };

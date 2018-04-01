@@ -13,7 +13,7 @@
 		}
 	}
 
-	$("#imgInput").change(function() {
+	$("#picture").change(function() {
 		readURL(this);
 	});
 	
@@ -36,7 +36,7 @@
 
 		var phoneRegex = /^[0-9]{11}$/;
 
-		if (!telephone.toString().test(phoneRegex)) {
+		if (!telephone.test(phoneRegex)) {
 			alert("Telephone number must be valid.");
 			return false;
 		}
