@@ -44,31 +44,9 @@ function get_profile(request, response){
 		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 		
 		query.each(email, function(err, row) {
-			
-			// Construct the organiser home page
-			buildPage('profile', function(content){
 				
-				var home = builder.navbarLink("/CS2410/coursework", "Home");
-				var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
-				var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
-				var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
-				var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
-				
-				var	navbar = builder.navbar([home, newEvent, myEvents, search, logout]);	
-				
-				var profile = builder.profile(row);
-				
-				var head = builder.head("Aston Events");
-				var body = builder.body(navbar, profile + content);
-				var page = builder.page(head, body);
-				
-				response.writeHead(200, {'Content-Type':'text/html'});
-				response.write(page);
-				response.end();
-				
-			});
-			
-			
+			profile(request, response, row, "");
+		
 		},function(err, count) {
 			  query.finalize();
 			  
@@ -249,7 +227,7 @@ function post_profile(request, response){
 			var newRow = {
 				"email" : row.email,
 				"name" : (row.name !== request.body.name) ? request.body.name : row.name,
-				"organiser" : (row.orgainer === 'true' || request.body.organiser) ? 'true' : 'false',
+				"organiser" : request.body.organiser ? 'true' : 'false',
 				"picture" : (newPicture !== row.picture) ? newPicture : row.picture,
 				"password" : password,
 				"telephone" : (row.telephone !== request.body.telephone) ? request.body.telephone : row.telephone 
@@ -259,30 +237,9 @@ function post_profile(request, response){
 			update.run([newRow.name, newRow.organiser, newRow.picture, newRow.password, newRow.telephone, newRow.email]);
 			update.finalize();
 			
-			// Construct the organiser home page
-			buildPage('profile', function(content){
-				
-				var home = builder.navbarLink("/CS2410/coursework", "Home");
-				var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
-				var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
-				var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
-				var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
-				
-				var	navbar = builder.navbar([home, newEvent, myEvents, search, logout]);	
-				
-				var profile = builder.profile(row);
-				
-				var info = builder.response("Changes Updated");
-				
-				var head = builder.head("Aston Events");
-				var body = builder.body(navbar, info + profile + content);
-				var page = builder.page(head, body);
-				
-				response.writeHead(200, {'Content-Type':'text/html'});
-				response.write(page);
-				response.end();
-				
-			});
+			var info = builder.response("Changes Updated");
+		
+			profile(request, response, newRow, info);
 			
 		},function(err, count) {
 			query.finalize();
@@ -460,6 +417,35 @@ function signup(request, response){
 			  
 		  }
 	});
+}
+
+function profile(request, response, user, info){
+	
+	
+	// Construct the organiser home page
+	buildPage('profile', function(content){
+		
+		var home = builder.navbarLink("/CS2410/coursework", "Home");
+		var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
+		var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
+		var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
+		var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
+		
+		var	navbar = builder.navbar((user.organiser === 'true') ? [home, newEvent, myEvents, search, logout] : [home, search, logout]);	
+		
+		var profile = builder.profile(user);
+		
+		var head = builder.head("Aston Events");
+		var body = builder.body(navbar, info + profile + content);
+		var page = builder.page(head, body);
+		
+		response.writeHead(200, {'Content-Type':'text/html'});
+		response.write(page);
+		response.end();
+		
+	});
+	
+	
 }
 
 function encodeHTML(html) {
