@@ -6,12 +6,16 @@ header h1 {
 }
 
 .panel-body {
-	word-break:break-all;
+	word-break: break-all;
 }
 
 .navbar {
 	margin-bottom: 0px !important;
 	padding-bottom: 0pn !important;
+}
+
+textarea {
+	resize: vertical;
 }
 
 nav {

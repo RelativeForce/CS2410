@@ -24,13 +24,70 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(fileUpload());
 
+app.get('/CS2410/coursework', get_landing);
 app.get('/CS2410/coursework/login', get_login);
 app.get('/CS2410/coursework/logout', get_logout);
 app.get('/CS2410/coursework/profile', get_profile);
-app.get('/CS2410/coursework', get_landing);
-app.post('/CS2410/coursework/login', post_login);
+app.get('/CS2410/coursework/organise', get_organise);
+
 app.post('/CS2410/coursework', post_landing);
+app.post('/CS2410/coursework/login', post_login);
 app.post('/CS2410/coursework/profile', post_profile);
+
+function get_organise(request, response){
+	
+	// Check for the session cookie and wherther it is active.
+	var sessionToken = request.cookies[cookieName];
+	
+	// If there is a active session build the nav bar with the user options
+	if(sessions.validSession(sessionToken)){
+		
+		var email = sessions.getEmail(sessionToken);
+		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
+		
+		query.each(email, function(err, row) {
+				
+			if(row.organiser !== 'true'){
+				response.sendStatus(500);
+			}else{
+				
+				// Construct the organiser home page
+				buildPage('organise', function(content){
+					
+					var home = builder.navbarLink("/CS2410/coursework", "Home");
+					var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
+					var profile = builder.navbarLink("/CS2410/coursework/profile", "My Profile");
+					var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
+					var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
+					
+					var	navbar = builder.navbar([home, profile, myEvents, search, logout]);	
+
+					var head = builder.head("Aston Events");
+					var body = builder.body(navbar, content);
+					var page = builder.page(head, body);
+					
+					response.writeHead(200, {'Content-Type':'text/html'});
+					response.write(page);
+					response.end();
+					
+				});
+				
+			}
+		
+		},function(err, count) {
+			  query.finalize();
+			  
+			  // If there is no user with that email.
+			  if(count == 0){
+				  response.sendStatus(500);
+			  }
+		});
+		
+	}else{
+		response.sendStatus(500);	
+	}
+	
+}
 
 function get_profile(request, response){
 	
