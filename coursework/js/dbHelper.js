@@ -18,14 +18,14 @@ function users(database){
 function events(database){
 	
 	var sql = 'CREATE TABLE Events (';
-	sql +='event_id TEXT PRIMARY KEY,';
+	sql +='event_id INTEGER PRIMARY KEY,';
 	sql +='name TEXT NOT NULL,';
 	sql +='description TEXT NOT NULL,';
 	sql +='organiser TEXT NOT NULL,';
 	sql +='type TEXT NOT NULL,';
 	sql +='time TEXT NOT NULL,';
 	sql +='location TEXT NOT NULL,';
-	sql +='popularity TEXT NOT NULL,';
+	sql +='popularity INTEGER NOT NULL,';
 	sql += 'FOREIGN KEY(organiser) REFERENCES Users(email)';
 	sql +=');';
 	
@@ -36,7 +36,7 @@ function events(database){
 function interest(database){
 	
 	var sql = 'CREATE TABLE Interest (';
-	sql +='event_id TEXT NOT NULL,';
+	sql +='event_id INTEGER NOT NULL,';
 	sql +='student_email TEXT NOT NULL,';
 	sql += 'FOREIGN KEY(event_id) REFERENCES Events(event_id)';
 	sql += 'FOREIGN KEY(student_email) REFERENCES Users(email)';
@@ -50,7 +50,7 @@ function pictures(database){
 	
 	var sql = 'CREATE TABLE Event_Pictures (';
 	sql += 'picture TEXT PRIMARY KEY,';
-	sql += 'event_id TEXT NOT NULL,';
+	sql += 'event_id INTEGER NOT NULL,';
 	sql += 'FOREIGN KEY(event_id) REFERENCES Events(event_id)';
 	sql +=');';
 	

@@ -8,47 +8,68 @@
 				action="/CS2410/coursework/organise"
 				onsubmit="return validateEvent()" method="post">
 
+				<!-- Name -->
 				<div class="form-group">
 					<label for="name">Name:</label> <input type="text" name="name"
 						id="name" class="form-control" />
 				</div>
 
+				<!-- Type -->
 				<div class="form-group">
 					<label for="type">Type:</label>
 					<div class="radio">
-						<label><input type="radio" name="optradio">Sport</label>
+						<label><input type="radio" value="sport" name="type">Sport</label>
 					</div>
 					<div class="radio">
-						<label><input type="radio" name="optradio">Culture</label>
+						<label><input type="radio" value="culture" name="type">Culture</label>
 					</div>
 					<div class="radio">
-						<label><input type="radio" name="optradio" checked="checked">Other</label>
+						<label><input type="radio" value="other" name="type"
+							checked="checked">Other</label>
 					</div>
 				</div>
 
+				<!-- Location -->
 				<div class="form-group">
 					<label for="location">Location:</label> <input type="text"
 						name="location" id="location" class="form-control" />
 				</div>
 
+				<!-- Time -->
 				<div class="form-group">
 					<label for="time">Time:</label> <input type="date" name="time"
 						id="time" class="form-control" />
 				</div>
 
+				<!-- Description -->
 				<div class="form-group">
 					<label for="description">Description:</label>
 					<textarea class="form-control" id="description" rows="5"
 						name="description"></textarea>
 				</div>
 
-				<div class="form-group">
-					<label for="picture">Picture:</label> <input type="file"
-						id="picture" name="picture" class="form-control" /> <img
-						id="preview" src="No Picture" alt="profile picture"
-						style="width: 100%; height: 100%" />
+				<!-- Picture -->
+				<div class="col-sm-12">
+					<div id="pictureSection" class="form-group panel panel-default">
+						<div class="panel-heading" id="imageContainerHeader">
+							<label>Picture:</label>
+							<button id="addPicture" class="btn btn-info" type="button"
+								style="" onclick="addPictureInput()" value="+">+</button>
+
+						</div>
+						<div id="imageContainer" class="panel-body">
+
+							<div class="imageInput col-sm-3">
+								<input type="file" name="picture0" id="picture0"
+									class="form-control" /> <img id="preview0" src="No Picture"
+									alt="profile picture" style="width: 100%; height: 100%" />
+							</div>
+
+						</div>
+					</div>
 				</div>
 
+				<!-- Submit Button -->
 				<button class="btn btn-primary" type="submit" form="event"
 					value="Save">Save</button>
 
@@ -58,22 +79,60 @@
 </div>
 
 <script>
+	$("#picture0").change(function() {
+		readURL(this);
+	});
+
+	var numberOfPictures = 0;
+
+	function addPictureInput() {
+
+		numberOfPictures++;
+
+		var imageInput = document.createElement('div');
+		imageInput.setAttribute("class", "imageInput col-sm-3");
+
+		var input = document.createElement('input');
+		input.setAttribute("class", "picture form-control");
+		input.setAttribute("type", "file");
+		input.setAttribute("name", "picture" + numberOfPictures);
+		input.onchange = function() {
+			readURL(input);
+		};
+
+		var img = document.createElement('img');
+		img.setAttribute("src", "No Picture");
+		img.setAttribute("style", "width: 100%; height: 100%");
+		img.setAttribute("alt", "profile picture");
+		img.setAttribute("id", "preview" + numberOfPictures);
+
+		imageInput.appendChild(input);
+		imageInput.appendChild(img);
+
+		document.getElementById("imageContainer").appendChild(imageInput);
+
+		if (numberOfPictures == 3) {
+			document.getElementById("imageContainerHeader").removeChild(document.getElementById("addPicture"));
+		}
+
+	}
+
 	function readURL(input) {
 
 		if (input.files && input.files[0]) {
 			var reader = new FileReader();
 
-			reader.onload = function(e) {
-				$('#preview').attr('src', e.target.result);
-			}
+			var number = input.name.replace('picture', '');
 
+			reader.onload = function(e) {
+
+				var id = '#preview' + number;
+
+				$(id).attr('src', e.target.result);
+			}
 			reader.readAsDataURL(input.files[0]);
 		}
 	}
-
-	$("#picture").change(function() {
-		readURL(this);
-	});
 
 	function validateEvent() {
 
