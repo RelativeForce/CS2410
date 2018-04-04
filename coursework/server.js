@@ -146,9 +146,10 @@ function addEvent(request, email, event_id){
 		"popularity" : 0
 	};
 
-	var add = database.prepare("INSERT INTO Events (event_id, name, description, organiser, type, time, location, popularity) VALUES (?, ?, ?, ?, ?, ?, ?, ?);");
-//	add.run([event.id, event.name, event.description, event.organiser, event.type, event.time, event.location, event.popularity]);
-	//add.finalize();
+	//var add = database.prepare("INSERT INTO Events (event_id, name, description, organiser, type, time, location, popularity) VALUES (?, ?, ?, ?, ?, ?, ?, ?);");
+// add.run([event.id, event.name, event.description, event.organiser,
+// event.type, event.time, event.location, event.popularity]);
+	// add.finalize();
 	
 	console.log(event);
 	
@@ -156,48 +157,45 @@ function addEvent(request, email, event_id){
 
 function addEventPicture(request, event_id){
 	
-	// If a file was uploaded
-	if (request.files.picture) {
+	var files = request.files;
 		
-		var query = database.prepare("SELECT * FROM Event_Pictures WHERE event_id = ?");
+	var query = database.prepare("SELECT * FROM Event_Pictures WHERE event_id = ?");
 
-		query.each(event_id, function(err, row) {
-			// Count number of event images
-		}, function(err, count) {
-			query.finalize();
-
-			var files = request.files;
+	query.each(event_id, function(err, row) {
+		// Count number of event images
+	}, function(err, count) {
 			
-			for(var i = 0; i < files.length; i++){
-				
-				var file = files[i];
-				var ext = path.extname(file.name).toLowerCase();
-				var newFilename = 'e_' + event_id + "_" + (count + i) + ext;
-				var relativePath = './public/uploaded/' + newFilename;
-
-				if (ext === '.png' || ext === '.jpg') {
-
-					file.mv(relativePath, function(err) {
-							
-						if (err) {
-							throw err;
-						} else {
-							console.log('Uploaded: ' + file.name + ' -> ' + newFilename);
-								
-							var addPicture = database.prepare("INSERT INTO Event_Pictures (picture, event_id) VALUES (?, ?);");
-							//addPicture.run([newFilename, event_id]);
-							//addPicture.finalize();
-								
-						}
-					});
-				}				
-			}
-		});
-
+		query.finalize();
+			
+		var index = 0;
 		
-	}
-	
-	
+		for(var f in files){
+			
+			var file = files[f];	
+			var filename = file.name;
+			var ext = path.extname(filename).toLowerCase();
+			var newFilename = 'e_' + event_id + "_" + (count + index) + ext;
+			var relativePath = './public/uploaded/' + newFilename;
+
+			if (ext === '.png' || ext === '.jpg') {
+
+				// Move the file
+				file.mv(relativePath, function(err) {
+					if (err) {
+						throw err;
+					}
+				});
+				
+				// var addPicture = database.prepare("INSERT INTO Event_Pictures(picture, event_id) VALUES (?, ?);");
+				// addPicture.run([newFilename, event_id]);
+				// addPicture.finalize();
+				
+				console.log('Uploaded: ' + filename + ' -> ' + newFilename);
+			}	
+			
+			index += 1;
+		}
+	});
 }
 
 function get_profile(request, response) {
