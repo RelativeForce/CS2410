@@ -33,7 +33,7 @@ function get_organise(request, response) {
 		query.each(email, function(err, row) {
 
 			if (row.organiser !== 'true') {
-				response.sendStatus(500);
+				response.redirect('/CS2410/coursework');
 			} else {
 
 				// Construct the organiser home page
@@ -66,12 +66,12 @@ function get_organise(request, response) {
 
 			// If there is no user with that email.
 			if (count == 0) {
-				response.sendStatus(500);
+				response.redirect('/CS2410/coursework');
 			}
 		});
 
 	} else {
-		response.sendStatus(500);
+		response.redirect('/CS2410/coursework');
 	}
 
 }
@@ -92,7 +92,7 @@ function post_organise(request, response) {
 			function(err, user) {
 
 				if (user.organiser !== 'true') {
-					response.sendStatus(500);
+					response.redirect('/CS2410/coursework');
 				} else {
 
 					var eventQuery = database.prepare("SELECT * FROM Events");
@@ -108,9 +108,9 @@ function post_organise(request, response) {
 								
 							addEvent(request, email, event_id);
 												
-							addEventPicture(request, event_id)
+							addEventPictures(request.files, event_id)
 
-							response.sendStatus(status.OK);
+							response.redirect('/CS2410/coursework/event?id=' + event_id);
 						}
 					);
 
@@ -122,13 +122,13 @@ function post_organise(request, response) {
 
 				// If there is no user with that email.
 				if (count == 0) {
-					response.sendStatus(500);
+					response.redirect('/CS2410/coursework');
 				}
 			}
 		);
 
 	} else {
-		response.sendStatus(500);
+		response.redirect('/CS2410/coursework');
 	}
 
 }
@@ -146,29 +146,28 @@ function addEvent(request, email, event_id){
 		"popularity" : 0
 	};
 
-	//var add = database.prepare("INSERT INTO Events (event_id, name, description, organiser, type, time, location, popularity) VALUES (?, ?, ?, ?, ?, ?, ?, ?);");
-// add.run([event.id, event.name, event.description, event.organiser,
-// event.type, event.time, event.location, event.popularity]);
-	// add.finalize();
+	var add = database.prepare("INSERT INTO Events (event_id, name, description, organiser, type, time, location, popularity) VALUES (?, ?, ?, ?, ?, ?, ?, ?);");
+	add.run([event.id, event.name, event.description, event.organiser, event.type, event.time, event.location, event.popularity]);
+	add.finalize();
 	
 	console.log(event);
 	
 }
 
-function addEventPicture(request, event_id){
-	
-	var files = request.files;
+function addEventPictures(files, event_id){
 		
 	var query = database.prepare("SELECT * FROM Event_Pictures WHERE event_id = ?");
 
+	// Iterate over all the pictures with the specifed event id and count them
 	query.each(event_id, function(err, row) {
 		// Count number of event images
 	}, function(err, count) {
 			
 		query.finalize();
-			
+		
 		var index = 0;
 		
+		// For all of the files the user wants to input
 		for(var f in files){
 			
 			var file = files[f];	
@@ -177,6 +176,7 @@ function addEventPicture(request, event_id){
 			var newFilename = 'e_' + event_id + "_" + (count + index) + ext;
 			var relativePath = './public/uploaded/' + newFilename;
 
+			// If the image is the valid file type
 			if (ext === '.png' || ext === '.jpg') {
 
 				// Move the file
@@ -186,16 +186,24 @@ function addEventPicture(request, event_id){
 					}
 				});
 				
-				// var addPicture = database.prepare("INSERT INTO Event_Pictures(picture, event_id) VALUES (?, ?);");
-				// addPicture.run([newFilename, event_id]);
-				// addPicture.finalize();
+				// Insert the entry into the database
+				insertPicture(event_id, filename, newFilename);
 				
-				console.log('Uploaded: ' + filename + ' -> ' + newFilename);
 			}	
 			
 			index += 1;
 		}
 	});
+}
+
+function insertPicture(event_id, filename, newFilename){
+	
+	var addPicture = database.prepare("INSERT INTO Event_Pictures(picture, event_id) VALUES (?, ?);");
+	addPicture.run([newFilename, event_id]);
+	addPicture.finalize();
+	
+	console.log('Uploaded: ' + filename + ' -> ' + newFilename);
+	
 }
 
 function get_profile(request, response) {
@@ -218,12 +226,12 @@ function get_profile(request, response) {
 
 			// If there is no user with that email.
 			if (count == 0) {
-				response.sendStatus(500);
+				response.redirect('/CS2410/coursework');
 			}
 		});
 
 	} else {
-		response.sendStatus(500);
+		response.redirect('/CS2410/coursework');
 	}
 
 }
@@ -390,51 +398,40 @@ function post_profile(request, response) {
 		var email = sessions.getEmail(sessionToken);
 		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 
-		query
-				.each(
-						email,
-						function(err, row) {
+		query.each(email,function(err, row) {
 
-							var newPicture = changePicure(request, response,
-									row);
+			var newPicture = changePicure(request, response, row);
 
-							var password = row.password;
+			var password = row.password;
 
-							if (request.body.password !== "") {
-								password = MD5.hash(request.body.password
-										+ row.salt);
-							}
+			if (request.body.password !== "") {
+				password = MD5.hash(request.body.password + row.salt);
+			}
 
-							var newRow = {
-								"email" : row.email,
-								"name" : (row.name !== request.body.name) ? request.body.name
-										: row.name,
-								"organiser" : request.body.organiser ? 'true'
-										: 'false',
-								"picture" : (newPicture !== row.picture) ? newPicture
-										: row.picture,
-								"password" : password,
-								"telephone" : (row.telephone !== request.body.telephone) ? request.body.telephone
-										: row.telephone
-							};
+			var newRow = {
+				"email" : row.email,
+				"name" : (row.name !== request.body.name) ? request.body.name : row.name,
+				"organiser" : request.body.organiser ? 'true' : 'false',
+				"picture" : (newPicture !== row.picture) ? newPicture : row.picture,
+				"password" : password,
+				"telephone" : (row.telephone !== request.body.telephone) ? request.body.telephone : row.telephone
+			};
 
-							var update = database
-									.prepare("UPDATE Users SET name = ?, organiser = ?, picture = ?, password = ?, telephone = ?  WHERE email = ?;");
-							update.run([ newRow.name, newRow.organiser,
-									newRow.picture, newRow.password,
-									newRow.telephone, newRow.email ]);
-							update.finalize();
+			var update = database.prepare("UPDATE Users SET name = ?, organiser = ?, picture = ?, password = ?, telephone = ?  WHERE email = ?;");
+			update.run([newRow.name, newRow.organiser, newRow.picture, newRow.password,	newRow.telephone, newRow.email]);
+			update.finalize();
 
-							var info = builder.response("Changes Updated");
+			var info = builder.response("Changes Updated");
 
-							profile(request, response, newRow, info);
+			profile(request, response, newRow, info);
 
-						}, function(err, count) {
-							query.finalize();
-						});
+		}, 
+		function(err, count) {
+			query.finalize();
+		});
 
 	} else {
-		response.sendStatus(500);
+		response.redirect('/CS2410/coursework');
 	}
 
 }
@@ -509,50 +506,41 @@ function login(request, response) {
 
 	var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 
-	query
-			.each(
-					email,
-					function(err, row) {
+	query.each(email, function(err, row) {
 
-						var salted = MD5.hash(password + row.salt);
+		var salted = MD5.hash(password + row.salt);
 
-						if (salted === row.password) {
+		if (salted === row.password) {
 
-							var token = sessions.uniqueToken();
+			var token = sessions.uniqueToken();
 
-							// If the session is
-							// added redirct the
-							// client.
-							if (sessions.addSession(token, email)) {
-								response.cookie(cookieName, token, {
-									maxAge : 999999
-								});
-								response.redirect('/CS2410/coursework');
-							} else {
-								// Session
-								// alread
-								// exists.
-								var error = builder
-										.error("Session exists elsewhere. Please sign out in the other location.");
-								build_login(request, response, error);
-							}
-						} else {
+			// If the session is added redirct the client.
+			if (sessions.addSession(token, email)) {
+				response.cookie(cookieName, token, {
+					maxAge : 999999
+				});
+				response.redirect('/CS2410/coursework');
+			} else {
+				// Session alread exists.
+				var error = builder.error("Session exists elsewhere. Please sign out in the other location.");
+				build_login(request, response, error);
+			}
+		} else {
 
-							// Invalid password
-							var error = builder.error("Password is incorrect.");
-							build_login(request, response, error);
-						}
+			// Invalid password
+			var error = builder.error("Password is incorrect.");
+			build_login(request, response, error);
+		}
 
-					}, function(err, count) {
-						query.finalize();
+	}, function(err, count) {
+		query.finalize();
 
-						// Invalid email
-						if (count == 0) {
-							var error = builder.error("<strong>" + email
-									+ "</strong> is not a valid email.");
-							build_login(request, response, error);
-						}
-					});
+		// Invalid email
+		if (count == 0) {
+			var error = builder.error("<strong>" + email + "</strong> is not a valid email.");
+			build_login(request, response, error);
+		}
+	});
 
 }
 
@@ -591,47 +579,36 @@ function signup(request, response) {
 
 	var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 
-	query
-			.each(
-					email,
-					function(err, row) {
-						// Do nothing
-					},
-					function(err, count) {
-						query.finalize();
+	query.each(email, function(err, row) {
+		// Count elements
+	},
+	function(err, count) {
+		query.finalize();
 
-						// User does not exist already
-						if (count == 0) {
+		// User does not exist already
+		if (count == 0) {
 
-							var insert = database
-									.prepare("INSERT INTO Users('email', 'name', 'dob', 'organiser' ,'picture','password', 'salt', 'telephone') VALUES (?, ?, ?, ?, ?, ?, ?, ?);");
-							insert.run([ email, name, dob, 'false', picture,
-									saltedPassword, salt, telephone ]);
-							insert.finalize();
+			var insert = database.prepare("INSERT INTO Users('email', 'name', 'dob', 'organiser' ,'picture','password', 'salt', 'telephone') VALUES (?, ?, ?, ?, ?, ?, ?, ?);");
+			insert.run([ email, name, dob, 'false', picture, saltedPassword, salt, telephone ]);
+			insert.finalize();
 
-							console.log("User created: [" + email + ", " + name
-									+ ", " + dob + ", false, " + picture + ", "
-									+ saltedPassword + ", " + salt + ", "
-									+ telephone + "]");
+			console.log("User created: [" + email + ", " + name + ", " + dob + ", false, " + picture + ", " + saltedPassword + ", " + salt + ", " + telephone + "]");
 
-							var token = sessions.uniqueToken();
+			var token = sessions.uniqueToken();
 
-							sessions.addSession(token, email);
-							response.cookie(cookieName, token, {
-								maxAge : 999999
-							});
-							response.redirect('/CS2410/coursework');
+			sessions.addSession(token, email);
+			response.cookie(cookieName, token, {
+				maxAge : 999999
+			});
+			response.redirect('/CS2410/coursework');
 
-						} else {
+		} else {
 
-							var error = builder
-									.error("A user with Email: <strong>"
-											+ email
-											+ "</strong> already exists.");
-							build_login(request, response, error);
+			var error = builder.error("A user with Email: <strong>"+ email+ "</strong> already exists.");
+			build_login(request, response, error);
 
-						}
-					});
+		}
+	});
 }
 
 function profile(request, response, user, info) {
