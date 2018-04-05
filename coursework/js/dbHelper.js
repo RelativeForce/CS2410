@@ -1,3 +1,10 @@
+/**
+ * Creates the 'Users' table.
+ * 
+ * @param database
+ *            The database the table will be created in.
+ * @returns undefined
+ */
 function users(database){
 	
 	var sql = 'CREATE TABLE Users (';
@@ -15,6 +22,13 @@ function users(database){
 	
 }
 
+/**
+ * Creates the 'Events' table.
+ * 
+ * @param database
+ *            The database the table will be created in.
+ * @returns undefined
+ */
 function events(database){
 	
 	var sql = 'CREATE TABLE Events (';
@@ -33,6 +47,13 @@ function events(database){
 	
 }
 
+/**
+ * Creates the 'Interest' table.
+ * 
+ * @param database
+ *            The database the table will be created in.
+ * @returns undefined
+ */
 function interest(database){
 	
 	var sql = 'CREATE TABLE Interest (';
@@ -46,6 +67,13 @@ function interest(database){
 	
 }
 
+/**
+ * Creates the 'Event_Pictures' table.
+ * 
+ * @param database
+ *            The database the table will be created in.
+ * @returns undefined
+ */
 function pictures(database){
 	
 	var sql = 'CREATE TABLE Event_Pictures (';
@@ -58,19 +86,31 @@ function pictures(database){
 	
 }
 
-function forEach(database, query, callback){
+/**
+ * Perfroms a specifed action on each ro retunred from the specifed database
+ * query.
+ * 
+ * @param database
+ *            The database that the query will be performed on.
+ * @param query
+ *            The query to be performed.
+ * @param action
+ *            The function that should take the row as a parameter that will be
+ *            performed on each row.
+ * @returns undefined
+ */
+function forEach(database, query, action){
 	
 	database.serialize(() => {
 		database.each(query, function(err, row){
 			if (err) {
 				throw err;
 			}
-			callback(row);
+			action(row);
 		});
 	});
 	
 }
-
 
 module.exports = {
 	forEach : function(database, query, callback) {
