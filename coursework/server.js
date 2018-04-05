@@ -1,24 +1,43 @@
 const port = 3000;
 const cookieName = 'AstonEvents';
 
-// Import requestuired packages
+// Import modules
 const express = require('express');
+const app = express();
+const server = app.listen(port, startServer);
 const status = require('http-status');
 const path = require('path');
 const fs = require('fs');
-const app = express();
+const bodyParser = require('body-parser');
+const fileUpload = require('express-fileupload');
+const cookieParser = require('cookie-parser');
+const sqlite3 = require('sqlite3').verbose();
+
+// My modules
+const MD5 = require('./public/MD5');
 const dbHelper = require('./js/dbHelper');
 const builder = require('./js/pageBuilder');
 const sessions = require('./js/sessionHelper');
-const MD5 = require('./public/MD5');
-const sqlite3 = require('sqlite3').verbose();
-const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
-const server = app.listen(port, startServer);
-const fileUpload = require('express-fileupload');
 
+/**
+ * Holds the connection to the SQLite database.
+ */
 var database;
 
+// GET handlers --------------------------------------------
+
+/**
+ * Processes the GET requests to the 'organise' end point which will respond
+ * with the organise page provided that the request contains a valid session
+ * cookie.
+ * 
+ * @param request
+ *            The request from the client that should contain the session
+ *            cookie.
+ * @param response
+ *            The reponse that will be sent to the client.
+ * @returns undefined
+ */
 function get_organise(request, response) {
 
 	// Check for the session cookie and wherther it is active.
@@ -32,6 +51,7 @@ function get_organise(request, response) {
 
 		query.each(email, function(err, row) {
 
+			// If the user is not an organiser redirect them to the home page.
 			if (row.organiser !== 'true') {
 				response.redirect('/CS2410/coursework');
 			} else {
@@ -39,21 +59,25 @@ function get_organise(request, response) {
 				// Construct the organiser home page
 				buildPage('organise', function(content) {
 
+					// The elements of the organise page.
 					var home = builder.navbarLink("/CS2410/coursework", "Home");
 					var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
 					var profile = builder.navbarLink("/CS2410/coursework/profile","My Profile");
 					var search = builder.navbarLink("/CS2410/coursework/search","Search Events");
 					var myEvents = builder.navbarLink("/CS2410/coursework/events","My Events");
-
 					var navbar = builder.navbar([ home, profile, myEvents, search, logout ]);
-
 					var head = builder.head("Aston Events");
 					var body = builder.body(navbar, content);
+					
+					// The string representation of the page as HTML
 					var page = builder.page(head, body);
 
-					response.writeHead(200, {
+					// The attributes of the response.
+					var responseAttributes = {
 						'Content-Type' : 'text/html'
-					});
+					};
+					
+					response.writeHead(200, responseAttributes);
 					response.write(page);
 					response.end();
 
@@ -74,6 +98,141 @@ function get_organise(request, response) {
 		response.redirect('/CS2410/coursework');
 	}
 
+}
+
+/**
+ * Processes the GET requests to the 'profile' end point which will respond with
+ * the profile page provided that the request contains a valid session cookie.
+ * 
+ * @param request
+ *            The request from the client that should contain the session
+ *            cookie.
+ * @param response
+ *            The reponse that will be sent to the client.
+ * @returns undefined
+ */
+function get_profile(request, response) {
+
+	// Check for the session cookie and wherther it is active.
+	var sessionToken = request.cookies[cookieName];
+
+	// If there is a valid session show the users profile.
+	if (sessions.validSession(sessionToken)) {
+
+		var email = sessions.getEmail(sessionToken);
+		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
+
+		query.each(email, function(err, row) {
+
+			profile(request, response, row, "");
+
+		}, function(err, count) {
+			query.finalize();
+
+			// If there is no user with that email redirect to the landing page.
+			if (count == 0) {
+				response.redirect('/CS2410/coursework');
+			}
+		});
+
+	} else {
+		// No valid session redirect the user to the home screen.
+		response.redirect('/CS2410/coursework');
+	}
+
+}
+
+/**
+ * Processes the GET requests to the primary end point which will respond with
+ * the home page or landing page depending on whether the response contains
+ * valid session cookie.
+ * 
+ * @param request
+ *            The request from the client that may contain the session cookie.
+ * @param response
+ *            The langing OR home page.
+ * @returns undefined
+ */
+function get_landing(request, response) {
+
+	// Check for the session cookie and wherther it is active.
+	var sessionToken = request.cookies[cookieName];
+
+	// If there is a active session build the nav bar with the user options
+	if (sessions.validSession(sessionToken)) {
+
+		var email = sessions.getEmail(sessionToken);
+		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
+
+		query.each(email, function(error, user) {
+
+			// If there is a row send the home page of that user.
+			home(request, response, user);
+
+		}, function(err, count) {
+			query.finalize();
+
+			// If there is no user with that email show the landing
+			// page.
+			if (count == 0) {
+				landing(request, response);
+			}
+		});
+
+	} else {
+		
+		// If there is no valid session send the landing page.
+		landing(request, response);
+	}
+}
+
+/**
+ * Processes the GET requests to the 'login' end point which will respond with
+ * the login page.
+ * 
+ * @param request
+ *            Cannot contain a valud session cookie.
+ * @param response
+ *            The login page.
+ * @returns undefined
+ */
+function get_login(request, response) {
+	build_login(request, response, "");
+}
+
+/**
+ * Processes the GET requests to the 'logout' end point which will redirect to
+ * the landing page and end the users session.
+ * 
+ * @param request
+ *            The request from the client that may contain the session cookie.
+ * @param response
+ *            Redirect the client to the landing page.
+ * @returns undefined
+ */
+function get_logout(request, response) {
+
+	// Check for the session cookie and wherther it is active.
+	var sessionToken = request.cookies[cookieName];
+
+	// If there is a active session end it.
+	if (sessions.validSession(sessionToken)) {
+		sessions.endSession(sessionToken);
+	}
+
+	response.clearCookie(cookieName);
+	response.redirect('/CS2410/coursework');
+
+}
+
+// POST handlers -------------------------------------------
+
+function post_login(request, response) {
+	if (request.body.status === "login") {
+		login(request, response);
+	} else if (request.body.status === "signup") {
+		signup(request, response);
+	}
 }
 
 function post_organise(request, response) {
@@ -132,6 +291,57 @@ function post_organise(request, response) {
 	}
 
 }
+
+function post_profile(request, response) {
+
+	// Check for the session cookie and wherther it is active.
+	var sessionToken = request.cookies[cookieName];
+
+	// If there is a active session build the nav bar with the user options
+	if (sessions.validSession(sessionToken)) {
+
+		var email = sessions.getEmail(sessionToken);
+		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
+
+		query.each(email,function(err, row) {
+
+			var newPicture = changePicure(request, response, row);
+
+			var password = row.password;
+
+			if (request.body.password !== "") {
+				password = MD5.hash(request.body.password + row.salt);
+			}
+
+			var newRow = {
+				"email" : row.email,
+				"name" : (row.name !== request.body.name) ? request.body.name : row.name,
+				"organiser" : request.body.organiser ? 'true' : 'false',
+				"picture" : (newPicture !== row.picture) ? newPicture : row.picture,
+				"password" : password,
+				"telephone" : (row.telephone !== request.body.telephone) ? request.body.telephone : row.telephone
+			};
+
+			var update = database.prepare("UPDATE Users SET name = ?, organiser = ?, picture = ?, password = ?, telephone = ?  WHERE email = ?;");
+			update.run([newRow.name, newRow.organiser, newRow.picture, newRow.password,	newRow.telephone, newRow.email]);
+			update.finalize();
+
+			var info = builder.response("Changes Updated");
+
+			profile(request, response, newRow, info);
+
+		}, 
+		function(err, count) {
+			query.finalize();
+		});
+
+	} else {
+		response.redirect('/CS2410/coursework');
+	}
+
+}
+
+// Misc functions ------------------------------------------
 
 function addEvent(request, email, event_id){
 	
@@ -206,71 +416,6 @@ function insertPicture(event_id, filename, newFilename){
 	
 }
 
-function get_profile(request, response) {
-
-	// Check for the session cookie and wherther it is active.
-	var sessionToken = request.cookies[cookieName];
-
-	// If there is a active session build the nav bar with the user options
-	if (sessions.validSession(sessionToken)) {
-
-		var email = sessions.getEmail(sessionToken);
-		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
-
-		query.each(email, function(err, row) {
-
-			profile(request, response, row, "");
-
-		}, function(err, count) {
-			query.finalize();
-
-			// If there is no user with that email.
-			if (count == 0) {
-				response.redirect('/CS2410/coursework');
-			}
-		});
-
-	} else {
-		response.redirect('/CS2410/coursework');
-	}
-
-}
-
-/**
- * This method processes GET requests to the server for the landing page. The
- * request cookies may contain a session cookie whihc is used to determine which
- * client is which and also how long their session has been active for.
- */
-function get_landing(request, response) {
-
-	// Check for the session cookie and wherther it is active.
-	var sessionToken = request.cookies[cookieName];
-
-	// If there is a active session build the nav bar with the user options
-	if (sessions.validSession(sessionToken)) {
-
-		var email = sessions.getEmail(sessionToken);
-		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
-
-		query.each(email, function(err, row) {
-
-			home(request, response, row);
-
-		}, function(err, count) {
-			query.finalize();
-
-			// If there is no user with that email show the landing
-			// page.
-			if (count == 0) {
-				landing(request, response);
-			}
-		});
-
-	} else {
-		landing(request, response);
-	}
-}
-
 function home(request, response, user) {
 
 	// Construct the student home page
@@ -301,7 +446,7 @@ function home(request, response, user) {
 				"id" : row.event_id,
 				"location" : row.location,
 				"time" : row.time,
-				"organiser" : row.email
+				"organiser" : row.organiser
 			};
 
 			events.push(event);
@@ -347,92 +492,6 @@ function landing(request, response) {
 		response.end();
 
 	});
-
-}
-
-/**
- * This method processes GET requests to the server for the login page.
- */
-function get_login(request, response) {
-	build_login(request, response, "");
-}
-
-function get_logout(request, response) {
-
-	// Check for the session cookie and wherther it is active.
-	var sessionToken = request.cookies[cookieName];
-
-	// If there is a active session end it.
-	if (sessions.validSession(sessionToken)) {
-		sessions.endSession(sessionToken);
-	}
-
-	response.clearCookie(cookieName);
-	response.redirect('/CS2410/coursework');
-
-}
-
-/**
- * 
- */
-function post_landing(request, response) {
-	response.sendStatus(status.OK);
-}
-
-function post_login(request, response) {
-	if (request.body.status === "login") {
-		login(request, response);
-	} else if (request.body.status === "signup") {
-		signup(request, response);
-	}
-}
-
-function post_profile(request, response) {
-
-	// Check for the session cookie and wherther it is active.
-	var sessionToken = request.cookies[cookieName];
-
-	// If there is a active session build the nav bar with the user options
-	if (sessions.validSession(sessionToken)) {
-
-		var email = sessions.getEmail(sessionToken);
-		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
-
-		query.each(email,function(err, row) {
-
-			var newPicture = changePicure(request, response, row);
-
-			var password = row.password;
-
-			if (request.body.password !== "") {
-				password = MD5.hash(request.body.password + row.salt);
-			}
-
-			var newRow = {
-				"email" : row.email,
-				"name" : (row.name !== request.body.name) ? request.body.name : row.name,
-				"organiser" : request.body.organiser ? 'true' : 'false',
-				"picture" : (newPicture !== row.picture) ? newPicture : row.picture,
-				"password" : password,
-				"telephone" : (row.telephone !== request.body.telephone) ? request.body.telephone : row.telephone
-			};
-
-			var update = database.prepare("UPDATE Users SET name = ?, organiser = ?, picture = ?, password = ?, telephone = ?  WHERE email = ?;");
-			update.run([newRow.name, newRow.organiser, newRow.picture, newRow.password,	newRow.telephone, newRow.email]);
-			update.finalize();
-
-			var info = builder.response("Changes Updated");
-
-			profile(request, response, newRow, info);
-
-		}, 
-		function(err, count) {
-			query.finalize();
-		});
-
-	} else {
-		response.redirect('/CS2410/coursework');
-	}
 
 }
 
@@ -691,7 +750,6 @@ app.get('/CS2410/coursework/logout', get_logout);
 app.get('/CS2410/coursework/profile', get_profile);
 app.get('/CS2410/coursework/organise', get_organise);
 
-app.post('/CS2410/coursework', post_landing);
 app.post('/CS2410/coursework/login', post_login);
 app.post('/CS2410/coursework/profile', post_profile);
 app.post('/CS2410/coursework/organise', post_organise);
