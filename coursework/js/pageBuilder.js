@@ -105,6 +105,9 @@ function eventsTable(events, title) {
 	eventsList += '						</tr>';
 	eventsList += '					</thead>';
 	eventsList += '					<tbody>';
+	eventsList += '						<form name="interest" method="post" action="/CS2410/coursework">';
+	eventsList += '							<input hidden type="text" value="none" id="event_id" name="event_id"/>';
+	eventsList += '							<input hidden type="text" value="none" id="like" name="like"/>';
 
 	for (var i = 0; i < events.length; i++) {
 
@@ -112,16 +115,26 @@ function eventsTable(events, title) {
 
 		eventsList += '<tr>';
 		eventsList += '		<td>';
-		eventsList += '			<a href="/CS2410/coursework/event?id=' + event.id
-				+ '">' + event.name + '</a></td>';
+		eventsList += '			<a href="/CS2410/coursework/event?id=' + event.id + '">' + event.name + '</a></td>';
 		eventsList += '		<td>' + event.location + '</td>';
 		eventsList += '		<td>' + event.time + '</td>';
 		eventsList += '		<td>' + event.organiser + '</td>';
+		eventsList += '		<td>';
+
+		if (event.hasLiked) {
+			eventsList += '<button id="eventButton' + event.id + '" onclick="setInterest(' + event.id
+					+ ', false)" class="btn btn-danger btn-sm" type="submit" value="Unlike">Unlike</a>';
+		} else {
+			eventsList += '<button id="eventButton' + event.id + '" onclick="setInterest(' + event.id
+					+ ', true)" class="btn btn-success btn-sm" type="submit" value="Like">Like</a>';
+		}
+
+		eventsList += '		</td>';
 		eventsList += '</tr>';
 
 	}
 
-	eventsList += '</tbody></table></div></div></div>';
+	eventsList += '</form></tbody></table></div></div></div>';
 
 	return eventsList;
 }
@@ -187,8 +200,8 @@ function profileInformation(userDetails) {
 
 	information += '	<div class="form-group">';
 	information += '		<label for="name">Full Name:</label>';
-	information += '		<input type="text"	name="name" id="name" class="form-control" value="'
-			+ userDetails.name + '" />';
+	information += '		<input type="text"	name="name" id="name" class="form-control" value="' + userDetails.name
+			+ '" />';
 	information += '	</div>';
 	information += '	<div class="form-group">';
 	information += '		<label for="password">Password:</label> ';
@@ -205,8 +218,7 @@ function profileInformation(userDetails) {
 	information += '	</div>';
 	information += '	<div class="form-check">';
 	information += '		<input class="form-check-input" type="checkbox" name="organiser" id="organiser" '
-			+ (userDetails.organiser === 'true' ? 'checked' : 'unchecked')
-			+ '/>';
+			+ (userDetails.organiser === 'true' ? 'checked' : 'unchecked') + '/>';
 
 	information += '		<label for="organiser">Event Organiser</label> ';
 	information += '	</div>';
@@ -216,8 +228,8 @@ function profileInformation(userDetails) {
 
 }
 
-function response(message){
-	
+function response(message) {
+
 	var response = '';
 
 	response += '<div class="alert alert-info">';
@@ -225,7 +237,7 @@ function response(message){
 	response += '</div>';
 
 	return response;
-	
+
 }
 
 module.exports = {
@@ -253,7 +265,7 @@ module.exports = {
 	profile : function(userDetails) {
 		return profile(userDetails);
 	},
-	response : function(message){
+	response : function(message) {
 		return response(message);
 	}
 };
