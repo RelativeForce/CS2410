@@ -1,7 +1,7 @@
 const port = 3000;
 const cookieName = 'AstonEvents';
 
-// Import modules
+// Imported modules
 const express = require('express');
 const app = express();
 const server = app.listen(port, startServer);
@@ -24,7 +24,7 @@ const sessions = require('./js/sessionHelper');
  */
 var database;
 
-// GET handlers --------------------------------------------
+// GET handlers ---------------------------------------------------------------
 
 /**
  * Processes the GET requests to the 'organise' end point which will respond
@@ -225,16 +225,51 @@ function get_logout(request, response) {
 
 }
 
-// POST handlers -------------------------------------------
+// POST handlers --------------------------------------------------------------
 
+/**
+ * Processes POST requests to the 'login' end point which will take a request to
+ * log a client in or sign a client up. If the request is valid the client will
+ * be redirected to the home page.
+ * 
+ * @param request
+ *            That contains all the details of the login credentials. Passwords
+ *            should be hashed before they are sent.
+ * @param response
+ *            A Redirect to the home page or the login page with the error.
+ * @returns undefined
+ */
 function post_login(request, response) {
+	
+	// If the request is to log in.
 	if (request.body.status === "login") {
 		login(request, response);
-	} else if (request.body.status === "signup") {
+	} 
+	
+	// If the request is to sign up
+	else if (request.body.status === "signup") {
 		signup(request, response);
+	}
+	
+	// Invalid request.
+	else{
+		response.redirect('/CS2410/coursework');
 	}
 }
 
+/**
+ * Processes POST requests to the 'organise' end point while will take a request
+ * to add a new event. If the request is from a client that is not anorganiser
+ * then the client will be redirected to the home page.
+ * 
+ * @param request
+ *            Must contain a valid session from a user that is a organiser.
+ * @param response
+ *            Either a redirect the event view for the new event that has been
+ *            created or a redirect to the home page if the request is not
+ *            valid.
+ * @returns undefined
+ */
 function post_organise(request, response) {
 
 	// Check for the session cookie and wherther it is active.
@@ -250,6 +285,7 @@ function post_organise(request, response) {
 			email,
 			function(err, user) {
 
+				// If the user is not a organiser.
 				if (user.organiser !== 'true') {
 					response.redirect('/CS2410/coursework');
 				} else {
@@ -261,20 +297,19 @@ function post_organise(request, response) {
 							// Count the results
 						},
 						function(err, count) {
-
+							eventQuery.finalize();
+							
 							// TEMP ID GENTERATION!!!!!
 							var event_id = count;
 								
-							addEvent(request, email, event_id);
-												
+							// Add event and pictures to the database
+							addEvent(request, email, event_id);	
 							addEventPictures(request.files, event_id)
 
 							response.redirect('/CS2410/coursework/event?id=' + event_id);
 						}
 					);
-
 				}
-
 			}, 
 			function(err, count) {
 				query.finalize();
@@ -292,27 +327,43 @@ function post_organise(request, response) {
 
 }
 
+/**
+ * Processes POST requests to the 'profile' ened point which will updated the
+ * sessions user's details with the details specifed in the request.
+ * 
+ * @param request
+ *            That contains the updated user details of the for teh session's
+ *            user
+ * @param response
+ *            Either a redirect to the home page if there is not a valid user
+ *            session or a profile page with the uspdated user details and a
+ *            response box.
+ * @returns undefined
+ */
 function post_profile(request, response) {
 
-	// Check for the session cookie and wherther it is active.
+	// The session cookie.
 	var sessionToken = request.cookies[cookieName];
 
-	// If there is a active session build the nav bar with the user options
+	// Check for the session cookie and wherther it is active.
 	if (sessions.validSession(sessionToken)) {
 
 		var email = sessions.getEmail(sessionToken);
 		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 
+		// Iterate over the user's details
 		query.each(email,function(err, row) {
 
+			// Change the profile picture
 			var newPicture = changePicure(request, response, row);
 
+			// Updated the password if there is a new password specified
 			var password = row.password;
-
 			if (request.body.password !== "") {
 				password = MD5.hash(request.body.password + row.salt);
 			}
 
+			// The updated user details
 			var newRow = {
 				"email" : row.email,
 				"name" : (row.name !== request.body.name) ? request.body.name : row.name,
@@ -322,26 +373,35 @@ function post_profile(request, response) {
 				"telephone" : (row.telephone !== request.body.telephone) ? request.body.telephone : row.telephone
 			};
 
+			// Update the user details in the database
 			var update = database.prepare("UPDATE Users SET name = ?, organiser = ?, picture = ?, password = ?, telephone = ?  WHERE email = ?;");
 			update.run([newRow.name, newRow.organiser, newRow.picture, newRow.password,	newRow.telephone, newRow.email]);
 			update.finalize();
 
+			// Build a new info box
 			var info = builder.response("Changes Updated");
 
+			// Build the profile page with the info box at the top.
 			profile(request, response, newRow, info);
 
 		}, 
 		function(err, count) {
 			query.finalize();
+			
+			// If the user email was invalid.
+			if(count == 0){
+				response.redirect('/CS2410/coursework');
+			}
 		});
 
 	} else {
+		// If the session was invalid
 		response.redirect('/CS2410/coursework');
 	}
 
 }
 
-// Misc functions ------------------------------------------
+// Misc functions -------------------------------------------------------------
 
 function addEvent(request, email, event_id){
 	
@@ -360,7 +420,7 @@ function addEvent(request, email, event_id){
 	add.run([event.id, event.name, event.description, event.organiser, event.type, event.time, event.location, event.popularity]);
 	add.finalize();
 	
-	console.log(event);
+	console.log("New Event: " + event.name);
 	
 }
 
