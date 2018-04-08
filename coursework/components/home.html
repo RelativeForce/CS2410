@@ -3,8 +3,28 @@
 </header>
 
 <script>
-	function setInterest(event_id, like) {
-		document.getElementById("event_id").value = event_id;
-		document.getElementById("like").value = like;
+	function setEvent(event_id, button) {
+		
+		var type = button.value;
+		
+		if(type === "View"){
+			
+			document.getElementById("event_id").value = event_id;
+			document.getElementById("type").value = "view";
+			document.getElementById("eventForm").setAttribute("method", "get");
+			
+		}else if(type === "Like"){
+			
+			document.getElementById("event_id").value = event_id;
+			document.getElementById("type").value = "like";
+			document.getElementById("eventForm").setAttribute("method", "post");
+			
+		}else if(type === "Unlike"){
+			
+			document.getElementById("event_id").value = event_id;
+			document.getElementById("type").value = "unlike";
+			document.getElementById("eventForm").setAttribute("method", "post");
+			
+		}
 	}
 </script>

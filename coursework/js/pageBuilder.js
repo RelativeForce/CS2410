@@ -105,29 +105,32 @@ function eventsTable(events, title) {
 	eventsList += '						</tr>';
 	eventsList += '					</thead>';
 	eventsList += '					<tbody>';
-	eventsList += '						<form name="interest" method="post" action="/CS2410/coursework">';
+	eventsList += '						<form id="eventForm" name="events">';
 	eventsList += '							<input hidden type="text" value="none" id="event_id" name="event_id"/>';
-	eventsList += '							<input hidden type="text" value="none" id="like" name="like"/>';
+	eventsList += '							<input hidden type="text" value="none" id="type" name="type"/>';
 
 	for (var i = 0; i < events.length; i++) {
 
 		var event = events[i];
 
 		eventsList += '<tr>';
-		eventsList += '		<td>';
-		eventsList += '			<a href="/CS2410/coursework/event?id=' + event.id + '">' + event.name + '</a></td>';
+		eventsList += '		<td>' + event.name + '</td>';
 		eventsList += '		<td>' + event.location + '</td>';
 		eventsList += '		<td>' + event.time + '</td>';
 		eventsList += '		<td>' + event.organiser + '</td>';
 		eventsList += '		<td>';
 
 		if (event.hasLiked) {
-			eventsList += '<button id="eventButton' + event.id + '" onclick="setInterest(' + event.id
-					+ ', false)" class="btn btn-danger btn-sm" type="submit" value="Unlike">Unlike</a>';
+
+			eventsList += '<input formaction="/CS2410/coursework" class="btn btn-danger btn-sm" id="interest'
+					+ event.id + '" onclick="setEvent(' + event.id + ', this);" type="submit" value="Unlike"/>';
 		} else {
-			eventsList += '<button id="eventButton' + event.id + '" onclick="setInterest(' + event.id
-					+ ', true)" class="btn btn-success btn-sm" type="submit" value="Like">Like</a>';
+			eventsList += '<input formaction="/CS2410/coursework" class="btn btn-success btn-sm" id="interest'
+					+ event.id + '" onclick="setEvent(' + event.id + ', this);" type="submit" value="Like"/>';
 		}
+
+		eventsList += '		<input formaction="/CS2410/coursework/event" class="btn btn-primary btn-sm" id="view'
+				+ event.id + '" onclick="setEvent(' + event.id + ', this);" type="submit" value="View"/>';
 
 		eventsList += '		</td>';
 		eventsList += '</tr>';
@@ -137,6 +140,15 @@ function eventsTable(events, title) {
 	eventsList += '</form></tbody></table></div></div></div>';
 
 	return eventsList;
+}
+
+function event(eventDetails, isOrganiser) {
+
+	var event = '';
+
+	event += '';
+
+	return event;
 }
 
 function profile(userDetails) {
@@ -261,6 +273,9 @@ module.exports = {
 	},
 	eventsTable : function(events, title) {
 		return eventsTable(events, title);
+	},
+	event : function(eventDetails, isOrganiser) {
+		return event(eventDetails, isOrganiser);
 	},
 	profile : function(userDetails) {
 		return profile(userDetails);

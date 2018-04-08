@@ -55,7 +55,7 @@ function get_organise(request, response) {
 			if (row.organiser !== 'true') {
 				response.redirect('/CS2410/coursework');
 			} else {
-
+				
 				// Construct the organiser home page
 				buildPage('organise', function(content) {
 
@@ -225,6 +225,54 @@ function get_logout(request, response) {
 
 }
 
+function get_event(request, response){
+		
+	console.log(request.query.event_id);
+	
+	if(request.query.event_id){
+		
+		var event_id = request.query.event_id;
+		var eventQuery = database.prepare("SELECT * FROM Events WHERE event_id = ?");
+
+		eventQuery.each(event_id, function(error, event) {
+			
+			// Check for the session cookie and wherther it is active.
+			var sessionToken = request.cookies[cookieName];
+			
+			var user;
+			
+			// If there is a active session display the event as editable
+			if (sessions.validSession(sessionToken)) {	
+				
+				var email = sessions.getEmail(sessionToken);
+				
+				// Pass an whether or not the current user is the event
+				// organiser.
+				build_event(response,event, email === event.organiser);
+								
+			}else{
+				
+				// Pass an false as the user is not signed in.
+				build_event(response,event, false);
+			}
+			
+
+		}, function(err, count) {
+			eventQuery.finalize();
+
+			// If there is no event with that id show the landing
+			// page.
+			if (count == 0) {
+				response.redirect('/CS2410/coursework');
+			}
+		});	
+		
+	}else{
+		response.redirect('/CS2410/coursework');
+	}
+	
+}
+
 // POST handlers --------------------------------------------------------------
 
 /**
@@ -303,7 +351,6 @@ function post_landing(request, response){
 	}
 	
 }
-
 
 /**
  * Processes POST requests to the 'organise' end point while will take a request
@@ -454,11 +501,11 @@ function post_profile(request, response) {
 function updateInterest(request, email){
 	
 	var event_id = request.body.event_id;
-	var like = request.body.like;
+	var type = request.body.type;
 
-	if(event_id && like){
+	if(event_id && type){
 		
-		if(like === "true"){
+		if(type === "like"){
 			
 			var addInterest = database.prepare("INSERT INTO Interest(event_id, student_email) VALUES (?, ?);");
 			addInterest.run([event_id, email]);
@@ -470,7 +517,7 @@ function updateInterest(request, email){
 			
 			console.log("Interest update: " + email + " liked event " + event_id);
 			
-		}else if(like === "false"){
+		}else if(type === "unlike"){
 			
 			var removeInterest = database.prepare("DELETE FROM Interest WHERE event_id = ? AND student_email = ?;");
 			removeInterest.run([event_id, email]);
@@ -483,6 +530,28 @@ function updateInterest(request, email){
 			console.log("Interest update: " + email + " unliked event " + event_id);
 		}
 	}
+}
+
+function build_event(response,event, isOrganiser){
+	
+	// Builds the student login page
+	buildPage('event', function(content) {
+
+		var home = builder.navbarLink("/CS2410/coursework", "Home");
+		var navbar = builder.navbar([ home ]);
+		var head = builder.head("Login");
+		var event = builder.event(event, isOrganiser);
+		var body = builder.body(navbar, event + content);
+		var page = builder.page(head, body);
+
+		response.writeHead(200, {
+			'Content-Type' : 'text/html'
+		});
+		response.write(page);
+		response.end();
+
+	});
+	
 }
 
 function addEvent(request, email, event_id){
@@ -898,7 +967,7 @@ function generateSalt() {
 }
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(fileUpload());
 
@@ -907,6 +976,7 @@ app.get('/CS2410/coursework/login', get_login);
 app.get('/CS2410/coursework/logout', get_logout);
 app.get('/CS2410/coursework/profile', get_profile);
 app.get('/CS2410/coursework/organise', get_organise);
+app.get('/CS2410/coursework/event', get_event);
 
 app.post('/CS2410/coursework', post_landing);
 app.post('/CS2410/coursework/login', post_login);
