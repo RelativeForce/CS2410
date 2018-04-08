@@ -259,7 +259,8 @@ function get_event(request, response){
 					// Check for the session cookie and wherther it is active.
 					var sessionToken = request.cookies[cookieName];
 					
-					// If there is a active session display the event as editable
+					// If there is a active session display the event as
+					// editable
 					if (sessions.validSession(sessionToken)) {
 					
 						var email = sessions.getEmail(sessionToken);
@@ -267,14 +268,16 @@ function get_event(request, response){
 
 						query.each(email, function(error, user) {
 							
-							// Pass an whether or not the current user is the event organiser.
+							// Pass an whether or not the current user is the
+							// event organiser.
 							build_event(response, event, email === event.organiser, user.organiser === "true");
 
 						}, function(err, userCount) {
 							query.finalize();
 
 							if (userCount == 0) {
-								// Should never happen as only logged in users have valid sessions.
+								// Should never happen as only logged in users
+								// have valid sessions.
 							}
 						});
 					
@@ -426,9 +429,9 @@ function post_organise(request, response) {
 								
 							// Add event and pictures to the database
 							addEvent(request, email, event_id);	
-							addEventPictures(request.files, event_id)
+							changeEventPictures(request.files, event_id)
 
-							response.redirect('/CS2410/coursework/event?id=' + event_id);
+							response.redirect('/CS2410/coursework/event?event_id=' + event_id);
 						}
 					);
 				}
@@ -523,6 +526,88 @@ function post_profile(request, response) {
 
 }
 
+function post_event(request, response){
+	
+	// Check for the session cookie and wherther it is active.
+	var sessionToken = request.cookies[cookieName];
+
+	// If there is a active session build the nav bar with the user options
+	if (sessions.validSession(sessionToken)) {
+
+		var email = sessions.getEmail(sessionToken);
+		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
+
+		query.each(
+			email,
+			function(userEror, user) {
+
+				// If the user is not a organiser.
+				if (user.organiser !== 'true') {
+					response.redirect('/CS2410/coursework');
+				} else {
+
+					var eventQuery = database.prepare("SELECT * FROM Events WHERE event_id = ?");
+					var isOrganiser = false;
+					var event_id = request.body.event_id;
+					var popularity = 0;
+					
+					eventQuery.each(
+						event_id, 
+						function(err, row) {
+							
+							// If the event is owned by the current user.
+							if(row.organiser === email){
+								isOrganiser = true;
+							}
+							
+							popularity = row.popularity;
+							
+						},
+						function(eventError, count) {
+							eventQuery.finalize();
+							
+							// If the user has the right to update the event.
+							if(isOrganiser){
+								
+								var event = {
+									"name" : request.body.name,
+									"id" : request.body.event_id,
+									"location" : request.body.location,
+									"time" : request.body.time,
+									"organiser" : email,
+									"description" : request.body.description,
+									"type" : request.body.type,
+									"popularity" : popularity
+								};
+								
+								changeEventPictures(request.files, event_id);
+								updateEvent(event);
+								
+								response.redirect('/CS2410/coursework/event?event_id=' + event_id);
+								
+							}else{
+								response.redirect('/CS2410/coursework');
+							}
+						}
+					);
+				}
+			}, 
+			function(err, count) {
+				query.finalize();
+
+				// If there is no user with that email.
+				if (count == 0) {
+					response.redirect('/CS2410/coursework');
+				}
+			}
+		);
+
+	} else {
+		response.redirect('/CS2410/coursework');
+	}
+	
+}
+
 // Misc functions -------------------------------------------------------------
 
 function updateInterest(request, email){
@@ -611,8 +696,20 @@ function addEvent(request, email, event_id){
 	
 }
 
-function addEventPictures(files, event_id){
+function updateEvent(event){
+	
+	var update = database.prepare("UPDATE Events SET name = ?, description = ?, organiser = ?, type = ?, time = ?, location = ?, popularity = ? WHERE event_id = ?;");
+	update.run([event.id, event.name, event.description, event.organiser, event.type, event.time, event.location, event.popularity]);
+	update.finalize();
 		
+	console.log("Updated Event: " + event.name);
+
+}
+
+function changeEventPictures(files, event_id){
+	
+	deleteCurrentPictures(event_id);
+	
 	var query = database.prepare("SELECT * FROM Event_Pictures WHERE event_id = ?");
 
 	// Iterate over all the pictures with the specifed event id and count them
@@ -651,6 +748,31 @@ function addEventPictures(files, event_id){
 			index += 1;
 		}
 	});
+}
+
+function deleteCurrentPictures(event_id){
+	
+	var picturesQuery = database.prepare("SELECT * FROM Event_Pictures WHERE event_id = ?");
+
+	picturesQuery.each(event_id, function(error, row) {
+
+		var toDelete = path.resolve('./public/uploaded/' + row.picture);
+
+		if (fs.existsSync(toDelete)) {
+			console.log('Deleted: ' + toDelete);
+			fs.unlinkSync(toDelete);
+		}
+		
+
+	}, function(err, userCount) {
+		picturesQuery.finalize();
+		
+		var removeOldPictures = database.prepare("DELETE FROM Event_Pictures WHERE event_id = ?;");
+		removeOldPictures.run([event_id]);
+		removeOldPictures.finalize();
+		
+	});
+	
 }
 
 function insertPicture(event_id, filename, newFilename){
@@ -1018,3 +1140,4 @@ app.post('/CS2410/coursework', post_landing);
 app.post('/CS2410/coursework/login', post_login);
 app.post('/CS2410/coursework/profile', post_profile);
 app.post('/CS2410/coursework/organise', post_organise);
+app.post('/CS2410/coursework/event', post_event);

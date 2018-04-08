@@ -166,6 +166,7 @@ function editEvent(eventDetails){
 	event += '		</div>';
 	event += '		<div class="panel-body">';
 	event += '			<form id="event" enctype="multipart/form-data" name="event" action="/CS2410/coursework/event" onsubmit="return validateEvent()" method="post">';
+	event += '				<input type="text" hidden name="event_id" id="event_id" class="form-control" value="' + eventDetails.event_id + '"/>';
 	
 	// Name
 	event += '				<div class="form-group">';
