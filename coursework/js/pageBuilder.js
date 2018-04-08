@@ -166,64 +166,74 @@ function editEvent(eventDetails){
 	event += '		</div>';
 	event += '		<div class="panel-body">';
 	event += '			<form id="event" enctype="multipart/form-data" name="event" action="/CS2410/coursework/event" onsubmit="return validateEvent()" method="post">';
+	
+	// Name
 	event += '				<div class="form-group">';
 	event += '					<label for="name">Name:</label>';
-	event += '					<input type="text" name="name" id="name" class="form-control" />';
+	event += '					<input type="text" name="name" id="name" class="form-control" value="' + eventDetails.name + '"/>';
 	event += '				</div>';
+	
+	var checked = 'checked="checked"';
 	
 	// Type
 	event += '				<div class="form-group">';
 	event += '					<label for="type">Type:</label>';
 	event += '					<div class="radio">';
-	event += '						<label><input type="radio" value="sport" name="type" />Sport</label>';
+	event += '						<label><input type="radio" value="sport" name="type" ' + (eventDetails.type === "sport" ? checked : '' ) + '/>Sport</label>';
 	event += '					</div>';
 	event += '					<div class="radio">';
-	event += '						<label><input type="radio" value="culture" name="type" />Culture</label>';
+	event += '						<label><input type="radio" value="culture" name="type" ' + (eventDetails.type === "culture" ? checked : '' ) + '/>Culture</label>';
 	event += '					</div>';
 	event += '					<div class="radio">';
-	event += '						<label><input type="radio" value="other" name="type" checked="checked" />Other</label>';
+	event += '						<label><input type="radio" value="other" name="type"  ' + (eventDetails.type === "other" ? checked : '' ) + '/>Other</label>';
 	event += '					</div>';
 	event += '				</div>';
 	
 	// Location
 	event += '				<div class="form-group">';
 	event += '					<label for="location">Location:</label> ';
-	event += '					<input type="text" name="location" id="location" class="form-control" />';
+	event += '					<input type="text" name="location" id="location" class="form-control" value="' + eventDetails.location + '"/>';
 	event += '				</div>';
 		
 	// Time
 	event += '				<div class="form-group">';
 	event += '					<label for="time">Time:</label> ';
-	event += '					<input type="date" name="time" id="time" class="form-control" />';
+	event += '					<input type="date" name="time" id="time" class="form-control" value="' + eventDetails.time + '"/>';
 	event += '				</div>';
 
 	// Description
 	event += '				<div class="form-group">';
 	event += '					<label for="description">Description:</label>';
-	event += '					<textarea class="form-control" id="description" rows="5" name="description"></textarea>';
+	event += '					<textarea class="form-control" id="description" rows="5" name="description">' + eventDetails.description + '</textarea>';
 	event += '				</div>';
 
 	event += '				<div class="col-sm-12">';
 	event += '					<div id="pictureSection" class="form-group panel panel-default">';
 	event += '						<div class="panel-heading" id="imageContainerHeader">';
 	event += '							<label>Picture:</label>';
-	event += '							<button id="addPicture" class="btn btn-info" type="button" style="" onclick="addPictureInput()" value="+">+</button>';
+	
+	if(eventDetails.pictures.length < 4){
+		event += '<button id="addPicture" class="btn btn-info" type="button" style="" onclick="addPictureInput()" value="+">+</button>';
+	}
+	
 	event += '						</div>';
 	event += '						<div id="imageContainer" class="panel-body">';
 
 	
-	// -------------------------
-	event += '							<div class="imageInput col-sm-3">';
-	event += '								<input type="file" name="picture0" id="picture0" class="form-control" /> ';
-	event += '								<img id="preview0" src="No Picture" alt="profile picture" style="width: 100%; height: 100%" />';
-	event += '							</div>';
-	
-	// -------------------------
+	for(var index = 0; index < eventDetails.pictures.length; index++){
+		
+		var picture = eventDetails.pictures[index];
+		
+		event += '<div class="imageInput col-sm-3">';
+		event += '		<input type="file" name="picture' + index + '" id="picture' + index + '" class="form-control" onchange="readURL(this)"/>';
+		event += '		<img id="preview' + index + '" src="/uploaded/' + picture + '" alt="event picture" style="width: 100%; height: 100%" />';
+		event += '</div>';
+	}
 	
 	event += '						</div>';
 	event += '					</div>';
 	event += '				</div>';
-	event += '				<button class="btn btn-primary" type="submit" form="event" value="Save">Save</button>';
+	event += '				<button class="btn btn-primary" type="submit" form="event" value="Save Changes">Save Changes</button>';
 	event += '			</form>';
 	event += '		</div>';
 	event += '	</div>';

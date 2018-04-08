@@ -226,43 +226,70 @@ function get_logout(request, response) {
 }
 
 function get_event(request, response){
-		
-	console.log(request.query.event_id);
 	
 	if(request.query.event_id){
 		
 		var event_id = request.query.event_id;
 		var eventQuery = database.prepare("SELECT * FROM Events WHERE event_id = ?");
 
-		eventQuery.each(event_id, function(error, event) {
+		eventQuery.each(event_id, function(error, eventDetails) {
 			
-			// Check for the session cookie and wherther it is active.
-			var sessionToken = request.cookies[cookieName];
-			
-			var user;
-			
-			// If there is a active session display the event as editable
-			if (sessions.validSession(sessionToken)) {	
-				
-				var email = sessions.getEmail(sessionToken);
-				
-				// Pass an whether or not the current user is the event
-				// organiser.
-				build_event(response,event, email === event.organiser);
-								
-			}else{
-				
-				// Pass an false as the user is not signed in.
-				build_event(response,event, false);
-			}
-			
+				var pictureQuery = database.prepare("SELECT * FROM Event_Pictures WHERE event_id = ?");
+				var pictures = [];
 
-		}, function(err, count) {
+				pictureQuery.each(event_id, function(error, pictureEntry) {
+					
+					pictures.push(pictureEntry.picture);
+		
+				}, function(err, pictureCount) {
+					
+					pictureQuery.finalize();
+					
+					var event = {
+							"event_id" : eventDetails.event_id,
+							"name" : eventDetails.name,
+							"description" : eventDetails.description,
+							"organiser" : eventDetails.organiser,
+							"type" : eventDetails.type,
+							"time" : eventDetails.time,
+							"location" : eventDetails.location,
+							"pictures" : pictures
+						};
+					
+					// Check for the session cookie and wherther it is active.
+					var sessionToken = request.cookies[cookieName];
+					
+					// If there is a active session display the event as editable
+					if (sessions.validSession(sessionToken)) {
+					
+						var email = sessions.getEmail(sessionToken);
+						var query = database.prepare("SELECT * FROM Users WHERE email = ?");
+
+						query.each(email, function(error, user) {
+							
+							// Pass an whether or not the current user is the event organiser.
+							build_event(response, event, email === event.organiser, user.organiser === "true");
+
+						}, function(err, userCount) {
+							query.finalize();
+
+							if (userCount == 0) {
+								// Should never happen as only logged in users have valid sessions.
+							}
+						});
+					
+					}else{
+						
+						// Pass an false as the user is not signed in.
+						build_event(response, event, false, false);
+					}
+				});
+								
+		}, function(err, eventCount) {
 			eventQuery.finalize();
 
-			// If there is no event with that id show the landing
-			// page.
-			if (count == 0) {
+			// If there is no event with that id show the landing page.
+			if (eventCount == 0) {
 				response.redirect('/CS2410/coursework');
 			}
 		});	
@@ -532,16 +559,25 @@ function updateInterest(request, email){
 	}
 }
 
-function build_event(response,event, isOrganiser){
+function build_event(response, event, isEventOrganiser, isAnOrganiser){
 	
 	// Builds the student login page
 	buildPage('event', function(content) {
 
 		var home = builder.navbarLink("/CS2410/coursework", "Home");
-		var navbar = builder.navbar([ home ]);
-		var head = builder.head("Login");
-		var event = builder.event(event, isOrganiser);
-		var body = builder.body(navbar, event + content);
+		var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
+		var profile = builder.navbarLink("/CS2410/coursework/profile", "My Profile");
+		var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
+		var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
+		var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
+
+		var navbar = isAnOrganiser ? 
+				builder.navbar([ home, newEvent, myEvents, search, profile, logout ]) : 
+				builder.navbar([ home, search, profile, logout ]);
+	
+		var head = builder.head("Event");
+		var eventHTML = builder.event(event, isEventOrganiser);
+		var body = builder.body(navbar, eventHTML + content);
 		var page = builder.page(head, body);
 
 		response.writeHead(200, {
