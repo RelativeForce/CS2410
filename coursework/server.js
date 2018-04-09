@@ -429,7 +429,7 @@ function post_organise(request, response) {
 								
 							// Add event and pictures to the database
 							addEvent(request, email, event_id);	
-							changeEventPictures(request.files, event_id)
+							changeEventPictures(request, event_id)
 
 							response.redirect('/CS2410/coursework/event?event_id=' + event_id);
 						}
@@ -580,10 +580,10 @@ function post_event(request, response){
 									"popularity" : popularity
 								};
 								
-								changeEventPictures(request.files, event_id);
+								changeEventPictures(request, event_id);
 								updateEvent(event);
 								
-								response.redirect('/CS2410/coursework/event?event_id=' + event_id);
+								response.redirect('/CS2410/coursework/event?event_id=' + event_id + '&type=view');
 								
 							}else{
 								response.redirect('/CS2410/coursework');
@@ -699,79 +699,102 @@ function addEvent(request, email, event_id){
 function updateEvent(event){
 	
 	var update = database.prepare("UPDATE Events SET name = ?, description = ?, organiser = ?, type = ?, time = ?, location = ?, popularity = ? WHERE event_id = ?;");
-	update.run([event.id, event.name, event.description, event.organiser, event.type, event.time, event.location, event.popularity]);
+	update.run([ event.name, event.description, event.organiser, event.type, event.time, event.location, event.popularity, event.id]);
 	update.finalize();
 		
 	console.log("Updated Event: " + event.name);
 
 }
 
-function changeEventPictures(files, event_id){
+function changeEventPictures(request, event_id){
 	
-	deleteCurrentPictures(event_id);
+	var files = request.files;
+	
+	if(request.body.pName0 && request.body.pName0 !== ""){
+		swapPicture(event_id, files, request.body.pName0, '0');
+	}
+
+	if(request.body.pName1 && request.body.pName1 !== ""){
+		swapPicture(event_id, files, request.body.pName1, '1');
+	}
+
+	if(request.body.pName2 && request.body.pName2 !== ""){
+		swapPicture(event_id, files, request.body.pName2, '2');
+	}
+
+	if(request.body.pName3 && request.body.pName3 !== ""){
+		swapPicture(event_id, files, request.body.pName3, '3');
+	}
+	
+}
+
+function swapPicture(event_id, files, specificFile, pictureNum){
+	
+	var picture = 'none';
 	
 	var query = database.prepare("SELECT * FROM Event_Pictures WHERE event_id = ?");
 
-	// Iterate over all the pictures with the specifed event id and count them
+	// Iterate over all the pictures with the specifed event id
 	query.each(event_id, function(err, row) {
-		// Count number of event images
+		
+		// If the current name is the name of the first image regardless of file extension.
+		if(row.picture.split('.')[0] === ('e_' + event_id + '_' + pictureNum)){
+			picture = row.picture;
+		}
+
+		
 	}, function(err, count) {
-			
 		query.finalize();
 		
-		var index = 0;
+		if(count != 0 && picture !== 'none' ){
+			deletePicture(picture);
+		}
 		
 		// For all of the files the user wants to input
 		for(var f in files){
 			
 			var file = files[f];	
 			var filename = file.name;
-			var ext = path.extname(filename).toLowerCase();
-			var newFilename = 'e_' + event_id + "_" + (count + index) + ext;
-			var relativePath = './public/uploaded/' + newFilename;
-
-			// If the image is the valid file type
-			if (ext === '.png' || ext === '.jpg') {
-
-				// Move the file
-				file.mv(relativePath, function(err) {
-					if (err) {
-						throw err;
-					}
-				});
-				
-				// Insert the entry into the database
-				insertPicture(event_id, filename, newFilename);
-				
-			}	
 			
-			index += 1;
+			// If the current file is the file for the current slot.
+			if(filename === specificFile){
+				
+				var ext = path.extname(filename).toLowerCase();
+				var newFilename = 'e_' + event_id + "_" + pictureNum + ext;
+				var relativePath = './public/uploaded/' + newFilename;
+
+				// If the image is the valid file type
+				if (ext === '.png' || ext === '.jpg') {
+
+					// Move the file
+					file.mv(relativePath, function(err) {
+						if (err) {
+							throw err;
+						}
+					});
+					
+					// Insert the entry into the database
+					insertPicture(event_id, filename, newFilename);
+					
+				}	
+			}
 		}
 	});
+	
 }
 
-function deleteCurrentPictures(event_id){
+function deletePicture(picture){
 	
-	var picturesQuery = database.prepare("SELECT * FROM Event_Pictures WHERE event_id = ?");
-
-	picturesQuery.each(event_id, function(error, row) {
-
-		var toDelete = path.resolve('./public/uploaded/' + row.picture);
-
-		if (fs.existsSync(toDelete)) {
-			console.log('Deleted: ' + toDelete);
-			fs.unlinkSync(toDelete);
-		}
-		
-
-	}, function(err, userCount) {
-		picturesQuery.finalize();
-		
-		var removeOldPictures = database.prepare("DELETE FROM Event_Pictures WHERE event_id = ?;");
-		removeOldPictures.run([event_id]);
-		removeOldPictures.finalize();
-		
-	});
+	var toDelete = path.resolve('./public/uploaded/' + picture);
+	if (fs.existsSync(toDelete)) {
+		fs.unlinkSync(toDelete);
+	}
+	
+	var removeOldPicture = database.prepare("DELETE FROM Event_Pictures WHERE picture = ?;");
+	removeOldPicture.run([picture]);
+	removeOldPicture.finalize();
+	
+	console.log('Deleted: ' + picture);
 	
 }
 
@@ -927,18 +950,23 @@ function startServer() {
 	console.log('Listening on port ' + port);
 
 	// Connect to the database.
-	database = new sqlite3.Database('./db/aston_events.sqlite3',
-			sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, function(err) {
-				if (err){
-					console.log(err.message);
-				}});
+	database = new sqlite3.Database(
+		'./db/aston_events.sqlite3',
+		sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
+		function(err) {
+			if (err){
+			console.log(err.message);
+			}
+		}
+	);
 
 	// dbHelper.users(database);
 	// dbHelper.events(database);
 	// dbHelper.interest(database);
 	// dbHelper.pictures(database);
 
-	// database.run("DROP TABLE Interest");
+	// Emergancy command
+	// database.run("DROP TABLE Events");
 
 }
 

@@ -166,7 +166,7 @@ function editEvent(eventDetails){
 	event += '		</div>';
 	event += '		<div class="panel-body">';
 	event += '			<form id="event" enctype="multipart/form-data" name="event" action="/CS2410/coursework/event" onsubmit="return validateEvent()" method="post">';
-	event += '				<input type="text" hidden name="event_id" id="event_id" class="form-control" value="' + eventDetails.event_id + '"/>';
+	event += '				<input hidden type="text" name="event_id" id="event_id" value="' + eventDetails.event_id + '"/>';
 	
 	// Name
 	event += '				<div class="form-group">';
@@ -220,14 +220,14 @@ function editEvent(eventDetails){
 	event += '						</div>';
 	event += '						<div id="imageContainer" class="panel-body">';
 
-	
 	for(var index = 0; index < eventDetails.pictures.length; index++){
 		
 		var picture = eventDetails.pictures[index];
 		
 		event += '<div class="imageInput col-sm-3">';
-		event += '		<input type="file" name="picture' + index + '" id="picture' + index + '" class="form-control" onchange="readURL(this)"/>';
+		event += '		<input type="file" name="picture' + index + '" id="picture' + index + '" class="form-control" onchange="readURL(this)" accept=".png,.jpg"/>';
 		event += '		<img id="preview' + index + '" src="/uploaded/' + picture + '" alt="event picture" style="width: 100%; height: 100%" />';
+		event += '		<input hidden type="text" name="pName' + index + '" id="pName'+index+'" />';
 		event += '</div>';
 	}
 	
@@ -296,7 +296,7 @@ function picture(picturePath) {
 
 	var picture = '';
 
-	picture += '	<input type="file" id="picture" name="picture" class="form-control"/> ';
+	picture += '	<input type="file" id="picture" name="picture" class="form-control" accept=".png,.jpg"/> ';
 
 	if (fs.existsSync(path.resolve('./public/uploaded/' + picturePath))) {
 		picture += '	<img id="preview" src="/uploaded/' + picturePath

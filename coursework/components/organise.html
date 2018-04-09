@@ -60,9 +60,9 @@
 						<div id="imageContainer" class="panel-body">
 
 							<div class="imageInput col-sm-3">
-								<input type="file" name="picture0" id="picture0"
-									class="form-control" /> <img id="preview0" src="No Picture"
-									alt="profile picture" style="width: 100%; height: 100%" />
+								<input type="file" name="picture0" id="picture0" class="form-control" accept=".png,.jpg" onchange="readURL(this)" /> 
+								<img id="preview0" src="No Picture" alt="profile picture" style="width: 100%; height: 100%" />
+								<input hidden type="text" name="pName0" id="pName0" />';
 							</div>
 
 						</div>
@@ -79,11 +79,7 @@
 </div>
 
 <script>
-	$("#picture0").change(function() {
-		readURL(this);
-	});
-
-	var numberOfPictures = 0;
+	var numberOfPictures = document.getElementById("imageContainer").childElementCount - 1;
 
 	function addPictureInput() {
 
@@ -96,6 +92,7 @@
 		input.setAttribute("class", "picture form-control");
 		input.setAttribute("type", "file");
 		input.setAttribute("name", "picture" + numberOfPictures);
+		input.setAttribute("id", "picture" + numberOfPictures);
 		input.onchange = function() {
 			readURL(input);
 		};
@@ -103,11 +100,18 @@
 		var img = document.createElement('img');
 		img.setAttribute("src", "No Picture");
 		img.setAttribute("style", "width: 100%; height: 100%");
-		img.setAttribute("alt", "profile picture");
+		img.setAttribute("alt", "event picture");
 		img.setAttribute("id", "preview" + numberOfPictures);
+
+		var text = document.createElement('input');
+		text.style.visibility = "hidden";
+		text.setAttribute("type", "text");
+		text.setAttribute("name", "pName" + numberOfPictures);
+		text.setAttribute("id", "pName" + numberOfPictures);
 
 		imageInput.appendChild(input);
 		imageInput.appendChild(img);
+		imageInput.appendChild(text);
 
 		document.getElementById("imageContainer").appendChild(imageInput);
 
@@ -120,11 +124,14 @@
 	function readURL(input) {
 
 		if (input.files && input.files[0]) {
-			var reader = new FileReader();
 
+			var reader = new FileReader();
 			var number = input.name.replace('picture', '');
+			var filename = input.value.split(/(\\|\/)/g).pop();
 
 			reader.onload = function(e) {
+
+				document.getElementById("pName" + number).value = filename;
 
 				var id = '#preview' + number;
 
