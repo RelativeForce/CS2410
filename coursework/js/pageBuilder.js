@@ -145,20 +145,20 @@ function eventsTable(events, title) {
 function event(eventDetails, isOrganiser) {
 
 	var eventHTML = '';
-	
-	if(isOrganiser){
+
+	if (isOrganiser) {
 		eventHTML += editEvent(eventDetails);
-	}else{
+	} else {
 		eventHTML += viewEvent(eventDetails);
 	}
 
 	return eventHTML;
 }
 
-function editEvent(eventDetails){
-	
+function editEvent(eventDetails) {
+
 	var event = '';
-	
+
 	event += '<div class="container">';
 	event += '	<div class="panel panel-default">';
 	event += '		<div class="panel-heading">';
@@ -167,35 +167,39 @@ function editEvent(eventDetails){
 	event += '		<div class="panel-body">';
 	event += '			<form id="event" enctype="multipart/form-data" name="event" action="/CS2410/coursework/event" onsubmit="return validateEvent()" method="post">';
 	event += '				<input hidden type="text" name="event_id" id="event_id" value="' + eventDetails.event_id + '"/>';
-	
+
 	// Name
 	event += '				<div class="form-group">';
 	event += '					<label for="name">Name:</label>';
 	event += '					<input type="text" name="name" id="name" class="form-control" value="' + eventDetails.name + '"/>';
 	event += '				</div>';
-	
+
 	var checked = 'checked="checked"';
-	
+
 	// Type
 	event += '				<div class="form-group">';
 	event += '					<label for="type">Type:</label>';
 	event += '					<div class="radio">';
-	event += '						<label><input type="radio" value="sport" name="type" ' + (eventDetails.type === "sport" ? checked : '' ) + '/>Sport</label>';
+	event += '						<label><input type="radio" value="sport" name="type" '
+			+ (eventDetails.type === "sport" ? checked : '') + '/>Sport</label>';
 	event += '					</div>';
 	event += '					<div class="radio">';
-	event += '						<label><input type="radio" value="culture" name="type" ' + (eventDetails.type === "culture" ? checked : '' ) + '/>Culture</label>';
+	event += '						<label><input type="radio" value="culture" name="type" '
+			+ (eventDetails.type === "culture" ? checked : '') + '/>Culture</label>';
 	event += '					</div>';
 	event += '					<div class="radio">';
-	event += '						<label><input type="radio" value="other" name="type"  ' + (eventDetails.type === "other" ? checked : '' ) + '/>Other</label>';
+	event += '						<label><input type="radio" value="other" name="type"  '
+			+ (eventDetails.type === "other" ? checked : '') + '/>Other</label>';
 	event += '					</div>';
 	event += '				</div>';
-	
+
 	// Location
 	event += '				<div class="form-group">';
 	event += '					<label for="location">Location:</label> ';
-	event += '					<input type="text" name="location" id="location" class="form-control" value="' + eventDetails.location + '"/>';
+	event += '					<input type="text" name="location" id="location" class="form-control" value="'
+			+ eventDetails.location + '"/>';
 	event += '				</div>';
-		
+
 	// Time
 	event += '				<div class="form-group">';
 	event += '					<label for="time">Time:</label> ';
@@ -205,32 +209,35 @@ function editEvent(eventDetails){
 	// Description
 	event += '				<div class="form-group">';
 	event += '					<label for="description">Description:</label>';
-	event += '					<textarea class="form-control" id="description" rows="5" name="description">' + eventDetails.description + '</textarea>';
+	event += '					<textarea class="form-control" id="description" rows="5" name="description">'
+			+ eventDetails.description + '</textarea>';
 	event += '				</div>';
 
 	event += '				<div class="col-sm-12">';
 	event += '					<div id="pictureSection" class="form-group panel panel-default">';
 	event += '						<div class="panel-heading" id="imageContainerHeader">';
 	event += '							<label>Picture:</label>';
-	
-	if(eventDetails.pictures.length < 4){
+
+	if (eventDetails.pictures.length < 4) {
 		event += '<button id="addPicture" class="btn btn-info" type="button" style="" onclick="addPictureInput()" value="+">+</button>';
 	}
-	
+
 	event += '						</div>';
 	event += '						<div id="imageContainer" class="panel-body">';
 
-	for(var index = 0; index < eventDetails.pictures.length; index++){
-		
+	for (var index = 0; index < eventDetails.pictures.length; index++) {
+
 		var picture = eventDetails.pictures[index];
-		
+
 		event += '<div class="imageInput col-sm-3">';
-		event += '		<input type="file" name="picture' + index + '" id="picture' + index + '" class="form-control" onchange="readURL(this)" accept=".png,.jpg"/>';
-		event += '		<img id="preview' + index + '" src="/uploaded/' + picture + '" alt="event picture" style="width: 100%; height: 100%" />';
-		event += '		<input hidden type="text" name="pName' + index + '" id="pName'+index+'" />';
+		event += '		<input type="file" name="picture' + index + '" id="picture' + index
+				+ '" class="form-control" onchange="readURL(this)" accept=".png,.jpg"/>';
+		event += '		<img id="preview' + index + '" src="/uploaded/' + picture
+				+ '" alt="event picture" style="width: 100%; height: 100%" />';
+		event += '		<input hidden type="text" name="pName' + index + '" id="pName' + index + '" />';
 		event += '</div>';
 	}
-	
+
 	event += '						</div>';
 	event += '					</div>';
 	event += '				</div>';
@@ -239,21 +246,18 @@ function editEvent(eventDetails){
 	event += '		</div>';
 	event += '	</div>';
 	event += '</div>';
-	
-	
+
 	return event;
 }
 
-function viewEvent(eventDetails){
-	
+function viewEvent(eventDetails) {
+
 	var event = '';
-	
-	
-	
+
 	return event;
 }
 
-function profile(userDetails) {
+function editProfile(userDetails) {
 
 	var profile = '';
 
@@ -270,7 +274,7 @@ function profile(userDetails) {
 	profile += '							Picture';
 	profile += '						</div>';
 	profile += '						<div class="panel-body">';
-	profile += picture(userDetails.picture);
+	profile += editPicture(userDetails.picture);
 	profile += '						</div>';
 	profile += '					</div>';
 	profile += '				</div>';
@@ -280,7 +284,7 @@ function profile(userDetails) {
 	profile += '							Information';
 	profile += '						</div>';
 	profile += '						<div class="panel-body">';
-	profile += profileInformation(userDetails);
+	profile += editProfileInformation(userDetails);
 	profile += '						</div>';
 	profile += '					</div>';
 	profile += '				</div>';
@@ -292,7 +296,7 @@ function profile(userDetails) {
 	return profile;
 }
 
-function picture(picturePath) {
+function editPicture(picturePath) {
 
 	var picture = '';
 
@@ -308,7 +312,7 @@ function picture(picturePath) {
 	return picture;
 }
 
-function profileInformation(userDetails) {
+function editProfileInformation(userDetails) {
 
 	var information = '';
 
@@ -337,6 +341,83 @@ function profileInformation(userDetails) {
 	information += '		<label for="organiser">Event Organiser</label> ';
 	information += '	</div>';
 	information += '	<button class="btn btn-primary" type="submit" form="information" value="Save Changes">Save Changes</button>';
+
+	return information;
+
+}
+
+function viewProfile(userDetails) {
+
+	var profile = "";
+
+	profile += '<div class="container">';
+	profile += '	<div class="panel panel-default">';
+	profile += '		<div class="panel-heading">';
+	profile += '			<h2 id="title">Profile: ' + userDetails.name + '</h2>';
+	profile += '		</div>';
+	profile += '		<div class="panel-body">';
+	profile += '			<div class="col-xs-12 col-sm-5">';
+	profile += '				<div class="panel panel-default">';
+	profile += '					<div class="panel-heading">';
+	profile += '						Picture';
+	profile += '					</div>';
+	profile += '					<div class="panel-body">';
+	profile += viewPicture(userDetails.picture);
+	profile += '					</div>';
+	profile += '				</div>';
+	profile += '			</div>';
+	profile += '			<div class="col-xs-12 col-sm-7">';
+	profile += '				<div class="panel panel-default">';
+	profile += '					<div class="panel-heading">';
+	profile += '						Information';
+	profile += '					</div>';
+	profile += '					<div class="panel-body">';
+	profile += viewProfileInformation(userDetails);
+	profile += '					</div>';
+	profile += '				</div>';
+	profile += '			</div>';
+	profile += '		</div>';
+	profile += '	</div>';
+	profile += '</div>';
+
+	return profile;
+
+}
+
+function viewPicture(picturePath) {
+
+	var picture = '';
+
+	if (fs.existsSync(path.resolve('./public/uploaded/' + picturePath))) {
+		picture += '<img id="preview" src="/uploaded/' + picturePath
+				+ '" alt="profile picture" style="width: 100%; height: 100%"/>';
+	} else {
+		picture += '<p>No picture</p>';
+	}
+
+	return picture;
+}
+
+function viewProfileInformation(userDetails) {
+
+	var information = '';
+
+	information += '	<div>';
+	information += '		<label>Email:</label>';
+	information += '		<p>' + userDetails.email + '</p>';
+	information += '	</div>';
+	information += '	<div>';
+	information += '		<label>Full Name:</label>';
+	information += '		<p>' + userDetails.name + '</p>';
+	information += '	</div>';
+	information += '	<div>';
+	information += '		<label>Telephone:</label> ';
+	information += '		<p>' + userDetails.telephone + '</p>';
+	information += '	</div>';
+	information += '	<div>';
+	information += '		<label>Event Organiser</label> ';
+	information += '		<p>' + (userDetails.organiser === 'true' ? 'Yes' : 'No') + '</p>';
+	information += '	</div>';
 
 	return information;
 
@@ -379,8 +460,13 @@ module.exports = {
 	event : function(eventDetails, isOrganiser) {
 		return event(eventDetails, isOrganiser);
 	},
-	profile : function(userDetails) {
-		return profile(userDetails);
+	profile : function(userDetails, canEdit) {
+
+		if (canEdit == true) {
+			return editProfile(userDetails);
+		} else {
+			return viewProfile(userDetails);
+		}
 	},
 	response : function(message) {
 		return response(message);

@@ -1,4 +1,4 @@
-const port = 3000;
+const port = 80;
 const cookieName = 'AstonEvents';
 
 // Imported modules
@@ -62,7 +62,7 @@ function get_organise(request, response) {
 					// The elements of the organise page.
 					var home = builder.navbarLink("/CS2410/coursework", "Home");
 					var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
-					var profile = builder.navbarLink("/CS2410/coursework/profile","My Profile");
+					var profile = builder.navbarLink("/CS2410/coursework/profile?email=" + email,"My Profile");
 					var search = builder.navbarLink("/CS2410/coursework/search","Search Events");
 					var myEvents = builder.navbarLink("/CS2410/coursework/events","My Events");
 					var navbar = builder.navbar([ home, profile, myEvents, search, logout ]);
@@ -113,22 +113,28 @@ function get_organise(request, response) {
  */
 function get_profile(request, response) {
 
-	// Check for the session cookie and wherther it is active.
-	var sessionToken = request.cookies[cookieName];
-
-	// If there is a valid session show the users profile.
-	if (sessions.validSession(sessionToken)) {
-
-		var email = sessions.getEmail(sessionToken);
+	if(request.query.email){
+	
+		var email = request.query.email;
 		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 
 		query.each(email, function(err, row) {
+				
+			// Check for the session cookie and wherther it is active.
+			var sessionToken = request.cookies[cookieName];
 
-			profile(request, response, row, "");
+			if (sessions.validSession(sessionToken)) {
+				
+				// If the current user owns the profile allow them to edit it.
+				profile(request, response, row, "", sessions.getEmail(sessionToken) === email);
+				
+			}else{
+				profile(request, response, row, "", false);
+			}
 
 		}, function(err, count) {
 			query.finalize();
-
+			
 			// If there is no user with that email redirect to the landing page.
 			if (count == 0) {
 				response.redirect('/CS2410/coursework');
@@ -507,7 +513,7 @@ function post_profile(request, response) {
 			var info = builder.response("Changes Updated");
 
 			// Build the profile page with the info box at the top.
-			profile(request, response, newRow, info);
+			profile(request, response, newRow, info, true);
 
 		}, 
 		function(err, count) {
@@ -651,7 +657,7 @@ function build_event(response, event, isEventOrganiser, isAnOrganiser){
 
 		var home = builder.navbarLink("/CS2410/coursework", "Home");
 		var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
-		var profile = builder.navbarLink("/CS2410/coursework/profile", "My Profile");
+		var profile = builder.navbarLink("/CS2410/coursework/profile?email=" + email, "My Profile");
 		var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
 		var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
 		var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
@@ -737,7 +743,8 @@ function swapPicture(event_id, files, specificFile, pictureNum){
 	// Iterate over all the pictures with the specifed event id
 	query.each(event_id, function(err, row) {
 		
-		// If the current name is the name of the first image regardless of file extension.
+		// If the current name is the name of the first image regardless of file
+		// extension.
 		if(row.picture.split('.')[0] === ('e_' + event_id + '_' + pictureNum)){
 			picture = row.picture;
 		}
@@ -814,8 +821,7 @@ function home(request, response, user) {
 	buildPage('home', function(content) {
 
 		var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
-		var profile = builder.navbarLink("/CS2410/coursework/profile",
-				"My Profile");
+		var profile = builder.navbarLink("/CS2410/coursework/profile?email=" + user.email, "My Profile");
 		var newEvent = builder.navbarLink("/CS2410/coursework/organise",
 				"Orgainse Event");
 		var search = builder.navbarLink("/CS2410/coursework/search",
@@ -1083,7 +1089,7 @@ function signup(request, response) {
 	});
 }
 
-function profile(request, response, user, info) {
+function profile(request, response, user, info, canEdit) {
 
 	// Construct the organiser home page
 	buildPage('profile', function(content) {
@@ -1101,7 +1107,7 @@ function profile(request, response, user, info) {
 				.navbar((user.organiser === 'true') ? [ home, newEvent,
 						myEvents, search, logout ] : [ home, search, logout ]);
 
-		var profile = builder.profile(user);
+		var profile = builder.profile(user, canEdit);
 
 		var head = builder.head("Aston Events");
 		var body = builder.body(navbar, info + profile + content);
