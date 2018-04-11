@@ -162,3 +162,10 @@ function calcMD5(str) {
 	}
 	return rhex(a) + rhex(b) + rhex(c) + rhex(d);
 }
+module.exports = {
+		
+	hash : function(text) {
+		return calcMD5(text);
+	}
+
+};

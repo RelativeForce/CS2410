@@ -14,7 +14,7 @@ const cookieParser = require('cookie-parser');
 const sqlite3 = require('sqlite3').verbose();
 
 // My modules
-const MD5 = require('./public/MD5');
+const MD5 = require('./js/MD5');
 const dbHelper = require('./js/dbHelper');
 const builder = require('./js/pageBuilder');
 const sessions = require('./js/sessionHelper');
@@ -274,9 +274,23 @@ function get_event(request, response){
 
 						query.each(email, function(error, user) {
 							
+							
+							var isOrganiser = user.organiser === "true";
+							
+							var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
+							var profile = builder.navbarLink("/CS2410/coursework/profile?email=" + user.email, "My Profile");
+							var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
+							var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
+							var home = builder.navbarLink("/CS2410/coursework", "Home");
+
+							var navbar = builder.navbar(isOrganiser ? 
+									[ home, newEvent, search, profile, logout ] : 
+									[ home, search, profile, logout ]);
+							
+							
 							// Pass an whether or not the current user is the
 							// event organiser.
-							build_event(response, event, email, user.organiser === "true");
+							build_event(response, navbar, event, email, isOrganiser);
 
 						}, function(err, userCount) {
 							query.finalize();
@@ -284,8 +298,13 @@ function get_event(request, response){
 					
 					}else{
 						
+						var login = builder.navbarLink("/CS2410/coursework/login", "Login");
+						var home = builder.navbarLink("/CS2410/coursework", "Home");
+
+						var navbar = builder.navbar( [ home, login ]);
+						
 						// Pass an false as the user is not signed in.
-						build_event(response, event, "", false);
+						build_event(response, navbar, event, "", false);
 					}
 				});
 								
@@ -301,6 +320,99 @@ function get_event(request, response){
 	}else{
 		response.redirect('/CS2410/coursework');
 	}
+	
+}
+
+function get_events(request, response){
+	
+	// Check for the session cookie and wherther it is active.
+	var sessionToken = request.cookies[cookieName];
+
+	// If there is a active session build the nav bar with the user options
+	if (sessions.validSession(sessionToken)) {
+		
+		var email = sessions.getEmail(sessionToken);
+		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
+
+		query.each(email, function(error, user) {
+			
+			var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
+			var home = builder.navbarLink("/CS2410/coursework", "Home");
+			var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
+			var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
+			var profile = builder.navbarLink("/CS2410/coursework/profile?email=" + email, "My Profile");
+
+			var navbar = builder.navbar([ home, newEvent, search, profile, logout ]);
+
+			var eventQuery = database.prepare("SELECT * FROM Events WHERE organiser = ?");
+
+			var events = [];
+
+			eventQuery.each(email, function(eventError, row) {
+
+				var event = {
+					"name" : row.name,
+					"id" : row.event_id,
+					"type" : row.type,
+					"location" : row.location,
+					"time" : row.time,
+					"organiser" : row.organiser,
+					"popularity": row.popularity,
+					"hasLiked" : false
+				};
+
+				events.push(event);
+
+			}, function(eventError, eventCount) {
+				eventQuery.finalize();
+				
+				var interestQuery = database.prepare("SELECT * FROM Interest WHERE student_email = ?");
+
+				interestQuery.each(email, function(interestError, row) {
+
+					for(var index = 0; index < events.length; index++){	
+						var current = events[index];
+						
+						if(row.event_id === current.id){
+							current.hasLiked = true;
+						}	
+					}
+
+				}, function(interestError, interestCount) {
+					interestQuery.finalize();
+
+					var eventsTable = builder.eventsTable(events, "My Events", true);
+
+					var head = builder.head("Aston Events");
+					var body = builder.body(navbar, eventsTable);
+					var page = builder.page(head, body);
+
+					response.writeHead(200, {
+						'Content-Type' : 'text/html'
+					});
+					response.write(page);
+					response.end();
+
+				});
+			});
+			
+			
+			
+
+		}, function(err, count) {
+			query.finalize();
+			
+			// If there is no user with that email show the landing
+			// page.
+			if (count == 0) {
+				response.redirect('/CS2410/coursework');
+			}
+		});
+
+	} else {
+		response.redirect('/CS2410/coursework');
+	}
+	
 	
 }
 
@@ -645,21 +757,10 @@ function updateInterest(request, email){
 	}
 }
 
-function build_event(response, event, email, isAnOrganiser){
+function build_event(response, navbar, event, email, isAnOrganiser){
 	
 	// Builds the student login page
 	buildPage('event', function(content) {
-
-		var home = builder.navbarLink("/CS2410/coursework", "Home");
-		var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
-		var profile = builder.navbarLink("/CS2410/coursework/profile?email=" + email, "My Profile");
-		var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
-		var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
-		var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
-
-		var navbar = isAnOrganiser ? 
-				builder.navbar([ home, newEvent, myEvents, search, profile, logout ]) : 
-				builder.navbar([ home, search, profile, logout ]);
 	
 		var head = builder.head("Event");
 		var eventHTML = builder.event(event, event.organiser === email);
@@ -828,7 +929,6 @@ function home(request, response, user) {
 				[ newEvent, myEvents, search, profile, logout ] : 
 				[ search, profile, logout ]);
 
-		
 		var eventQuery = database.prepare("SELECT * FROM Events");
 
 		var events = [];
@@ -838,9 +938,11 @@ function home(request, response, user) {
 			var event = {
 				"name" : row.name,
 				"id" : row.event_id,
+				"type" : row.type,
 				"location" : row.location,
 				"time" : row.time,
 				"organiser" : row.organiser,
+				"popularity": row.popularity,
 				"hasLiked" : false
 			};
 
@@ -864,7 +966,7 @@ function home(request, response, user) {
 			}, function(interestError, interestCount) {
 				interestQuery.finalize();
 
-				var eventsTable = builder.eventsTable(events, "Upcoming Events");
+				var eventsTable = builder.eventsTable(events, "All Events", true);
 
 				var head = builder.head("Aston Events");
 				var body = builder.body(navbar, content + eventsTable);
@@ -886,23 +988,50 @@ function home(request, response, user) {
 function landing(request, response) {
 
 	// Construct the landing page
-	buildPage('landing', function(content) {
+	buildPage('landing', function(content) {	
 
-		var login = builder.navbarLink("/CS2410/coursework/login", "Login");
-		var navbar = builder.navbar([ login ]);
+		var eventQuery = database.prepare("SELECT * FROM Events");
 
-		var head = builder.head("Aston Events");
-		var body = builder.body(navbar, content);
-		var page = builder.page(head, body);
+		var events = [];
 
-		response.writeHead(200, {
-			'Content-Type' : 'text/html'
+		eventQuery.each(function(eventError, row) {
+
+			var event = {
+				"name" : row.name,
+				"id" : row.event_id,
+				"location" : row.location,
+				"time" : row.time,
+				"type" : row.type,
+				"organiser" : row.organiser,
+				"popularity": row.popularity,
+				"hasLiked" : false
+			};
+
+			events.push(event);
+
+		}, function(eventError, eventCount) {
+			eventQuery.finalize();
+			
+			var login = builder.navbarLink("/CS2410/coursework/login", "Login");
+			var navbar = builder.navbar([ login ]);
+			
+			var eventsTable = builder.eventsTable(events, "All Events", false);
+
+			var head = builder.head("Aston Events");
+			var body = builder.body(navbar, content + eventsTable);
+			var page = builder.page(head, body);
+
+			response.writeHead(200, {
+				'Content-Type' : 'text/html'
+			});
+			response.write(page);
+			response.end();
+
 		});
-		response.write(page);
-		response.end();
-
 	});
-
+		
+		
+		
 }
 
 function changePicure(request, response, row) {
@@ -1165,6 +1294,7 @@ app.get('/CS2410/coursework/logout', get_logout);
 app.get('/CS2410/coursework/profile', get_profile);
 app.get('/CS2410/coursework/organise', get_organise);
 app.get('/CS2410/coursework/event', get_event);
+app.get('/CS2410/coursework/events', get_events);
 
 app.post('/CS2410/coursework', post_landing);
 app.post('/CS2410/coursework/login', post_login);

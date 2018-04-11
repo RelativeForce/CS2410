@@ -27,6 +27,10 @@ section {
 	padding: 5%;
 }
 
+.container{
+	margin-top: 20px;
+}
+
 header {
 	margin: 0;
 	color: white;

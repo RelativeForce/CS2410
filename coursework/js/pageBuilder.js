@@ -87,7 +87,7 @@ function page(head, body) {
 	return document;
 }
 
-function eventsTable(events, title) {
+function eventsTable(events, title, signedIn) {
 
 	var eventsList = '';
 
@@ -99,9 +99,11 @@ function eventsTable(events, title) {
 	eventsList += '					<thead>';
 	eventsList += '						<tr>';
 	eventsList += '							<th>Name</th>';
+	eventsList += '							<th>Type</th>';
 	eventsList += '							<th>Location</th>';
 	eventsList += '							<th>Time</th>';
 	eventsList += '							<th>Organiser Email</th>';
+	eventsList += '							<th>Popularity</th>';
 	eventsList += '						</tr>';
 	eventsList += '					</thead>';
 	eventsList += '					<tbody>';
@@ -115,22 +117,27 @@ function eventsTable(events, title) {
 
 		eventsList += '<tr>';
 		eventsList += '		<td>' + event.name + '</td>';
+		eventsList += '		<td>' + event.type + '</td>';
 		eventsList += '		<td>' + event.location + '</td>';
 		eventsList += '		<td>' + event.time + '</td>';
-		eventsList += '		<td><a href="/CS2410/coursework/profile?email=' + event.organiser + '">' + event.organiser + '</a></td>';
+		eventsList += '		<td><a href="/CS2410/coursework/profile?email=' + event.organiser + '">' + event.organiser
+				+ '</a></td>';
+		eventsList += '		<td>' + event.popularity + '</td>';
 		eventsList += '		<td>';
 
-		if (event.hasLiked) {
+		if (signedIn === true) {
+			if (event.hasLiked) {
 
-			eventsList += '<input formaction="/CS2410/coursework" class="btn btn-danger btn-sm" id="interest'
-					+ event.id + '" onclick="setEvent(' + event.id + ', this);" type="submit" value="Unlike"/>';
-		} else {
-			eventsList += '<input formaction="/CS2410/coursework" class="btn btn-success btn-sm" id="interest'
-					+ event.id + '" onclick="setEvent(' + event.id + ', this);" type="submit" value="Like"/>';
+				eventsList += '<input formaction="/CS2410/coursework" class="btn btn-danger btn-sm" id="interest'
+						+ event.id + '" onclick="setEvent(' + event.id + ', this);" type="submit" value="Unlike"/>';
+			} else {
+				eventsList += '<input formaction="/CS2410/coursework" class="btn btn-success btn-sm" id="interest'
+						+ event.id + '" onclick="setEvent(' + event.id + ', this);" type="submit" value="Like"/>';
+			}
 		}
 
-		eventsList += '		<input formaction="/CS2410/coursework/event" class="btn btn-primary btn-sm" id="view'
-				+ event.id + '" onclick="setEvent(' + event.id + ', this);" type="submit" value="View"/>';
+		eventsList += '		<a href="/CS2410/coursework/event?event_id='
+			+ event.id + '"><button class="btn btn-primary btn-sm"  type="button" value="View">View</button></a>';
 
 		eventsList += '		</td>';
 		eventsList += '</tr>';
@@ -272,11 +279,12 @@ function viewEvent(eventDetails) {
 	event += '				<label>Location:</label> ';
 	event += '				<p>' + eventDetails.location + '</p>';
 	event += '			</div>';
-	
+
 	// Organiser
 	event += '			<div>';
 	event += '				<label>Organiser:</label> ';
-	event += '				<p><a href="/CS2410/coursework/profile?email=' + eventDetails.organiser + '">' + eventDetails.organiser + '</a></p>';
+	event += '				<p><a href="/CS2410/coursework/profile?email=' + eventDetails.organiser + '">'
+			+ eventDetails.organiser + '</a></p>';
 	event += '			</div>';
 
 	// Time
@@ -511,8 +519,8 @@ module.exports = {
 	error : function(message) {
 		return error(message);
 	},
-	eventsTable : function(events, title) {
-		return eventsTable(events, title);
+	eventsTable : function(events, title, signedIn) {
+		return eventsTable(events, title, signedIn);
 	},
 	event : function(eventDetails, isOrganiser) {
 		return event(eventDetails, isOrganiser);
