@@ -824,9 +824,10 @@ function home(request, response, user) {
 		var myEvents = builder.navbarLink("/CS2410/coursework/events",
 				"My Events");
 
-		var navbar = (user.organiser === 'true') ? builder.navbar([ newEvent,
-				myEvents, search, profile, logout ]) : builder.navbar([ search,
-				profile, logout ]);
+		var navbar = builder.navbar((user.organiser === 'true') ? 
+				[ newEvent, myEvents, search, profile, logout ] : 
+				[ search, profile, logout ]);
+
 		
 		var eventQuery = database.prepare("SELECT * FROM Events");
 

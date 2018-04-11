@@ -117,7 +117,7 @@ function eventsTable(events, title) {
 		eventsList += '		<td>' + event.name + '</td>';
 		eventsList += '		<td>' + event.location + '</td>';
 		eventsList += '		<td>' + event.time + '</td>';
-		eventsList += '		<td>' + event.organiser + '</td>';
+		eventsList += '		<td><a href="/CS2410/coursework/profile?email=' + event.organiser + '">' + event.organiser + '</a></td>';
 		eventsList += '		<td>';
 
 		if (event.hasLiked) {
@@ -262,15 +262,21 @@ function viewEvent(eventDetails) {
 	event += '		<div class="panel-body">';
 
 	// Type
-	event += '			<div class="form-group">';
+	event += '			<div>';
 	event += '				<label>Type:</label>';
 	event += '				<p>' + eventDetails.type + '</p>';
 	event += '			</div>';
 
 	// Location
-	event += '			<div class="form-group">';
+	event += '			<div>';
 	event += '				<label>Location:</label> ';
 	event += '				<p>' + eventDetails.location + '</p>';
+	event += '			</div>';
+	
+	// Organiser
+	event += '			<div>';
+	event += '				<label>Organiser:</label> ';
+	event += '				<p><a href="/CS2410/coursework/profile?email=' + eventDetails.organiser + '">' + eventDetails.organiser + '</a></p>';
 	event += '			</div>';
 
 	// Time
@@ -285,6 +291,7 @@ function viewEvent(eventDetails) {
 	event += '				<p>' + eventDetails.description + '</p>';
 	event += '			</div>';
 
+	// Pictures
 	event += '			<div class="col-sm-12">';
 	event += '				<div id="pictureSection">';
 
