@@ -254,6 +254,56 @@ function viewEvent(eventDetails) {
 
 	var event = '';
 
+	event += '<div class="container">';
+	event += '	<div class="panel panel-default">';
+	event += '		<div class="panel-heading">';
+	event += '			<h2 id="title">Event: ' + eventDetails.name + '</h2>';
+	event += '		</div>';
+	event += '		<div class="panel-body">';
+
+	// Type
+	event += '			<div class="form-group">';
+	event += '				<label>Type:</label>';
+	event += '				<p>' + eventDetails.type + '</p>';
+	event += '			</div>';
+
+	// Location
+	event += '			<div class="form-group">';
+	event += '				<label>Location:</label> ';
+	event += '				<p>' + eventDetails.location + '</p>';
+	event += '			</div>';
+
+	// Time
+	event += '			<div>';
+	event += '				<label>Time:</label> ';
+	event += '				<p>' + eventDetails.time + '</p>';
+	event += '			</div>';
+
+	// Description
+	event += '			<div>';
+	event += '				<label>Description:</label>';
+	event += '				<p>' + eventDetails.description + '</p>';
+	event += '			</div>';
+
+	event += '			<div class="col-sm-12">';
+	event += '				<div id="pictureSection">';
+
+	for (var index = 0; index < eventDetails.pictures.length; index++) {
+
+		var picture = eventDetails.pictures[index];
+
+		event += '<div class="imageInput col-sm-3">';
+		event += '		<img id="preview' + index + '" src="/uploaded/' + picture
+				+ '" alt="event picture" style="width: 100%; height: 100%" />';
+		event += '</div>';
+	}
+
+	event += '				</div>';
+	event += '			</div>';
+	event += '		</div>';
+	event += '	</div>';
+	event += '</div>';
+
 	return event;
 }
 

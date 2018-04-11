@@ -252,15 +252,15 @@ function get_event(request, response){
 					pictureQuery.finalize();
 					
 					var event = {
-							"event_id" : eventDetails.event_id,
-							"name" : eventDetails.name,
-							"description" : eventDetails.description,
-							"organiser" : eventDetails.organiser,
-							"type" : eventDetails.type,
-							"time" : eventDetails.time,
-							"location" : eventDetails.location,
-							"pictures" : pictures
-						};
+						"event_id" : eventDetails.event_id,
+						"name" : eventDetails.name,
+						"description" : eventDetails.description,
+						"organiser" : eventDetails.organiser,
+						"type" : eventDetails.type,
+						"time" : eventDetails.time,
+						"location" : eventDetails.location,
+						"pictures" : pictures
+					};
 					
 					// Check for the session cookie and wherther it is active.
 					var sessionToken = request.cookies[cookieName];
@@ -276,21 +276,16 @@ function get_event(request, response){
 							
 							// Pass an whether or not the current user is the
 							// event organiser.
-							build_event(response, event, email === event.organiser, user.organiser === "true");
+							build_event(response, event, email, user.organiser === "true");
 
 						}, function(err, userCount) {
 							query.finalize();
-
-							if (userCount == 0) {
-								// Should never happen as only logged in users
-								// have valid sessions.
-							}
 						});
 					
 					}else{
 						
 						// Pass an false as the user is not signed in.
-						build_event(response, event, false, false);
+						build_event(response, event, "", false);
 					}
 				});
 								
@@ -650,7 +645,7 @@ function updateInterest(request, email){
 	}
 }
 
-function build_event(response, event, isEventOrganiser, isAnOrganiser){
+function build_event(response, event, email, isAnOrganiser){
 	
 	// Builds the student login page
 	buildPage('event', function(content) {
@@ -667,7 +662,7 @@ function build_event(response, event, isEventOrganiser, isAnOrganiser){
 				builder.navbar([ home, search, profile, logout ]);
 	
 		var head = builder.head("Event");
-		var eventHTML = builder.event(event, isEventOrganiser);
+		var eventHTML = builder.event(event, event.organiser === email);
 		var body = builder.body(navbar, eventHTML + content);
 		var page = builder.page(head, body);
 
