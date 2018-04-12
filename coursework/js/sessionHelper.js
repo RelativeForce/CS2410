@@ -5,7 +5,7 @@ const cookieName = 'AstonEvents';
  */
 const duration = 1;
 
-/**
+/**--
  * Holds all the valid sessions for this server.
  */
 var sessions = [];
@@ -20,6 +20,7 @@ var sessions = [];
  * @returns Whether or not the session was added.
  */
 function addSession(token, userEmail) {
+
 
 	// Check if the user is already logged in.
 	var userLoggedIn = contains(function(session) {
@@ -248,6 +249,8 @@ function extend(token, response) {
 			});
 
 			console.log("Session Extended: " + token + " to " + expire);
+			
+			return true;
 			
 		} else {
 			return false;
