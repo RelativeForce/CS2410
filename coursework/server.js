@@ -122,14 +122,37 @@ function get_profile(request, response) {
 				
 			// Check for the session cookie and wherther it is active.
 			var sessionToken = request.cookies[cookieName];
+			
 
 			if (sessions.validSession(sessionToken)) {
 				
+				
+				var home = builder.navbarLink("/CS2410/coursework", "Home");
+				var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
+				var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
+				var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
+				var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
+				var home = builder.navbarLink("/CS2410/coursework", "Home");
+				
+				var navbar = builder.navbar(
+					(row.organiser === 'true') ? 
+					[ home, newEvent, myEvents, search, logout ] : 
+					[ home, search, logout ]
+				);
+				
 				// If the current user owns the profile allow them to edit it.
-				profile(request, response, row, "", sessions.getEmail(sessionToken) === email);
+				profile(request, response, row, "", sessions.getEmail(sessionToken) === email, navbar);
 				
 			}else{
-				profile(request, response, row, "", false);
+				
+				var login = builder.navbarLink("/CS2410/coursework/login", "Login");
+				var home = builder.navbarLink("/CS2410/coursework", "Home");
+				
+				var navbar = builder.navbar(
+					[ home, login ]
+				);
+				
+				profile(request, response, row, "", false, navbar);
 			}
 
 		}, function(err, count) {
@@ -618,9 +641,22 @@ function post_profile(request, response) {
 
 			// Build a new info box
 			var info = builder.response("Changes Updated");
+			
+			var home = builder.navbarLink("/CS2410/coursework", "Home");
+			var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
+			var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
+			var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
+			var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
+			var home = builder.navbarLink("/CS2410/coursework", "Home");
+			
+			var navbar = builder.navbar(
+				(newRow.organiser === 'true') ? 
+				[ home, newEvent, myEvents, search, logout ] : 
+				[ home, search, logout ]
+			);
 
 			// Build the profile page with the info box at the top.
-			profile(request, response, newRow, info, true);
+			profile(request, response, newRow, info, true, navbar);
 
 		}, 
 		function(err, count) {
@@ -1214,23 +1250,10 @@ function signup(request, response) {
 	});
 }
 
-function profile(request, response, user, info, canEdit) {
+function profile(request, response, user, info, canEdit, navbar) {
 
 	// Construct the organiser home page
 	buildPage('profile', function(content) {
-
-		var home = builder.navbarLink("/CS2410/coursework", "Home");
-		var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
-		var newEvent = builder.navbarLink("/CS2410/coursework/organise",
-				"Orgainse Event");
-		var search = builder.navbarLink("/CS2410/coursework/search",
-				"Search Events");
-		var myEvents = builder.navbarLink("/CS2410/coursework/events",
-				"My Events");
-
-		var navbar = builder
-				.navbar((user.organiser === 'true') ? [ home, newEvent,
-						myEvents, search, logout ] : [ home, search, logout ]);
 
 		var profile = builder.profile(user, canEdit);
 
