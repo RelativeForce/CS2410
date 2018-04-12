@@ -1,3 +1,10 @@
+const cookieName = 'AstonEvents';
+
+/**
+ * The number of hours that a session will remain active for.
+ */
+const duration = 1;
+
 /**
  * Holds all the valid sessions for this server.
  */
@@ -26,15 +33,15 @@ function addSession(token, userEmail) {
 		return false;
 	}
 
-	// Sessions should last for 2 hours.
-	var dateTime = new Date();
-	dateTime.setHours(dateTime.getHours() + 2);
+	// Set the session cookie to expire at the end of its duration
+	var expire = new Date();
+	expire.setTime(expire.getTime() + (duration * 3600000)); // 60 * 60 * 1000
 
 	// Constuct the new session
 	var session = {
 		"token" : token,
 		"email" : userEmail,
-		"maxAge" : dateTime
+		"expires" : expire.getTime()
 	};
 
 	// Add the new session to the list.
@@ -65,14 +72,16 @@ function contains(check) {
 		var session = sessions[index];
 
 		// The current date time
-		var now = Date.now();
+		var now = new Date();
 
 		// If the session has expired remove it.
-		if (session["maxAge"] < now) {
-
+		if (session.expires < now.getTime()) {
+			
 			sessions.splice(index, 1);
 			index--;
 			numberOfSessions--;
+			
+			console.log("Session Expired: " + session.token);
 
 		} else {
 
@@ -208,6 +217,46 @@ function getEmail(token) {
 
 }
 
+/**
+ * Extends the session with the specifed token on the server while updating the
+ * cookie on the client response.
+ * 
+ * @param token
+ *            The token of the session that will be extended.
+ * @param response
+ *            The response that will be sent to the client.
+ * @returns Whether or not the session was extended.
+ */
+function extend(token, response) {
+
+	// Set the session cookie to expire at the end of its duration
+	var expire = new Date();
+	expire.setTime(expire.getTime() + (duration * 3600000)); // 60 * 60 * 1000
+
+	/*
+	 * Iterate over all the sessions and when the session with the token is
+	 * found extend the duration.
+	 */
+	return contains(function(session) {
+
+		if (session.token === token) {
+			
+			session.expires = expire.getTime();
+
+			response.cookie(cookieName, token, {
+				expire : expire.getTime()
+			});
+
+			console.log("Session Extended: " + token + " to " + expire);
+			
+		} else {
+			return false;
+		}
+
+	});
+
+}
+
 module.exports = {
 	uniqueToken : function() {
 		return uniqueToken();
@@ -226,5 +275,9 @@ module.exports = {
 	},
 	validSession : function(token) {
 		return validSession(token);
-	}
+	},
+	extend : function(token, response) {
+		return extend(token, response);
+	},
+	cookieName : cookieName
 };

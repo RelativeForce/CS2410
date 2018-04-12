@@ -1,5 +1,4 @@
 const port = 80;
-const cookieName = 'AstonEvents';
 
 // Imported modules
 const express = require('express');
@@ -18,6 +17,7 @@ const MD5 = require('./js/MD5');
 const dbHelper = require('./js/dbHelper');
 const builder = require('./js/pageBuilder');
 const sessions = require('./js/sessionHelper');
+const cookieName = sessions.cookieName;
 
 /**
  * Holds the connection to the SQLite database.
@@ -45,7 +45,9 @@ function get_organise(request, response) {
 
 	// If there is a active session build the nav bar with the user options
 	if (sessions.validSession(sessionToken)) {
-
+		
+		sessions.extend(sessionToken, response);
+		
 		var email = sessions.getEmail(sessionToken);
 		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 
@@ -72,14 +74,7 @@ function get_organise(request, response) {
 					// The string representation of the page as HTML
 					var page = builder.page(head, body);
 
-					// The attributes of the response.
-					var responseAttributes = {
-						'Content-Type' : 'text/html'
-					};
-					
-					response.writeHead(200, responseAttributes);
-					response.write(page);
-					response.end();
+					buildResponse(response, page);
 
 				});
 
@@ -125,7 +120,7 @@ function get_profile(request, response) {
 			
 
 			if (sessions.validSession(sessionToken)) {
-				
+				sessions.extend(sessionToken, response);
 				
 				var home = builder.navbarLink("/CS2410/coursework", "Home");
 				var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
@@ -189,6 +184,7 @@ function get_landing(request, response) {
 
 	// If there is a active session build the nav bar with the user options
 	if (sessions.validSession(sessionToken)) {
+		sessions.extend(sessionToken, response);
 		
 		var email = sessions.getEmail(sessionToken);
 		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
@@ -292,6 +288,8 @@ function get_event(request, response){
 					// editable
 					if (sessions.validSession(sessionToken)) {
 					
+						sessions.extend(sessionToken, response);
+						
 						var email = sessions.getEmail(sessionToken);
 						var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 
@@ -354,6 +352,8 @@ function get_events(request, response){
 	// If there is a active session build the nav bar with the user options
 	if (sessions.validSession(sessionToken)) {
 		
+		sessions.extend(sessionToken, response);
+		
 		var email = sessions.getEmail(sessionToken);
 		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 
@@ -410,17 +410,10 @@ function get_events(request, response){
 					var body = builder.body(navbar, eventsTable);
 					var page = builder.page(head, body);
 
-					response.writeHead(200, {
-						'Content-Type' : 'text/html'
-					});
-					response.write(page);
-					response.end();
+					buildResponse(response, page);
 
 				});
 			});
-			
-			
-			
 
 		}, function(err, count) {
 			query.finalize();
@@ -490,6 +483,8 @@ function post_landing(request, response){
 	// If there is a active session build the nav bar with the user options
 	if (sessions.validSession(sessionToken)) {
 		
+		sessions.extend(sessionToken, response);
+		
 		var email = sessions.getEmail(sessionToken);
 		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 
@@ -539,6 +534,8 @@ function post_organise(request, response) {
 	// If there is a active session build the nav bar with the user options
 	if (sessions.validSession(sessionToken)) {
 
+		sessions.extend(sessionToken, response);
+		
 		var email = sessions.getEmail(sessionToken);
 		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 
@@ -609,6 +606,8 @@ function post_profile(request, response) {
 	// Check for the session cookie and wherther it is active.
 	if (sessions.validSession(sessionToken)) {
 
+		sessions.extend(sessionToken, response);
+		
 		var email = sessions.getEmail(sessionToken);
 		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 
@@ -683,6 +682,9 @@ function post_event(request, response){
 	// If there is a active session build the nav bar with the user options
 	if (sessions.validSession(sessionToken)) {
 
+		
+		sessions.extend(sessionToken, response);
+		
 		var email = sessions.getEmail(sessionToken);
 		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 
@@ -759,6 +761,16 @@ function post_event(request, response){
 
 // Misc functions -------------------------------------------------------------
 
+function buildResponse(response, page){
+	
+	response.writeHead(200, {
+		'Content-Type' : 'text/html'
+	});
+	response.write(page);
+	response.end();
+	
+}
+
 function updateInterest(request, email){
 	
 	var event_id = request.body.event_id;
@@ -803,11 +815,7 @@ function build_event(response, navbar, event, email, isAnOrganiser){
 		var body = builder.body(navbar, eventHTML + content);
 		var page = builder.page(head, body);
 
-		response.writeHead(200, {
-			'Content-Type' : 'text/html'
-		});
-		response.write(page);
-		response.end();
+		buildResponse(response, page);
 
 	});
 	
@@ -1008,12 +1016,7 @@ function home(request, response, user) {
 				var body = builder.body(navbar, content + eventsTable);
 				var page = builder.page(head, body);
 
-				response.writeHead(200, {
-					'Content-Type' : 'text/html'
-				});
-				response.write(page);
-				response.end();
-
+				buildResponse(response, page);
 
 			});
 		});
@@ -1046,6 +1049,7 @@ function landing(request, response) {
 			events.push(event);
 
 		}, function(eventError, eventCount) {
+			
 			eventQuery.finalize();
 			
 			var login = builder.navbarLink("/CS2410/coursework/login", "Login");
@@ -1057,12 +1061,8 @@ function landing(request, response) {
 			var body = builder.body(navbar, content + eventsTable);
 			var page = builder.page(head, body);
 
-			response.writeHead(200, {
-				'Content-Type' : 'text/html'
-			});
-			response.write(page);
-			response.end();
-
+			buildResponse(response, page);
+			
 		});
 	});
 		
@@ -1155,9 +1155,7 @@ function login(request, response) {
 
 			// If the session is added redirct the client.
 			if (sessions.addSession(token, email)) {
-				response.cookie(cookieName, token, {
-					maxAge : 999999
-				});
+				sessions.extend(token, response);
 				response.redirect('/CS2410/coursework');
 			} else {
 				// Session alread exists.
@@ -1194,11 +1192,7 @@ function build_login(request, response, error) {
 		var body = builder.body(navbar, error + content);
 		var page = builder.page(head, body);
 
-		response.writeHead(200, {
-			'Content-Type' : 'text/html'
-		});
-		response.write(page);
-		response.end();
+		buildResponse(response, page);
 
 	});
 
@@ -1236,9 +1230,7 @@ function signup(request, response) {
 			var token = sessions.uniqueToken();
 
 			sessions.addSession(token, email);
-			response.cookie(cookieName, token, {
-				maxAge : 999999
-			});
+			sessions.extend(token, response);
 			response.redirect('/CS2410/coursework');
 
 		} else {
@@ -1257,15 +1249,11 @@ function profile(request, response, user, info, canEdit, navbar) {
 
 		var profile = builder.profile(user, canEdit);
 
-		var head = builder.head("Aston Events");
+		var head = builder.head("Profile");
 		var body = builder.body(navbar, info + profile + content);
 		var page = builder.page(head, body);
 
-		response.writeHead(200, {
-			'Content-Type' : 'text/html'
-		});
-		response.write(page);
-		response.end();
+		buildResponse(response, page);
 
 	});
 
