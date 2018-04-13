@@ -357,7 +357,9 @@ function get_events(request, response){
 		var email = sessions.getEmail(sessionToken);
 		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 
-		query.each(email, function(error, user) {
+		query.each(
+			email, 
+			function(error, user) {
 			
 			var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
 			var home = builder.navbarLink("/CS2410/coursework", "Home");
@@ -367,53 +369,56 @@ function get_events(request, response){
 
 			var navbar = builder.navbar([ home, newEvent, search, profile, logout ]);
 
-			var eventQuery = database.prepare("SELECT * FROM Events WHERE organiser = ? ORDER BY date(time) DESC");
-
-			var events = [];
-
-			eventQuery.each(email, function(eventError, row) {
-
-				var event = {
-					"name" : row.name,
-					"id" : row.event_id,
-					"type" : row.type,
-					"location" : row.location,
-					"time" : row.time,
-					"organiser" : row.organiser,
-					"popularity": row.popularity,
-					"hasLiked" : false
-				};
-
-				events.push(event);
-
-			}, function(eventError, eventCount) {
-				eventQuery.finalize();
+			
+			var queryText = "SELECT * FROM Events WHERE organiser = ? ORDER BY date(time) DESC";
+			
+			collect(
+				queryText, 
+				[email], 
+				function(row){
 				
-				var interestQuery = database.prepare("SELECT * FROM Interest WHERE student_email = ?");
+					return {
+						"name" : row.name,
+						"id" : row.event_id,
+						"type" : row.type,
+						"location" : row.location,
+						"time" : row.time,
+						"organiser" : row.organiser,
+						"popularity": row.popularity,
+						"hasLiked" : false
+					};
+				}, 
+				function(events){
+				
+					var interestQuery = database.prepare("SELECT * FROM Interest WHERE student_email = ?");
 
-				interestQuery.each(email, function(interestError, row) {
+					interestQuery.each(
+						email, 
+						function(interestError, row) {
 
-					for(var index = 0; index < events.length; index++){	
-						var current = events[index];
+							for(var index = 0; index < events.length; index++){	
+								var current = events[index];
 						
-						if(row.event_id === current.id){
-							current.hasLiked = true;
-						}	
-					}
+								if(row.event_id === current.id){
+									current.hasLiked = true;
+								}	
+							}
 
-				}, function(interestError, interestCount) {
-					interestQuery.finalize();
+						}, 
+						function(interestError, interestCount) {
+							interestQuery.finalize();
+							
+							var eventsTable = builder.eventsTable(events, "My Events", true);
 
-					var eventsTable = builder.eventsTable(events, "My Events", true);
+							var head = builder.head("Aston Events");
+							var body = builder.body(navbar, eventsTable);
+							var page = builder.page(head, body);
 
-					var head = builder.head("Aston Events");
-					var body = builder.body(navbar, eventsTable);
-					var page = builder.page(head, body);
-
-					buildResponse(response, page);
-
-				});
-			});
+							buildResponse(response, page);
+						}
+					);
+				}
+			);
 
 		}, function(err, count) {
 			query.finalize();
@@ -434,50 +439,55 @@ function get_events(request, response){
 
 function get_search(request, response){
 	
-	buildPage('search', function(content) {
+	buildPage(
+		'search', 
+		function(content) {
 		
-		// Check for the session cookie and wherther it is active.
-		var sessionToken = request.cookies[cookieName];
+			// Check for the session cookie and wherther it is active.
+			var sessionToken = request.cookies[cookieName];
 
-		// If there is a active session build the nav bar with the user options
-		if (sessions.validSession(sessionToken)) {
-			sessions.extend(sessionToken, response);
+			// If there is a active session build the nav bar with the user options
+			if (sessions.validSession(sessionToken)) {
+				sessions.extend(sessionToken, response);
 			
-			var email = sessions.getEmail(sessionToken);
-			var query = database.prepare("SELECT * FROM Users WHERE email = ?");
+				var email = sessions.getEmail(sessionToken);
+				var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 	
-			query.each(email, function(error, user) {
+				query.each(
+					email, 
+					function(error, user) {
 
-				var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
-				var profile = builder.navbarLink("/CS2410/coursework/profile?email=" + user.email, "My Profile");
-				var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
+						var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
+						var profile = builder.navbarLink("/CS2410/coursework/profile?email=" + user.email, "My Profile");
+						var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
+						var home = builder.navbarLink("/CS2410/coursework", "Home");
+						var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
+
+						var navbar = builder.navbar((user.organiser === 'true') ? 
+								[ home, newEvent, myEvents, profile, logout ] : 
+							[ home, profile, logout ]);
+					
+						search(request, response, navbar, true);
+					
+					}, 
+					function(err, count) {
+						query.finalize();
+					}
+				);
+
+			} else {
+			
+				var login = builder.navbarLink("/CS2410/coursework/login", "Login");
 				var home = builder.navbarLink("/CS2410/coursework", "Home");
-				var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
-
-				var navbar = builder.navbar((user.organiser === 'true') ? 
-						[ home, newEvent, myEvents, profile, logout ] : 
-						[ home, profile, logout ]);
-					
-				search(request, response, navbar, true);
-					
-			}, function(err, count) {
-				query.finalize();
-			});
-
-		} else {
+				
+				var navbar = builder.navbar(
+					[ home, login ]
+				);
 			
-			var login = builder.navbarLink("/CS2410/coursework/login", "Login");
-			var home = builder.navbarLink("/CS2410/coursework", "Home");
-			
-			var navbar = builder.navbar(
-				[ home, login ]
-			);
-			
-			search(request, response, navbar, false);
+				search(request, response, navbar, false);
+			}
 		}
-	});
-	
-	
+	);
 }
 
 
@@ -1064,69 +1074,72 @@ function insertPicture(event_id, filename, newFilename){
 function home(request, response, user) {
 
 	// Construct the student home page
-	buildPage('home', function(content) {
+	buildPage(
+		'home', 
+		function(content) {
 
-		var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
-		var profile = builder.navbarLink("/CS2410/coursework/profile?email=" + user.email, "My Profile");
-		var newEvent = builder.navbarLink("/CS2410/coursework/organise",
-				"Orgainse Event");
-		var search = builder.navbarLink("/CS2410/coursework/search",
-				"Search Events");
-		var myEvents = builder.navbarLink("/CS2410/coursework/events",
-				"My Events");
+			var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
+			var profile = builder.navbarLink("/CS2410/coursework/profile?email=" + user.email, "My Profile");
+			var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
+			var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
+			var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
 
-		var navbar = builder.navbar((user.organiser === 'true') ? 
+			var navbar = builder.navbar((user.organiser === 'true') ? 
 				[ newEvent, myEvents, search, profile, logout ] : 
 				[ search, profile, logout ]);
 
-		var eventQuery = database.prepare("SELECT * FROM Events ORDER BY date(time) DESC");
-
-		var events = [];
-
-		eventQuery.each(function(eventError, row) {
-
-			var event = {
-				"name" : row.name,
-				"id" : row.event_id,
-				"type" : row.type,
-				"location" : row.location,
-				"time" : row.time,
-				"organiser" : row.organiser,
-				"popularity": row.popularity,
-				"hasLiked" : false
-			};
-
-			events.push(event);
-
-		}, function(eventError, eventCount) {
-			eventQuery.finalize();
+			var queryText = "SELECT * FROM Events ORDER BY date(time) DESC";
+		
+			collect(
+				queryText, 
+				[], 
+				function(row){
 			
-			var interestQuery = database.prepare("SELECT * FROM Interest WHERE student_email = ?");
+					return {
+						"name" : row.name,
+						"id" : row.event_id,
+						"type" : row.type,
+						"location" : row.location,
+						"time" : row.time,
+						"organiser" : row.organiser,
+						"popularity": row.popularity,
+						"hasLiked" : false
+					};
 
-			interestQuery.each(user.email, function(interestError, row) {
+				}, 
+				function(events){
+			
+					var interestQuery = database.prepare("SELECT * FROM Interest WHERE student_email = ?");
 
-				for(var index = 0; index < events.length; index++){	
-					var current = events[index];
-					
-					if(row.event_id === current.id){
-						current.hasLiked = true;
-					}	
+					interestQuery.each(
+						user.email, 
+						function(interestError, row) {
+
+							for(var index = 0; index < events.length; index++){	
+								var current = events[index];
+								
+								if(row.event_id === current.id){
+									current.hasLiked = true;
+								}	
+							}
+
+						}, 
+						function(interestError, interestCount) {
+							interestQuery.finalize();
+
+							var eventsTable = builder.eventsTable(events, "All Events", true);
+
+							var head = builder.head("Aston Events");
+							var body = builder.body(navbar, content + eventsTable);
+							var page = builder.page(head, body);
+
+							buildResponse(response, page);
+						}
+					);
 				}
-
-			}, function(interestError, interestCount) {
-				interestQuery.finalize();
-
-				var eventsTable = builder.eventsTable(events, "All Events", true);
-
-				var head = builder.head("Aston Events");
-				var body = builder.body(navbar, content + eventsTable);
-				var page = builder.page(head, body);
-
-				buildResponse(response, page);
-
-			});
-		});
-	});
+			);	
+		}
+	);
 
 }
 
