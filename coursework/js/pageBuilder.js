@@ -513,6 +513,15 @@ function response(message) {
 
 }
 
+function search(filter){
+	
+	var search = '';
+	
+	
+	return search;
+	
+}
+
 module.exports = {
 	navbar : function(navElements) {
 		return navbar(navElements);
@@ -548,5 +557,8 @@ module.exports = {
 	},
 	response : function(message) {
 		return response(message);
+	},
+	search : function(filter) {
+		return search(filter);
 	}
 };

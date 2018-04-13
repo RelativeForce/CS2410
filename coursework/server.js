@@ -189,7 +189,7 @@ function get_landing(request, response) {
 		var email = sessions.getEmail(sessionToken);
 		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 
-		query.each(email, function(error, user) {
+		query.each([email], function(error, user) {
 			
 			// If there is a row send the home page of that user.
 			home(request, response, user);
@@ -431,6 +431,55 @@ function get_events(request, response){
 	
 	
 }
+
+function get_search(request, response){
+	
+	buildPage('search', function(content) {
+		
+		// Check for the session cookie and wherther it is active.
+		var sessionToken = request.cookies[cookieName];
+
+		// If there is a active session build the nav bar with the user options
+		if (sessions.validSession(sessionToken)) {
+			sessions.extend(sessionToken, response);
+			
+			var email = sessions.getEmail(sessionToken);
+			var query = database.prepare("SELECT * FROM Users WHERE email = ?");
+	
+			query.each(email, function(error, user) {
+
+				var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
+				var profile = builder.navbarLink("/CS2410/coursework/profile?email=" + user.email, "My Profile");
+				var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
+				var home = builder.navbarLink("/CS2410/coursework", "Home");
+				var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
+
+				var navbar = builder.navbar((user.organiser === 'true') ? 
+						[ home, newEvent, myEvents, profile, logout ] : 
+						[ home, profile, logout ]);
+					
+				search(request, response, navbar, true);
+					
+			}, function(err, count) {
+				query.finalize();
+			});
+
+		} else {
+			
+			var login = builder.navbarLink("/CS2410/coursework/login", "Login");
+			var home = builder.navbarLink("/CS2410/coursework", "Home");
+			
+			var navbar = builder.navbar(
+				[ home, login ]
+			);
+			
+			search(request, response, navbar, false);
+		}
+	});
+	
+	
+}
+
 
 // POST handlers --------------------------------------------------------------
 
@@ -762,6 +811,62 @@ function post_event(request, response){
 
 // Misc functions -------------------------------------------------------------
 
+/**
+ * 
+ * This function performs an specified sanitised SQLite query on the database,
+ * then maps the results using an anonymous function and stores those mappings
+ * in a collection which is then passed to the onComplete function.
+ * 
+ * @param queryText
+ *            An SQLite query on the Events table that will return a list of
+ *            events,
+ * @param params
+ *            An array of parameters for the SQLite query text which should be
+ *            in the sanitised form.
+ * @param mapper
+ *            A function that takes a row of the results of the query as its
+ *            only paramerter and returns a object that will added to the
+ *            collection passed to the onComplete function.
+ * @param onComplete
+ *            The function that will be called once all the results from the
+ *            query are read and their mappings are stored.
+ * @returns undefined
+ */
+function collect(queryText, params, mapper, onComplete){
+	
+	// Convert the query text into a sanitised SQLite query
+	var query = database.prepare(queryText);
+
+	// The collection of all the row mappings.
+	var collection = [];
+	
+	query.each(params, function(err, row) {
+		
+		// If there was an error throw it.
+		if(err){
+			throw err;
+		}
+		
+		// The object that the row mapped to.
+		var mapped = mapper(row);
+		
+		// Store the mapped value in the collection.
+		collection.push(mapped);
+		
+	},function(err, count){
+		
+		query.finalize();
+		
+		if(err){
+			throw err;
+		}
+		
+		// Perform the on complete function on the collection.
+		onComplete(collection);
+		
+	});
+}
+
 function buildResponse(response, page){
 	
 	response.writeHead(200, {
@@ -1030,28 +1135,22 @@ function landing(request, response) {
 	// Construct the landing page
 	buildPage('landing', function(content) {	
 
-		var eventQuery = database.prepare("SELECT * FROM Events ORDER BY date(time) DESC");
-
-		var events = [];
-
-		eventQuery.each(function(eventError, row) {
-
-			var event = {
-				"name" : row.name,
-				"id" : row.event_id,
-				"location" : row.location,
-				"time" : row.time,
-				"type" : row.type,
-				"organiser" : row.organiser,
-				"popularity": row.popularity,
+		var queryText = "SELECT * FROM Events ORDER BY date(time) DESC";
+		
+		collect(queryText, [], function(rawEvent){
+			
+			return {
+				"name" : rawEvent.name,
+				"id" : rawEvent.event_id,
+				"location" : rawEvent.location,
+				"time" : rawEvent.time,
+				"type" : rawEvent.type,
+				"organiser" : rawEvent.organiser,
+				"popularity": rawEvent.popularity,
 				"hasLiked" : false
 			};
 
-			events.push(event);
-
-		}, function(eventError, eventCount) {
-			
-			eventQuery.finalize();
+		}, function(events){
 			
 			var login = builder.navbarLink("/CS2410/coursework/login", "Login");
 			var navbar = builder.navbar([ login ]);
@@ -1065,9 +1164,57 @@ function landing(request, response) {
 			buildResponse(response, page);
 			
 		});
+		
 	});
+	
+}
+
+function search(request, response, navbar, signedIn){
+	
+	var queryText =  "SELECT * FROM Events ORDER BY date(time) DESC";
+	var params = [];
+	var filter = {
+		"by" : "",
+		"value" : ""
+	};
+	
+	if(request.query.type){
+		 queryText =  "SELECT * FROM Events WHERE type = ? ORDER BY date(time) DESC";
+		 params = [request.query.type];
+		 filter = {
+			"by" : "type", 
+			"value" : request.query.type
+		};
+	}
+	
+	collect(
+		queryText,
+		params, 
+		function(rawEvent){
 		
+			return {
+				"name" : rawEvent.name,
+				"id" : rawEvent.event_id,
+				"location" : rawEvent.location,
+				"time" : rawEvent.time,
+				"type" : rawEvent.type,
+				"organiser" : rawEvent.organiser,
+				"popularity": rawEvent.popularity,
+				"hasLiked" : false
+			};
+		}, 
+		function(events){
 		
+			var eventsTable = builder.eventsTable(events, "Results", signedIn);
+			var search = builder.search(filter);
+
+			var head = builder.head("Search");
+			var body = builder.body(navbar, search + eventsTable);
+			var page = builder.page(head, body);
+
+			buildResponse(response, page);
+		}
+	);
 		
 }
 
@@ -1307,6 +1454,7 @@ app.get('/CS2410/coursework/profile', get_profile);
 app.get('/CS2410/coursework/organise', get_organise);
 app.get('/CS2410/coursework/event', get_event);
 app.get('/CS2410/coursework/events', get_events);
+app.get('/CS2410/coursework/search', get_search);
 
 app.post('/CS2410/coursework', post_landing);
 app.post('/CS2410/coursework/login', post_login);
