@@ -136,8 +136,8 @@ function eventsTable(events, title, signedIn) {
 			}
 		}
 
-		eventsList += '		<a href="/CS2410/coursework/event?event_id='
-			+ event.id + '"><button class="btn btn-primary btn-sm"  type="button" value="View">View</button></a>';
+		eventsList += '		<a href="/CS2410/coursework/event?event_id=' + event.id
+				+ '"><button class="btn btn-primary btn-sm"  type="button" value="View">View</button></a>';
 
 		eventsList += '		</td>';
 		eventsList += '</tr>';
@@ -208,9 +208,22 @@ function editEvent(eventDetails) {
 	event += '				</div>';
 
 	// Time
-	event += '				<div class="form-group">';
-	event += '					<label for="time">Time:</label> ';
-	event += '					<input type="date" name="time" id="time" class="form-control" value="' + eventDetails.time + '"/>';
+	var time = eventDetails.time.split(" ")[1];
+	var date = eventDetails.time.split(" ")[0];
+
+	event += '				<div class="row">';
+	event += '					<div class="col-sm-6">';
+	event += '						<div class="form-group">';
+	event += '						<label for="date">Date:</label>';
+	event += '						<input type="date" name="date" id="date" class="form-control" value="' + date + '"/>';
+	event += '					</div>';
+	event += '					</div>';
+	event += '					<div class="col-sm-6">';
+	event += '						<div class="form-group">';
+	event += '							<label for="time">Time:</label>';
+	event += '							<input type="time" name="time" id="time" class="form-control" value="' + time + '"/>';
+	event += '						</div>';
+	event += '					</div>';
 	event += '				</div>';
 
 	// Description

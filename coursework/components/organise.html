@@ -36,9 +36,19 @@
 				</div>
 
 				<!-- Time -->
-				<div class="form-group">
-					<label for="time">Time:</label> <input type="date" name="time"
-						id="time" class="form-control" />
+				<div class="row">
+					<div class="col-sm-6">
+						<div class="form-group">
+							<label for="date">Date:</label> <input type="date" name="date"
+								id="date" class="form-control" />
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<div class="form-group">
+							<label for="time">Time:</label> <input type="time" name="time"
+								id="time" class="form-control" />
+						</div>
+					</div>
 				</div>
 
 				<!-- Description -->
@@ -60,9 +70,12 @@
 						<div id="imageContainer" class="panel-body">
 
 							<div class="imageInput col-sm-3">
-								<input type="file" name="picture0" id="picture0" class="form-control" accept=".png,.jpg" onchange="readURL(this)" /> 
-								<img id="preview0" src="No Picture" alt="profile picture" style="width: 100%; height: 100%" />
-								<input hidden type="text" name="pName0" id="pName0" />';
+								<input type="file" name="picture0" id="picture0"
+									class="form-control" accept=".png,.jpg"
+									onchange="readURL(this)" /> <img id="preview0"
+									src="No Picture" alt="profile picture"
+									style="width: 100%; height: 100%" /> <input hidden type="text"
+									name="pName0" id="pName0" />';
 							</div>
 
 						</div>
@@ -147,6 +160,7 @@
 		var description = document.getElementById("description").value;
 		var time = document.getElementById("time").value;
 		var location = document.getElementById("location").value;
+		var date = document.getElementById("date").value;
 
 		if (name == "") {
 			alert("Name must be filled out");
@@ -160,6 +174,11 @@
 
 		if (time == "") {
 			alert("Time must be filled out");
+			return false;
+		}
+		
+		if (date == "") {
+			alert("Date must be filled out");
 			return false;
 		}
 

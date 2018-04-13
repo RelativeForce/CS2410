@@ -367,7 +367,7 @@ function get_events(request, response){
 
 			var navbar = builder.navbar([ home, newEvent, search, profile, logout ]);
 
-			var eventQuery = database.prepare("SELECT * FROM Events WHERE organiser = ?");
+			var eventQuery = database.prepare("SELECT * FROM Events WHERE organiser = ? ORDER BY date(time) DESC");
 
 			var events = [];
 
@@ -682,7 +682,6 @@ function post_event(request, response){
 	// If there is a active session build the nav bar with the user options
 	if (sessions.validSession(sessionToken)) {
 
-		
 		sessions.extend(sessionToken, response);
 		
 		var email = sessions.getEmail(sessionToken);
@@ -717,6 +716,8 @@ function post_event(request, response){
 						function(eventError, count) {
 							eventQuery.finalize();
 							
+							console.log(request.body.date + " " + request.body.time);
+							
 							// If the user has the right to update the event.
 							if(isOrganiser){
 								
@@ -724,7 +725,7 @@ function post_event(request, response){
 									"name" : request.body.name,
 									"id" : request.body.event_id,
 									"location" : request.body.location,
-									"time" : request.body.time,
+									"time" :  request.body.date + " " + request.body.time,
 									"organiser" : email,
 									"description" : request.body.description,
 									"type" : request.body.type,
@@ -827,7 +828,7 @@ function addEvent(request, email, event_id){
 		"name" : request.body.name,
 		"id" : event_id,
 		"location" : request.body.location,
-		"time" : request.body.time,
+		"time" : request.body.date + " " + request.body.time,
 		"organiser" : email,
 		"description" : request.body.description,
 		"type" : request.body.type,
@@ -973,7 +974,7 @@ function home(request, response, user) {
 				[ newEvent, myEvents, search, profile, logout ] : 
 				[ search, profile, logout ]);
 
-		var eventQuery = database.prepare("SELECT * FROM Events");
+		var eventQuery = database.prepare("SELECT * FROM Events ORDER BY date(time) DESC");
 
 		var events = [];
 
@@ -1029,7 +1030,7 @@ function landing(request, response) {
 	// Construct the landing page
 	buildPage('landing', function(content) {	
 
-		var eventQuery = database.prepare("SELECT * FROM Events");
+		var eventQuery = database.prepare("SELECT * FROM Events ORDER BY date(time) DESC");
 
 		var events = [];
 
