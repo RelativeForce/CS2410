@@ -372,7 +372,7 @@ function get_events(request, response){
 			
 			var queryText = "SELECT * FROM Events WHERE organiser = ? ORDER BY date(time) DESC";
 			
-			collect(
+			dbHelper.collect(
 				queryText, 
 				[email], 
 				function(row){
@@ -821,62 +821,6 @@ function post_event(request, response){
 
 // Misc functions -------------------------------------------------------------
 
-/**
- * 
- * This function performs an specified sanitised SQLite query on the database,
- * then maps the results using an anonymous function and stores those mappings
- * in a collection which is then passed to the onComplete function.
- * 
- * @param queryText
- *            An SQLite query on the Events table that will return a list of
- *            events,
- * @param params
- *            An array of parameters for the SQLite query text which should be
- *            in the sanitised form.
- * @param mapper
- *            A function that takes a row of the results of the query as its
- *            only paramerter and returns a object that will added to the
- *            collection passed to the onComplete function.
- * @param onComplete
- *            The function that will be called once all the results from the
- *            query are read and their mappings are stored.
- * @returns undefined
- */
-function collect(queryText, params, mapper, onComplete){
-	
-	// Convert the query text into a sanitised SQLite query
-	var query = database.prepare(queryText);
-
-	// The collection of all the row mappings.
-	var collection = [];
-	
-	query.each(params, function(err, row) {
-		
-		// If there was an error throw it.
-		if(err){
-			throw err;
-		}
-		
-		// The object that the row mapped to.
-		var mapped = mapper(row);
-		
-		// Store the mapped value in the collection.
-		collection.push(mapped);
-		
-	},function(err, count){
-		
-		query.finalize();
-		
-		if(err){
-			throw err;
-		}
-		
-		// Perform the on complete function on the collection.
-		onComplete(collection);
-		
-	});
-}
-
 function buildResponse(response, page){
 	
 	response.writeHead(200, {
@@ -1090,7 +1034,7 @@ function home(request, response, user) {
 
 			var queryText = "SELECT * FROM Events ORDER BY date(time) DESC";
 		
-			collect(
+			dbHelper.collect(
 				queryText, 
 				[], 
 				function(row){
@@ -1150,7 +1094,7 @@ function landing(request, response) {
 
 		var queryText = "SELECT * FROM Events ORDER BY date(time) DESC";
 		
-		collect(queryText, [], function(rawEvent){
+		dbHelper.collect(queryText, [], function(rawEvent){
 			
 			return {
 				"name" : rawEvent.name,
@@ -1200,7 +1144,7 @@ function search(request, response, navbar, signedIn){
 		};
 	}
 	
-	collect(
+	dbHelper.collect(
 		queryText,
 		params, 
 		function(rawEvent){

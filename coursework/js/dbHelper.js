@@ -87,34 +87,64 @@ function pictures(database){
 }
 
 /**
- * Perfroms a specifed action on each ro retunred from the specifed database
- * query.
  * 
- * @param database
- *            The database that the query will be performed on.
- * @param query
- *            The query to be performed.
- * @param action
- *            The function that should take the row as a parameter that will be
- *            performed on each row.
+ * This function performs an specified sanitised SQLite query on the database,
+ * then maps the results using an anonymous function and stores those mappings
+ * in a collection which is then passed to the onComplete function.
+ * 
+ * @param queryText
+ *            An SQLite query on the Events table that will return a list of
+ *            events,
+ * @param params
+ *            An array of parameters for the SQLite query text which should be
+ *            in the sanitised form.
+ * @param mapper
+ *            A function that takes a row of the results of the query as its
+ *            only paramerter and returns a object that will added to the
+ *            collection passed to the onComplete function.
+ * @param onComplete
+ *            The function that will be called once all the results from the
+ *            query are read and their mappings are stored.
  * @returns undefined
  */
-function forEach(database, query, action){
+function collect(queryText, params, mapper, onComplete){
 	
-	database.serialize(() => {
-		database.each(query, function(err, row){
-			if (err) {
-				throw err;
-			}
-			action(row);
-		});
+	// Convert the query text into a sanitised SQLite query
+	var query = database.prepare(queryText);
+
+	// The collection of all the row mappings.
+	var collection = [];
+	
+	query.each(params, function(err, row) {
+		
+		// If there was an error throw it.
+		if(err){
+			throw err;
+		}
+		
+		// The object that the row mapped to.
+		var mapped = mapper(row);
+		
+		// Store the mapped value in the collection.
+		collection.push(mapped);
+		
+	},function(err, count){
+		
+		query.finalize();
+		
+		if(err){
+			throw err;
+		}
+		
+		// Perform the on complete function on the collection.
+		onComplete(collection);
+		
 	});
-	
 }
 
 module.exports = {
-	forEach : function(database, query, callback) {
-		return forEach(database, query, callback);
+	collect : function(queryText, params, mapper, onComplete) {
+		return collect(queryText, params, mapper, onComplete);
 	},
 	users : function(database){
 		return users(database);
