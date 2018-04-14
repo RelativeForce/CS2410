@@ -10,19 +10,13 @@ const fs = require('fs');
 const bodyParser = require('body-parser');
 const fileUpload = require('express-fileupload');
 const cookieParser = require('cookie-parser');
-const sqlite3 = require('sqlite3').verbose();
 
 // My modules
 const MD5 = require('./js/MD5');
-const dbHelper = require('./js/dbHelper');
+const db = require('./js/dbHelper');
 const builder = require('./js/pageBuilder');
 const sessions = require('./js/sessionHelper');
 const cookieName = sessions.cookieName;
-
-/**
- * Holds the connection to the SQLite database.
- */
-var database;
 
 // GET handlers ---------------------------------------------------------------
 
@@ -49,45 +43,50 @@ function get_organise(request, response) {
 		sessions.extend(sessionToken, response);
 		
 		var email = sessions.getEmail(sessionToken);
-		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 
-		query.each(email, function(err, row) {
+		dbHeleper.each(
+			"SELECT * FROM Users WHERE email = ?", 
+			[email], 
+			function(row) {
 
-			// If the user is not an organiser redirect them to the home page.
-			if (row.organiser !== 'true') {
-				response.redirect('/CS2410/coursework');
-			} else {
+				// If the user is not an organiser redirect them to the home page.
+				if (row.organiser !== 'true') {
+					response.redirect('/CS2410/coursework');
+				} else {
 				
-				// Construct the organiser home page
-				buildPage('organise', function(content) {
+					// Construct the organiser home page
+					buildPage(
+						'organise', 
+						function(content) {
 
-					// The elements of the organise page.
-					var home = builder.navbarLink("/CS2410/coursework", "Home");
-					var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
-					var profile = builder.navbarLink("/CS2410/coursework/profile?email=" + email,"My Profile");
-					var search = builder.navbarLink("/CS2410/coursework/search","Search Events");
-					var myEvents = builder.navbarLink("/CS2410/coursework/events","My Events");
-					var navbar = builder.navbar([ home, profile, myEvents, search, logout ]);
-					var head = builder.head("Aston Events");
-					var body = builder.body(navbar, content);
-					
-					// The string representation of the page as HTML
-					var page = builder.page(head, body);
+							// The elements of the organise page.
+							var home = builder.navbarLink("/CS2410/coursework", "Home");
+							var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
+							var profile = builder.navbarLink("/CS2410/coursework/profile?email=" + email,"My Profile");
+							var search = builder.navbarLink("/CS2410/coursework/search","Search Events");
+							var myEvents = builder.navbarLink("/CS2410/coursework/events","My Events");
+							var navbar = builder.navbar([ home, profile, myEvents, search, logout ]);
+							var head = builder.head("Aston Events");
+							var body = builder.body(navbar, content);
+						
+							// The string representation of the page as HTML
+							var page = builder.page(head, body);
+		
+							buildResponse(response, page);
+						}
+					);
 
-					buildResponse(response, page);
+				}
 
-				});
-
+			}, 
+			function(count) {
+	
+				// If there is no user with that email.
+				if (count == 0) {
+					response.redirect('/CS2410/coursework');
+				}
 			}
-
-		}, function(err, count) {
-			query.finalize();
-
-			// If there is no user with that email.
-			if (count == 0) {
-				response.redirect('/CS2410/coursework');
-			}
-		});
+		);
 
 	} else {
 		response.redirect('/CS2410/coursework');
@@ -111,53 +110,55 @@ function get_profile(request, response) {
 	if(request.query.email){
 	
 		var email = request.query.email;
-		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 
-		query.each(email, function(err, row) {
+		db.each(
+			"SELECT * FROM Users WHERE email = ?", 
+			[email], 
+			function(row) {
 				
-			// Check for the session cookie and wherther it is active.
-			var sessionToken = request.cookies[cookieName];
+				// Check for the session cookie and wherther it is active.
+				var sessionToken = request.cookies[cookieName];
+	
+				if (sessions.validSession(sessionToken)) {
+					sessions.extend(sessionToken, response);
+					
+					var home = builder.navbarLink("/CS2410/coursework", "Home");
+					var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
+					var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
+					var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
+					var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
+					var home = builder.navbarLink("/CS2410/coursework", "Home");
+					
+					var navbar = builder.navbar(
+						(row.organiser === 'true') ? 
+						[ home, newEvent, myEvents, search, logout ] : 
+						[ home, search, logout ]
+					);
+					
+					// If the current user owns the profile allow them to edit it.
+					profile(request, response, row, "", sessions.getEmail(sessionToken) === email, navbar);
+					
+				}else{
+					
+					var login = builder.navbarLink("/CS2410/coursework/login", "Login");
+					var home = builder.navbarLink("/CS2410/coursework", "Home");
+					
+					var navbar = builder.navbar(
+						[ home, login ]
+					);
+					
+					profile(request, response, row, "", false, navbar);
+				}
+
+			}, 
+			function(count) {
 			
-
-			if (sessions.validSession(sessionToken)) {
-				sessions.extend(sessionToken, response);
-				
-				var home = builder.navbarLink("/CS2410/coursework", "Home");
-				var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
-				var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
-				var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
-				var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
-				var home = builder.navbarLink("/CS2410/coursework", "Home");
-				
-				var navbar = builder.navbar(
-					(row.organiser === 'true') ? 
-					[ home, newEvent, myEvents, search, logout ] : 
-					[ home, search, logout ]
-				);
-				
-				// If the current user owns the profile allow them to edit it.
-				profile(request, response, row, "", sessions.getEmail(sessionToken) === email, navbar);
-				
-			}else{
-				
-				var login = builder.navbarLink("/CS2410/coursework/login", "Login");
-				var home = builder.navbarLink("/CS2410/coursework", "Home");
-				
-				var navbar = builder.navbar(
-					[ home, login ]
-				);
-				
-				profile(request, response, row, "", false, navbar);
+				// If there is no user with that email redirect to the landing page.
+				if (count == 0) {
+					response.redirect('/CS2410/coursework');
+				}
 			}
-
-		}, function(err, count) {
-			query.finalize();
-			
-			// If there is no user with that email redirect to the landing page.
-			if (count == 0) {
-				response.redirect('/CS2410/coursework');
-			}
-		});
+		);
 
 	} else {
 		// No valid session redirect the user to the home screen.
@@ -187,22 +188,26 @@ function get_landing(request, response) {
 		sessions.extend(sessionToken, response);
 		
 		var email = sessions.getEmail(sessionToken);
-		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 
-		query.each([email], function(error, user) {
+		db.each(
+			"SELECT * FROM Users WHERE email = ?", 
+			[email], 
+			function(user) {
 			
-			// If there is a row send the home page of that user.
-			home(request, response, user);
+				// If there is a row send the home page of that user.
+				home(request, response, user);
 
-		}, function(err, count) {
-			query.finalize();
+			}, 
+			function(count) {
 
-			// If there is no user with that email show the landing
-			// page.
-			if (count == 0) {
-				landing(request, response);
+	
+				// If there is no user with that email show the landing
+				// page.
+				if (count == 0) {
+					landing(request, response);
+				}
 			}
-		});
+		);
 
 	} else {
 		
@@ -255,82 +260,84 @@ function get_event(request, response){
 	if(request.query.event_id){
 		
 		var event_id = request.query.event_id;
-		var eventQuery = database.prepare("SELECT * FROM Events WHERE event_id = ?");
 
-		eventQuery.each(event_id, function(error, eventDetails) {
-			
-				var pictureQuery = database.prepare("SELECT * FROM Event_Pictures WHERE event_id = ?");
-				var pictures = [];
+		db.each(
+			"SELECT * FROM Events WHERE event_id = ?",
+			[event_id], 
+			function(eventDetails) {
 
-				pictureQuery.each(event_id, function(error, pictureEntry) {
+				db.collect(
+					"SELECT * FROM Event_Pictures WHERE event_id = ?", 
+					[event_id], 
+					function(pictureEntry) {
+						return pictureEntry.picture;
+					}, 
+					function(pictures) {
 					
-					pictures.push(pictureEntry.picture);
-		
-				}, function(err, pictureCount) {
+						var event = {
+							"event_id" : eventDetails.event_id,
+							"name" : eventDetails.name,
+							"description" : eventDetails.description,
+							"organiser" : eventDetails.organiser,
+							"type" : eventDetails.type,
+							"time" : eventDetails.time,
+							"location" : eventDetails.location,
+							"pictures" : pictures
+						};
 					
-					pictureQuery.finalize();
-					
-					var event = {
-						"event_id" : eventDetails.event_id,
-						"name" : eventDetails.name,
-						"description" : eventDetails.description,
-						"organiser" : eventDetails.organiser,
-						"type" : eventDetails.type,
-						"time" : eventDetails.time,
-						"location" : eventDetails.location,
-						"pictures" : pictures
-					};
-					
-					// Check for the session cookie and wherther it is active.
-					var sessionToken = request.cookies[cookieName];
-					
-					// If there is a active session display the event as
-					// editable
-					if (sessions.validSession(sessionToken)) {
-					
-						sessions.extend(sessionToken, response);
+						// Check for the session cookie and wherther it is active.
+						var sessionToken = request.cookies[cookieName];
 						
-						var email = sessions.getEmail(sessionToken);
-						var query = database.prepare("SELECT * FROM Users WHERE email = ?");
-
-						query.each(email, function(error, user) {
-							
-							
-							var isOrganiser = user.organiser === "true";
-							
-							var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
-							var profile = builder.navbarLink("/CS2410/coursework/profile?email=" + user.email, "My Profile");
-							var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
-							var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
-							var home = builder.navbarLink("/CS2410/coursework", "Home");
-
-							var navbar = builder.navbar(isOrganiser ? 
-									[ home, newEvent, search, profile, logout ] : 
-									[ home, search, profile, logout ]);
-							
-							
-							// Pass an whether or not the current user is the
-							// event organiser.
-							build_event(response, navbar, event, email, isOrganiser);
-
-						}, function(err, userCount) {
-							query.finalize();
-						});
-					
-					}else{
+						// If there is a active session display the event as
+						// editable
+						if (sessions.validSession(sessionToken)) {
 						
-						var login = builder.navbarLink("/CS2410/coursework/login", "Login");
-						var home = builder.navbarLink("/CS2410/coursework", "Home");
-
-						var navbar = builder.navbar( [ home, login ]);
-						
-						// Pass an false as the user is not signed in.
-						build_event(response, navbar, event, "", false);
-					}
-				});
+							sessions.extend(sessionToken, response);
+							
+							var email = sessions.getEmail(sessionToken);
+	
+							db.each(
+								"SELECT * FROM Users WHERE email = ?", 
+								[email], 
+								function(user) {
 								
-		}, function(err, eventCount) {
-			eventQuery.finalize();
+									var isOrganiser = user.organiser === "true";
+									
+									var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
+									var profile = builder.navbarLink("/CS2410/coursework/profile?email=" + user.email, "My Profile");
+									var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
+									var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
+									var home = builder.navbarLink("/CS2410/coursework", "Home");
+		
+									var navbar = builder.navbar(isOrganiser ? 
+											[ home, newEvent, search, profile, logout ] : 
+											[ home, search, profile, logout ]);
+									
+									
+									// Pass an whether or not the current user is the
+									// event organiser.
+									build_event(response, navbar, event, email, isOrganiser);
+	
+								}, 
+								function(userCount) {
+									// Do nothing
+								}
+							);
+						
+						}else{
+							
+							var login = builder.navbarLink("/CS2410/coursework/login", "Login");
+							var home = builder.navbarLink("/CS2410/coursework", "Home");
+	
+							var navbar = builder.navbar( [ home, login ]);
+							
+							// Pass an false as the user is not signed in.
+							build_event(response, navbar, event, "", false);
+						}
+					}
+				);
+								
+		}, function(eventCount) {
 
 			// If there is no event with that id show the landing page.
 			if (eventCount == 0) {
@@ -355,80 +362,75 @@ function get_events(request, response){
 		sessions.extend(sessionToken, response);
 		
 		var email = sessions.getEmail(sessionToken);
-		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 
-		query.each(
-			email, 
-			function(error, user) {
+		db.each(
+			"SELECT * FROM Users WHERE email = ?",
+			[email], 
+			function(user) {
 			
-			var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
-			var home = builder.navbarLink("/CS2410/coursework", "Home");
-			var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
-			var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
-			var profile = builder.navbarLink("/CS2410/coursework/profile?email=" + email, "My Profile");
-
-			var navbar = builder.navbar([ home, newEvent, search, profile, logout ]);
-
-			
-			var queryText = "SELECT * FROM Events WHERE organiser = ? ORDER BY date(time) DESC";
-			
-			dbHelper.collect(
-				queryText, 
-				[email], 
-				function(row){
-				
-					return {
-						"name" : row.name,
-						"id" : row.event_id,
-						"type" : row.type,
-						"location" : row.location,
-						"time" : row.time,
-						"organiser" : row.organiser,
-						"popularity": row.popularity,
-						"hasLiked" : false
-					};
-				}, 
-				function(events){
-				
-					var interestQuery = database.prepare("SELECT * FROM Interest WHERE student_email = ?");
-
-					interestQuery.each(
-						email, 
-						function(interestError, row) {
-
-							for(var index = 0; index < events.length; index++){	
-								var current = events[index];
-						
-								if(row.event_id === current.id){
-									current.hasLiked = true;
-								}	
-							}
-
-						}, 
-						function(interestError, interestCount) {
-							interestQuery.finalize();
+				var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
+				var home = builder.navbarLink("/CS2410/coursework", "Home");
+				var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
+				var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
+				var profile = builder.navbarLink("/CS2410/coursework/profile?email=" + email, "My Profile");
+	
+				var navbar = builder.navbar([ home, newEvent, search, profile, logout ]);
+	
+				db.collect(
+					"SELECT * FROM Events WHERE organiser = ? ORDER BY date(time) DESC", 
+					[email], 
+					function(row){
+					
+						return {
+							"name" : row.name,
+							"id" : row.event_id,
+							"type" : row.type,
+							"location" : row.location,
+							"time" : row.time,
+							"organiser" : row.organiser,
+							"popularity": row.popularity,
+							"hasLiked" : false
+						};
+					}, 
+					function(events){
+	
+						db.each(
+							"SELECT * FROM Interest WHERE student_email = ?",
+							[email], 
+							function(row) {
+	
+								for(var index = 0; index < events.length; index++){	
+									var current = events[index];
 							
-							var eventsTable = builder.eventsTable(events, "My Events", true);
+									if(row.event_id === current.id){
+										current.hasLiked = true;
+									}	
+								}
+	
+							}, 
+							function(interestCount) {
+								
+								var eventsTable = builder.eventsTable(events, "My Events", true);
+	
+								var head = builder.head("Aston Events");
+								var body = builder.body(navbar, eventsTable);
+								var page = builder.page(head, body);
+	
+								buildResponse(response, page);
+							}
+						);
+					}
+				);
 
-							var head = builder.head("Aston Events");
-							var body = builder.body(navbar, eventsTable);
-							var page = builder.page(head, body);
-
-							buildResponse(response, page);
-						}
-					);
-				}
-			);
-
-		}, function(err, count) {
-			query.finalize();
+			}, 
+			function(count) {
 			
-			// If there is no user with that email show the landing
-			// page.
-			if (count == 0) {
-				response.redirect('/CS2410/coursework');
+				// If there is no user with that email show the landing page.
+				if (count == 0) {
+					response.redirect('/CS2410/coursework');
+				}
 			}
-		});
+		);
 
 	} else {
 		response.redirect('/CS2410/coursework');
@@ -451,11 +453,11 @@ function get_search(request, response){
 				sessions.extend(sessionToken, response);
 			
 				var email = sessions.getEmail(sessionToken);
-				var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 	
-				query.each(
-					email, 
-					function(error, user) {
+				db.each(
+					"SELECT * FROM Users WHERE email = ?",
+					[email], 
+					function(user) {
 
 						var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
 						var profile = builder.navbarLink("/CS2410/coursework/profile?email=" + user.email, "My Profile");
@@ -464,14 +466,14 @@ function get_search(request, response){
 						var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
 
 						var navbar = builder.navbar((user.organiser === 'true') ? 
-								[ home, newEvent, myEvents, profile, logout ] : 
+							[ home, newEvent, myEvents, profile, logout ] : 
 							[ home, profile, logout ]);
 					
 						search(request, response, navbar, true);
 					
 					}, 
-					function(err, count) {
-						query.finalize();
+					function(count) {
+						
 					}
 				);
 
@@ -489,8 +491,7 @@ function get_search(request, response){
 		}
 	);
 }
-
-
+s
 // POST handlers --------------------------------------------------------------
 
 /**
@@ -545,24 +546,26 @@ function post_landing(request, response){
 		sessions.extend(sessionToken, response);
 		
 		var email = sessions.getEmail(sessionToken);
-		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 
-		query.each(email, function(error, user) {
+		db.each(
+			"SELECT * FROM Users WHERE email = ?",
+			[email], 
+			function(user) {
 			
-			updateInterest(request, email);
+				updateInterest(request, email);
+				
+				// If there is a row send the home page of that user.
+				home(request, response, user);
+
+			}, 
+			function(count) {
 			
-			// If there is a row send the home page of that user.
-			home(request, response, user);
-
-		}, function(err, count) {
-			query.finalize();
-
-			// If there is no user with that email show the landing
-			// page.
-			if (count == 0) {
-				landing(request, response);
+				// If there is no user with that email show the landing page.
+				if (count == 0) {
+					landing(request, response);
+				}
 			}
-		});
+		);
 
 	} else {
 		
@@ -596,25 +599,24 @@ function post_organise(request, response) {
 		sessions.extend(sessionToken, response);
 		
 		var email = sessions.getEmail(sessionToken);
-		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 
-		query.each(
-			email,
-			function(err, user) {
+		db.each(
+			"SELECT * FROM Users WHERE email = ?",
+			[email],
+			function(user) {
 
 				// If the user is not a organiser.
 				if (user.organiser !== 'true') {
 					response.redirect('/CS2410/coursework');
 				} else {
 
-					var eventQuery = database.prepare("SELECT * FROM Events");
-
-					eventQuery.each(
-						function(err, row) {
+					db.each(
+						"SELECT * FROM Events",
+						[],
+						function(row) {
 							// Count the results
 						},
-						function(err, count) {
-							eventQuery.finalize();
+						function(count) {
 							
 							// TEMP ID GENTERATION!!!!!
 							var event_id = count;
@@ -628,8 +630,7 @@ function post_organise(request, response) {
 					);
 				}
 			}, 
-			function(err, count) {
-				query.finalize();
+			function(count) {
 
 				// If there is no user with that email.
 				if (count == 0) {
@@ -668,57 +669,60 @@ function post_profile(request, response) {
 		sessions.extend(sessionToken, response);
 		
 		var email = sessions.getEmail(sessionToken);
-		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 
 		// Iterate over the user's details
-		query.each(email,function(err, row) {
+		db.each(
+			"SELECT * FROM Users WHERE email = ?"
+			[email],
+			function(row) {
 
-			// Change the profile picture
-			var newPicture = changePicure(request, response, row);
+				// Change the profile picture
+				var newPicture = changePicure(request, response, row);
+	
+				// Updated the password if there is a new password specified
+				var password = row.password;
+				if (request.body.password !== "") {
+					password = MD5.hash(request.body.password + row.salt);
+				}
+	
+				// The updated user details
+				var newRow = {
+					"email" : row.email,
+					"name" : (row.name !== request.body.name) ? request.body.name : row.name,
+					"organiser" : request.body.organiser ? 'true' : 'false',
+					"picture" : (newPicture !== row.picture) ? newPicture : row.picture,
+					"password" : password,
+					"telephone" : (row.telephone !== request.body.telephone) ? request.body.telephone : row.telephone
+				};
+	
+				// Update the user details in the database
+				db.run(
+					"UPDATE Users SET name = ?, organiser = ?, picture = ?, password = ?, telephone = ?  WHERE email = ?;",
+					[newRow.name, newRow.organiser, newRow.picture, newRow.password,	newRow.telephone, newRow.email]
+				);
 
-			// Updated the password if there is a new password specified
-			var password = row.password;
-			if (request.body.password !== "") {
-				password = MD5.hash(request.body.password + row.salt);
-			}
-
-			// The updated user details
-			var newRow = {
-				"email" : row.email,
-				"name" : (row.name !== request.body.name) ? request.body.name : row.name,
-				"organiser" : request.body.organiser ? 'true' : 'false',
-				"picture" : (newPicture !== row.picture) ? newPicture : row.picture,
-				"password" : password,
-				"telephone" : (row.telephone !== request.body.telephone) ? request.body.telephone : row.telephone
-			};
-
-			// Update the user details in the database
-			var update = database.prepare("UPDATE Users SET name = ?, organiser = ?, picture = ?, password = ?, telephone = ?  WHERE email = ?;");
-			update.run([newRow.name, newRow.organiser, newRow.picture, newRow.password,	newRow.telephone, newRow.email]);
-			update.finalize();
-
-			// Build a new info box
-			var info = builder.response("Changes Updated");
-			
-			var home = builder.navbarLink("/CS2410/coursework", "Home");
-			var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
-			var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
-			var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
-			var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
-			var home = builder.navbarLink("/CS2410/coursework", "Home");
-			
-			var navbar = builder.navbar(
-				(newRow.organiser === 'true') ? 
-				[ home, newEvent, myEvents, search, logout ] : 
-				[ home, search, logout ]
-			);
-
-			// Build the profile page with the info box at the top.
-			profile(request, response, newRow, info, true, navbar);
+	
+				// Build a new info box
+				var info = builder.response("Changes Updated");
+				
+				var home = builder.navbarLink("/CS2410/coursework", "Home");
+				var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
+				var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
+				var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
+				var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
+				var home = builder.navbarLink("/CS2410/coursework", "Home");
+				
+				var navbar = builder.navbar(
+					(newRow.organiser === 'true') ? 
+					[ home, newEvent, myEvents, search, logout ] : 
+					[ home, search, logout ]
+				);
+	
+				// Build the profile page with the info box at the top.
+				profile(request, response, newRow, info, true, navbar);
 
 		}, 
-		function(err, count) {
-			query.finalize();
+		function(count) {
 			
 			// If the user email was invalid.
 			if(count == 0){
@@ -744,25 +748,25 @@ function post_event(request, response){
 		sessions.extend(sessionToken, response);
 		
 		var email = sessions.getEmail(sessionToken);
-		var query = database.prepare("SELECT * FROM Users WHERE email = ?");
 
-		query.each(
-			email,
-			function(userEror, user) {
+		db.each(
+			"SELECT * FROM Users WHERE email = ?",
+			[email],
+			function(user) {
 
 				// If the user is not a organiser.
 				if (user.organiser !== 'true') {
 					response.redirect('/CS2410/coursework');
 				} else {
 
-					var eventQuery = database.prepare("SELECT * FROM Events WHERE event_id = ?");
 					var isOrganiser = false;
 					var event_id = request.body.event_id;
 					var popularity = 0;
 					
-					eventQuery.each(
-						event_id, 
-						function(err, row) {
+					db.each(
+						"SELECT * FROM Events WHERE event_id = ?",
+						[event_id], 
+						function(row) {
 							
 							// If the event is owned by the current user.
 							if(row.organiser === email){
@@ -772,8 +776,7 @@ function post_event(request, response){
 							popularity = row.popularity;
 							
 						},
-						function(eventError, count) {
-							eventQuery.finalize();
+						function(count) {
 							
 							console.log(request.body.date + " " + request.body.time);
 							
@@ -803,8 +806,7 @@ function post_event(request, response){
 					);
 				}
 			}, 
-			function(err, count) {
-				query.finalize();
+			function(count) {
 
 				// If there is no user with that email.
 				if (count == 0) {
@@ -840,25 +842,29 @@ function updateInterest(request, email){
 		
 		if(type === "like"){
 			
-			var addInterest = database.prepare("INSERT INTO Interest(event_id, student_email) VALUES (?, ?);");
-			addInterest.run([event_id, email]);
-			addInterest.finalize();
+			db.run(
+				"INSERT INTO Interest(event_id, student_email) VALUES (?, ?);", 
+				[event_id, email]
+			);
 			
-			var increasePopularity = database.prepare("UPDATE Events SET popularity = popularity + 1  WHERE event_id = ?;");
-			increasePopularity.run([event_id]);
-			increasePopularity.finalize();
-			
+			db.run(
+				"UPDATE Events SET popularity = popularity + 1  WHERE event_id = ?;",
+				[event_id]
+			);
+
 			console.log("Interest update: " + email + " liked event " + event_id);
 			
 		}else if(type === "unlike"){
 			
-			var removeInterest = database.prepare("DELETE FROM Interest WHERE event_id = ? AND student_email = ?;");
-			removeInterest.run([event_id, email]);
-			removeInterest.finalize();
+			db.run(
+				"DELETE FROM Interest WHERE event_id = ? AND student_email = ?;",
+				[event_id, email]
+			);
 			
-			var decreasePopularity = database.prepare("UPDATE Events SET popularity = popularity - 1  WHERE event_id = ?;");
-			decreasePopularity.run([event_id]);
-			decreasePopularity.finalize();
+			db.run(
+				"UPDATE Events SET popularity = popularity - 1  WHERE event_id = ?;", 
+				[event_id]
+			);
 			
 			console.log("Interest update: " + email + " unliked event " + event_id);
 		}
@@ -894,9 +900,10 @@ function addEvent(request, email, event_id){
 		"popularity" : 0
 	};
 
-	var add = database.prepare("INSERT INTO Events (event_id, name, description, organiser, type, time, location, popularity) VALUES (?, ?, ?, ?, ?, ?, ?, ?);");
-	add.run([event.id, event.name, event.description, event.organiser, event.type, event.time, event.location, event.popularity]);
-	add.finalize();
+	db.run(
+		"INSERT INTO Events (event_id, name, description, organiser, type, time, location, popularity) VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
+		[event.id, event.name, event.description, event.organiser, event.type, event.time, event.location, event.popularity]
+	);
 	
 	console.log("New Event: " + event.name);
 	
@@ -904,9 +911,10 @@ function addEvent(request, email, event_id){
 
 function updateEvent(event){
 	
-	var update = database.prepare("UPDATE Events SET name = ?, description = ?, organiser = ?, type = ?, time = ?, location = ?, popularity = ? WHERE event_id = ?;");
-	update.run([ event.name, event.description, event.organiser, event.type, event.time, event.location, event.popularity, event.id]);
-	update.finalize();
+	db.run(
+		"UPDATE Events SET name = ?, description = ?, organiser = ?, type = ?, time = ?, location = ?, popularity = ? WHERE event_id = ?;", 
+		[event.name, event.description, event.organiser, event.type, event.time, event.location, event.popularity, event.id]
+	);
 		
 	console.log("Updated Event: " + event.name);
 
@@ -937,56 +945,56 @@ function changeEventPictures(request, event_id){
 function swapPicture(event_id, files, specificFile, pictureNum){
 	
 	var picture = 'none';
-	
-	var query = database.prepare("SELECT * FROM Event_Pictures WHERE event_id = ?");
 
 	// Iterate over all the pictures with the specifed event id
-	query.each(event_id, function(err, row) {
+	db.each(
+		"SELECT * FROM Event_Pictures WHERE event_id = ?", 
+		[event_id], 
+		function(row) {
 		
-		// If the current name is the name of the first image regardless of file
-		// extension.
-		if(row.picture.split('.')[0] === ('e_' + event_id + '_' + pictureNum)){
-			picture = row.picture;
-		}
-
+			// If the current name is the name of the first image regardless of file
+			// extension.
+			if(row.picture.split('.')[0] === ('e_' + event_id + '_' + pictureNum)){
+				picture = row.picture;
+			}
+		}, 
+		function(count) {
 		
-	}, function(err, count) {
-		query.finalize();
+			if(count != 0 && picture !== 'none' ){
+				deletePicture(picture);
+			}
 		
-		if(count != 0 && picture !== 'none' ){
-			deletePicture(picture);
-		}
-		
-		// For all of the files the user wants to input
-		for(var f in files){
-			
-			var file = files[f];	
-			var filename = file.name;
-			
-			// If the current file is the file for the current slot.
-			if(filename === specificFile){
+			// For all of the files the user wants to input
+			for(var f in files){
 				
-				var ext = path.extname(filename).toLowerCase();
-				var newFilename = 'e_' + event_id + "_" + pictureNum + ext;
-				var relativePath = './public/uploaded/' + newFilename;
-
-				// If the image is the valid file type
-				if (ext === '.png' || ext === '.jpg') {
-
-					// Move the file
-					file.mv(relativePath, function(err) {
-						if (err) {
-							throw err;
-						}
-					});
+				var file = files[f];	
+				var filename = file.name;
+				
+				// If the current file is the file for the current slot.
+				if(filename === specificFile){
 					
-					// Insert the entry into the database
-					insertPicture(event_id, filename, newFilename);
-					
-				}	
+					var ext = path.extname(filename).toLowerCase();
+					var newFilename = 'e_' + event_id + "_" + pictureNum + ext;
+					var relativePath = './public/uploaded/' + newFilename;
+	
+					// If the image is the valid file type
+					if (ext === '.png' || ext === '.jpg') {
+	
+						// Move the file
+						file.mv(relativePath, function(err) {
+							if (err) {
+								throw err;
+							}
+						});
+						
+						// Insert the entry into the database
+						insertPicture(event_id, filename, newFilename);
+						
+					}	
+				}
 			}
 		}
-	});
+	);
 	
 }
 
@@ -997,9 +1005,10 @@ function deletePicture(picture){
 		fs.unlinkSync(toDelete);
 	}
 	
-	var removeOldPicture = database.prepare("DELETE FROM Event_Pictures WHERE picture = ?;");
-	removeOldPicture.run([picture]);
-	removeOldPicture.finalize();
+	db.run(
+		"DELETE FROM Event_Pictures WHERE picture = ?;", 
+		[picture] 
+	);
 	
 	console.log('Deleted: ' + picture);
 	
@@ -1007,9 +1016,10 @@ function deletePicture(picture){
 
 function insertPicture(event_id, filename, newFilename){
 	
-	var addPicture = database.prepare("INSERT INTO Event_Pictures(picture, event_id) VALUES (?, ?);");
-	addPicture.run([newFilename, event_id]);
-	addPicture.finalize();
+	db.run(
+		"INSERT INTO Event_Pictures(picture, event_id) VALUES (?, ?);",
+		[newFilename, event_id]
+	);
 	
 	console.log('Uploaded: ' + filename + ' -> ' + newFilename);
 	
@@ -1034,7 +1044,7 @@ function home(request, response, user) {
 
 			var queryText = "SELECT * FROM Events ORDER BY date(time) DESC";
 		
-			dbHelper.collect(
+			db.collect(
 				queryText, 
 				[], 
 				function(row){
@@ -1052,12 +1062,11 @@ function home(request, response, user) {
 
 				}, 
 				function(events){
-			
-					var interestQuery = database.prepare("SELECT * FROM Interest WHERE student_email = ?");
 
-					interestQuery.each(
-						user.email, 
-						function(interestError, row) {
+					db.each(
+						"SELECT * FROM Interest WHERE student_email = ?",
+						[user.email], 
+						function(row) {
 
 							for(var index = 0; index < events.length; index++){	
 								var current = events[index];
@@ -1068,8 +1077,7 @@ function home(request, response, user) {
 							}
 
 						}, 
-						function(interestError, interestCount) {
-							interestQuery.finalize();
+						function(interestCount) {
 
 							var eventsTable = builder.eventsTable(events, "All Events", true);
 
@@ -1094,7 +1102,7 @@ function landing(request, response) {
 
 		var queryText = "SELECT * FROM Events ORDER BY date(time) DESC";
 		
-		dbHelper.collect(queryText, [], function(rawEvent){
+		db.collect(queryText, [], function(rawEvent){
 			
 			return {
 				"name" : rawEvent.name,
@@ -1144,7 +1152,7 @@ function search(request, response, navbar, signedIn){
 		};
 	}
 	
-	dbHelper.collect(
+	db.collect(
 		queryText,
 		params, 
 		function(rawEvent){
@@ -1162,14 +1170,21 @@ function search(request, response, navbar, signedIn){
 		}, 
 		function(events){
 		
-			var eventsTable = builder.eventsTable(events, "Results", signedIn);
-			var search = builder.search(filter);
+			buildPage(
+				'search', 
+				function(content) {
+			
+					var eventsTable = builder.eventsTable(events, "Results", signedIn);
+					var search = builder.search(filter);
 
-			var head = builder.head("Search");
-			var body = builder.body(navbar, search + eventsTable);
-			var page = builder.page(head, body);
+					var head = builder.head("Search");
+					var body = builder.body(navbar, content + search + eventsTable);
+					var page = builder.page(head, body);
 
-			buildResponse(response, page);
+					buildResponse(response, page);
+			
+				}
+			);
 		}
 	);
 		
@@ -1221,24 +1236,7 @@ function startServer() {
 
 	console.log('Listening on port ' + port);
 
-	// Connect to the database.
-	database = new sqlite3.Database(
-		'./db/aston_events.sqlite3',
-		sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
-		function(err) {
-			if (err){
-			console.log(err.message);
-			}
-		}
-	);
-
-	// dbHelper.users(database);
-	// dbHelper.events(database);
-	// dbHelper.interest(database);
-	// dbHelper.pictures(database);
-
-	// Emergancy command
-	// database.run("DROP TABLE Events");
+	db.connect();
 
 }
 
@@ -1248,41 +1246,43 @@ function login(request, response) {
 	var email = encodeHTML(request.body.email);
 	var password = encodeHTML(request.body.password);
 
-	var query = database.prepare("SELECT * FROM Users WHERE email = ?");
+	db.each(
+		"SELECT * FROM Users WHERE email = ?",
+		[email], 
+		function(row) {
 
-	query.each(email, function(err, row) {
-
-		var salted = MD5.hash(password + row.salt);
-
-		if (salted === row.password) {
-
-			var token = sessions.uniqueToken();
-
-			// If the session is added redirct the client.
-			if (sessions.addSession(token, email)) {
-				sessions.extend(token, response);
-				response.redirect('/CS2410/coursework');
+			var salted = MD5.hash(password + row.salt);
+	
+			if (salted === row.password) {
+	
+				var token = sessions.uniqueToken();
+	
+				// If the session is added redirct the client.
+				if (sessions.addSession(token, email)) {
+					sessions.extend(token, response);
+					response.redirect('/CS2410/coursework');
+				} else {
+					// Session alread exists.
+					var error = builder.error("Session exists elsewhere. Please sign out in the other location.");
+					build_login(request, response, error);
+				}
 			} else {
-				// Session alread exists.
-				var error = builder.error("Session exists elsewhere. Please sign out in the other location.");
+	
+				// Invalid password
+				var error = builder.error("Password is incorrect.");
 				build_login(request, response, error);
 			}
-		} else {
 
-			// Invalid password
-			var error = builder.error("Password is incorrect.");
-			build_login(request, response, error);
+		}, 
+		function(count) {
+		
+			// Invalid email
+			if (count == 0) {
+				var error = builder.error("<strong>" + email + "</strong> is not a valid email.");
+				build_login(request, response, error);
+			}
 		}
-
-	}, function(err, count) {
-		query.finalize();
-
-		// Invalid email
-		if (count == 0) {
-			var error = builder.error("<strong>" + email + "</strong> is not a valid email.");
-			build_login(request, response, error);
-		}
-	});
+	);
 
 }
 
@@ -1315,36 +1315,38 @@ function signup(request, response) {
 
 	var saltedPassword = MD5.hash(password + salt);
 
-	var query = database.prepare("SELECT * FROM Users WHERE email = ?");
-
-	query.each(email, function(err, row) {
-		// Count elements
-	},
-	function(err, count) {
-		query.finalize();
-
-		// User does not exist already
-		if (count == 0) {
-
-			var insert = database.prepare("INSERT INTO Users('email', 'name', 'dob', 'organiser' ,'picture','password', 'salt', 'telephone') VALUES (?, ?, ?, ?, ?, ?, ?, ?);");
-			insert.run([ email, name, dob, 'false', picture, saltedPassword, salt, telephone ]);
-			insert.finalize();
-
-			console.log("User created: [" + email + ", " + name + ", " + dob + ", false, " + picture + ", " + saltedPassword + ", " + salt + ", " + telephone + "]");
-
-			var token = sessions.uniqueToken();
-
-			sessions.addSession(token, email);
-			sessions.extend(token, response);
-			response.redirect('/CS2410/coursework');
-
-		} else {
-
-			var error = builder.error("A user with Email: <strong>"+ email+ "</strong> already exists.");
-			build_login(request, response, error);
-
+	db.each(
+		"SELECT * FROM Users WHERE email = ?",
+		[email], 
+		function(row) {
+			// Count elements
+		},
+		function(count) {
+	
+			// User does not exist already
+			if (count == 0) {
+	
+				db.run(
+					"INSERT INTO Users('email', 'name', 'dob', 'organiser' ,'picture','password', 'salt', 'telephone') VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
+					[email, name, dob, 'false', picture, saltedPassword, salt, telephone]
+				);
+	
+				console.log("User created: [" + email + ", " + name + ", " + dob + ", false, " + picture + ", " + saltedPassword + ", " + salt + ", " + telephone + "]");
+	
+				var token = sessions.uniqueToken();
+	
+				sessions.addSession(token, email);
+				sessions.extend(token, response);
+				response.redirect('/CS2410/coursework');
+	
+			} else {
+	
+				var error = builder.error("A user with Email: <strong>"+ email+ "</strong> already exists.");
+				build_login(request, response, error);
+	
+			}
 		}
-	});
+	);
 }
 
 function profile(request, response, user, info, canEdit, navbar) {

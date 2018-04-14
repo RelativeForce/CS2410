@@ -1,7 +1,24 @@
-<form action="/coursework/search" method="GET">
+<div class="dropdown">
+	<button class="btn btn-secondary dropdown-toggle" type="button" id="filter" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" value="Date"></button>
+	<div class="dropdown-menu" aria-labelledby="filter">
+		<button class="dropdown-item" type="button" onclick="changeFilter('date')">Date</button>
+		<button class="dropdown-item" type="button" onclick="changeFilter('popularity')">Popularity</button>
+		<button class="dropdown-item" type="button" onclick="changeFilter('type')">Type</button>
+	</div>
+</div>
+<script>
 
+function changeFilter(newFilter){
+	
+	var filter = document.getElementById("filter");
+	
+	if(newFilter === 'date'){
+		filter.value = 'Date';
+	}else if(newFilter === 'popularity'){
+		filter.value = 'Popularity';
+	}else if(newFilter === 'type'){
+		filter.value = 'Type';
+	}
+}
 
-
-
-
-</form>
+</script>

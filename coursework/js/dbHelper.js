@@ -1,3 +1,8 @@
+const sqlite3 = require('sqlite3').verbose();
+
+// Holds the connection to the SQLite database.
+var database;
+
 /**
  * Creates the 'Users' table.
  * 
@@ -115,47 +120,121 @@ function collect(queryText, params, mapper, onComplete){
 	// The collection of all the row mappings.
 	var collection = [];
 	
-	query.each(params, function(err, row) {
+	query.each(
+		params, 
+		function(err, row) {
 		
-		// If there was an error throw it.
-		if(err){
-			throw err;
+			// If there was an error throw it.
+			if(err){
+				throw err;
+			}
+		
+			// The object that the row mapped to.
+			var mapped = mapper(row);
+		
+			// Store the mapped value in the collection.
+			collection.push(mapped);
+		
+		},function(err, count){
+		
+			query.finalize();
+		
+			if(err){
+				throw err;
+			}
+		
+			// Perform the on complete function on the collection.
+			onComplete(collection);
+		
 		}
+	);
+}
+
+function each(queryText, params, action , onComplete){
+	
+	// Convert the query text into a sanitised SQLite query
+	var query = database.prepare(queryText);
+	
+	query.each(
+		params, 
+		function(err, row) {
 		
-		// The object that the row mapped to.
-		var mapped = mapper(row);
+			// If there was an error throw it.
+			if(err){
+				throw err;
+			}
 		
-		// Store the mapped value in the collection.
-		collection.push(mapped);
+			// Perform the action on the row/
+			action(row);
 		
-	},function(err, count){
+		},
+		function(err, count){
+			query.finalize();
 		
-		query.finalize();
+			if(err){
+				throw err;
+			}
 		
-		if(err){
-			throw err;
+			// Perform the on complete function.
+			onComplete(count);
+		
 		}
-		
-		// Perform the on complete function on the collection.
-		onComplete(collection);
-		
-	});
+	);
+	
+}
+
+function connect(){
+	
+	// Connect to the database.
+	database = new sqlite3.Database(
+		'./db/aston_events.sqlite3',
+		sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
+		function(err) {
+			if (err){
+			console.log(err.message);
+			}
+		}
+	);
+	
+	// dbHelper.users(database);
+	// dbHelper.events(database);
+	// dbHelper.interest(database);
+	// dbHelper.pictures(database);
+
+	// Emergancy command
+	// database.run("DROP TABLE Events");
+	
+}
+
+function run(queryText, params){
+	var query = database.prepare(queryText);
+	query.run(params);
+	query.finalize();
 }
 
 module.exports = {
+	connect : function(){
+		connect();
+	},	
 	collect : function(queryText, params, mapper, onComplete) {
-		return collect(queryText, params, mapper, onComplete);
+		collect(queryText, params, mapper, onComplete);
+	},
+	each : function(queryText, params, action , onComplete){
+		each(queryText, params, action , onComplete);
+	},
+	run : function(queryText, params){
+		run(queryText, params);
 	},
 	users : function(database){
-		return users(database);
+		users(database);
 	},
 	events : function(database){
-		return events(database);
+		events(database);
 	},
 	interest : function(database){
-		return interest(database);
+		interest(database);
 	},
 	pictures : function(database){
-		return pictures(database);
+		pictures(database);
 	}
 };
