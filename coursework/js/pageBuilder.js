@@ -489,6 +489,10 @@ function viewProfileInformation(userDetails) {
 	information += '		<p>' + userDetails.name + '</p>';
 	information += '	</div>';
 	information += '	<div>';
+	information += '		<label>Date of birth:</label>';
+	information += '		<p>' + userDetails.dob + '</p>';
+	information += '	</div>';
+	information += '	<div>';
 	information += '		<label>Telephone:</label> ';
 	information += '		<p>' + userDetails.telephone + '</p>';
 	information += '	</div>';

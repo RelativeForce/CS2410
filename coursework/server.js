@@ -44,7 +44,7 @@ function get_organise(request, response) {
 		
 		var email = sessions.getEmail(sessionToken);
 
-		dbHeleper.each(
+		db.each(
 			"SELECT * FROM Users WHERE email = ?", 
 			[email], 
 			function(row) {
@@ -127,7 +127,6 @@ function get_profile(request, response) {
 					var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
 					var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
 					var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
-					var home = builder.navbarLink("/CS2410/coursework", "Home");
 					
 					var navbar = builder.navbar(
 						(row.organiser === 'true') ? 
@@ -142,9 +141,10 @@ function get_profile(request, response) {
 					
 					var login = builder.navbarLink("/CS2410/coursework/login", "Login");
 					var home = builder.navbarLink("/CS2410/coursework", "Home");
+					var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
 					
 					var navbar = builder.navbar(
-						[ home, login ]
+						[ home, login, search ]
 					);
 					
 					profile(request, response, row, "", false, navbar);
@@ -672,7 +672,7 @@ function post_profile(request, response) {
 
 		// Iterate over the user's details
 		db.each(
-			"SELECT * FROM Users WHERE email = ?"
+			"SELECT * FROM Users WHERE email = ?",
 			[email],
 			function(row) {
 
