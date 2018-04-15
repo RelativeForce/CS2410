@@ -517,6 +517,75 @@ function search(filter){
 	
 	var search = '';
 	
+	search += '	<div class="container">';
+	search += '		<form method="GET" action="/CS2410/coursework/search" onsubmit="return validateFilter()" id="search" name="search">';
+	search += '			<div class="panel panel-default">';
+	search += '				<div class="panel-heading">Filter Search</div>';
+	search += '				<div class="panel-body">';
+	search += '					<div class="row">';
+	search += '						<div class="col-sm-6 pull-left">';
+	search += '							<div class="form-group">';
+	search += '								<label for="minimum">Filter:</label> ';
+	search += '								<select onchange="changeFilter()" class="form-control" id="filter" name="filter">';
+	search += '									<option ' + (filter.by === "date" ? 'selected="selected"' : '') + '>Date</option>';
+	search += '									<option ' + (filter.by === "popularity" ? 'selected="selected"' : '') + '>Popularity</option>';
+	search += '									<option ' + (filter.by === "type" ? 'selected="selected"' : '') + '>Type</option>';
+	search += '								</select>';
+	search += '							</div>';
+	search += '						</div>';
+	search += '						<div class="col=sm-6" id="value">';
+	
+	// Filter params
+	if (filter.by === 'date') {
+
+		search += '		<div class="col-sm-3">';
+		search += '			<div class="form-group">';
+		search += '				<label for="from">From:</label>';
+		search += '				<input class="form-control" type="date" id="from" name="from" ' + ((filter.from !== "") ? ('value="' + filter.from + '"') : '' ) + '/>';
+		search += '			</div>';
+		search += '		</div>';
+		search += '		<div class="col-sm-3 pull-right">';
+		search += '			<div class="form-group">';
+		search += '				<label for="to">To:</label>';
+		search += '				<input class="form-control" type="date" id="to" name="to" ' + ((filter.to !== "") ? ('value="' + filter.to + '"') : '' ) + '/>';
+		search += '			</div>';
+		search += '		</div>';
+
+	} else if (filter.by === 'popularity') {
+		
+		search += '	<div class="col-sm-6 pull-right">';
+		search += '		<div class="form-group">';
+		search += '			<label for="minimum">Minimum:</label> ';
+		search += '			<input class="form-control" type="number" id="minimum" name="minimum" ' + ((filter.minimum !== "") ? ('value="' + filter.minimum + '"') : '' ) + '/>';
+		search += '		</div>';
+		search += '	</div>';
+
+	} else if (filter.by === 'type') {
+		
+		search += '	<div class="col-sm-6 pull-left">';
+		search += '		<div class="form-group">';
+		search += '			<label for="minimum">Type:</label> ';
+		search += '			<select class="form-control" id="type" name="type">';
+		search += '				<option ' + (filter.type === "sport" ? 'selected="selected"' : '') + '>sport</option>';
+		search += '				<option ' + (filter.type === "culture" ? 'selected="selected"' : '') + '>culture</option>';
+		search += '				<option ' + (filter.type === "other" ? 'selected="selected"' : '') + '>other</option>';
+		search += '			</select>';
+		search += '		</div>';
+		search += '	</div>';
+		
+	}
+		
+	search += '						</div>';
+	search += '					</div>';
+	search += '					<div class="row">';
+	search += '						<div class="col-sm-12 pull-left">';
+	search += '							<button class="form-control btn btn-primary" type="submit" form="search" value="Search">Search</button>';
+	search += '						</div>';
+	search += '					</div>';
+	search += '				</div>';
+	search += '			</div>';
+	search += '		</form>';
+	search += '	</div>';
 	
 	return search;
 	

@@ -491,7 +491,7 @@ function get_search(request, response){
 		}
 	);
 }
-s
+
 // POST handlers --------------------------------------------------------------
 
 /**
@@ -1117,8 +1117,9 @@ function landing(request, response) {
 
 		}, function(events){
 			
+			var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
 			var login = builder.navbarLink("/CS2410/coursework/login", "Login");
-			var navbar = builder.navbar([ login ]);
+			var navbar = builder.navbar([ login, search ]);
 			
 			var eventsTable = builder.eventsTable(events, "All Events", false);
 
@@ -1136,21 +1137,113 @@ function landing(request, response) {
 
 function search(request, response, navbar, signedIn){
 	
-	var queryText =  "SELECT * FROM Events ORDER BY date(time) DESC";
+	// Defalut order by date decsending 
+	var queryText =  "SELECT * FROM Events ORDER BY DATE(time) DESC";
 	var params = [];
 	var filter = {
-		"by" : "",
-		"value" : ""
+		"by" : "date",
+		"from" : "",
+		"to" : ""
 	};
 	
-	if(request.query.type){
-		 queryText =  "SELECT * FROM Events WHERE type = ? ORDER BY date(time) DESC";
-		 params = [request.query.type];
-		 filter = {
-			"by" : "type", 
-			"value" : request.query.type
-		};
+	if(request.query.filter){
+		
+		// The filter is by date
+		if(request.query.filter === "Date"){
+			
+			// The params for the date filter
+			var from = request.query.from;
+			var to = request.query.to;
+			
+			// The validity of the params
+			var validFrom = (from) && (from !== "");
+			var validTo = (to) && (to !== "");
+			
+			// If the user has specified a from and to
+			if(validFrom && validTo){
+				
+				queryText =  "SELECT * FROM Events WHERE DATE(time) BETWEEN DATE(?) AND DATE(?) ORDER BY DATE(time) DESC;";
+				params = [from, to];
+				filter = {
+					"by" : "date", 
+					"from" : from,
+					"to" : to
+				};
+				
+			}else if(validFrom){
+				
+				queryText =  "SELECT * FROM Events WHERE DATE(time) >= DATE(?) ORDER BY DATE(time) DESC;";
+				params = [from];
+				filter = {
+					"by" : "date", 
+					"from" : from,
+					"to" : ""
+				};
+				
+			}else if(validTo){
+				
+				queryText =  "SELECT * FROM Events WHERE DATE(time) <= DATE(?) ORDER BY DATE(time) DESC;";
+				params = [to];
+				filter = {
+					"by" : "date", 
+					"from" : "",
+					"to" : to
+				};
+				
+			}else{
+				// Use default filter
+			}
+		}
+		// Filter by Type
+		else if(request.query.filter === "Type"){
+			
+			var type = request.query.type;
+			
+			var validType = (type) && (type !== "");
+			
+			if(validType){
+				
+				queryText =  "SELECT * FROM Events WHERE type = ? ORDER BY DATE(time) DESC;";
+				params = [type];
+				filter = {
+					"by" : "type", 
+					"type" : type
+				};
+				
+			}else{
+				// Use default filter
+			}
+			
+			
+		}
+		// Filter by Popularity
+		else if(request.query.filter === "Popularity"){
+			
+			var minimum = request.query.minimum;
+			
+			var validMinimum = (minimum) && (minimum !== "");
+			
+			if(validMinimum){
+				
+				queryText =  "SELECT * FROM Events WHERE popularity >= ? ORDER BY popularity DESC;";
+				params = [minimum];
+				filter = {
+					"by" : "popularity", 
+					"minimum" : minimum
+				};
+				
+			}else{
+				
+				queryText =  "SELECT * FROM Events ORDER BY popularity DESC;";
+				params = [minimum];
+				filter = {
+					"by" : "popularity", 
+					"minimum" : ""
+				};	
+			}			
+		}
 	}
+	
 	
 	db.collect(
 		queryText,
@@ -1292,7 +1385,9 @@ function build_login(request, response, error) {
 	buildPage('login', function(content) {
 
 		var home = builder.navbarLink("/CS2410/coursework", "Home");
-		var navbar = builder.navbar([ home ]);
+		var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
+		
+		var navbar = builder.navbar([ home, search ]);
 		var head = builder.head("Login");
 		var body = builder.body(navbar, error + content);
 		var page = builder.page(head, body);
