@@ -38,16 +38,19 @@
 		$.ajax({
 	        url: "/CS2410/coursework/interest",
 	        data: {
-	            event_id : event_id,
-	            type : currentValue
+	            "event_id" : event_id,
+	            "state" : currentValue
 	        },
 	        type: 'POST',
-	        dataType: 'json',
 	        success: function(response) {
 	           
 	        	// Do the thing
-	        	alert("Success:" + response);
+	        	console.log("Success");
 	            
+	        },
+	        error: function(XMLHttpRequest, textStatus, errorThrown) { 
+	            alert("Update failed - Sorry about that"); 
+	           
 	        }
 	    });
 		

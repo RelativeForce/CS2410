@@ -189,17 +189,9 @@ function eventsTable(events, title, signedIn) {
 		if (signedIn === true) {
 			if (event.hasLiked) {
 
-				eventsList += '<input formaction="/CS2410/coursework" class="btn btn-danger btn-sm" id="interest'
-						+ event.id
-						+ '" onclick="setEvent('
-						+ event.id
-						+ ', this);" type="submit" value="Unlike"/>';
+				eventsList += '<button class="btn btn-danger btn-sm" id="interest' + event.id + '" onclick="changeInterest(this);" type="button" value="Unlike">Unlike</button>';
 			} else {
-				eventsList += '<input formaction="/CS2410/coursework" class="btn btn-success btn-sm" id="interest'
-						+ event.id
-						+ '" onclick="setEvent('
-						+ event.id
-						+ ', this);" type="submit" value="Like"/>';
+				eventsList += '<button class="btn btn-success btn-sm" id="interest' + event.id + '" onclick="changeInterest(this);" type="button" value="Like">Like</button>';
 			}
 		}
 
