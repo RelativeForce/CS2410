@@ -779,19 +779,17 @@ function post_event(request, response){
 						},
 						function(count) {
 							
-							console.log(request.body.date + " " + request.body.time);
-							
 							// If the user has the right to update the event.
 							if(isOrganiser){
 								
 								var event = {
-									"name" : request.body.name,
-									"id" : request.body.event_id,
-									"location" : request.body.location,
-									"time" :  request.body.date + " " + request.body.time,
-									"organiser" : email,
-									"description" : request.body.description,
-									"type" : request.body.type,
+									"name" : encodeHTML(request.body.name),
+									"id" : encodeHTML(request.body.event_id),
+									"location" : encodeHTML(request.body.location),
+									"time" :  encodeHTML(request.body.date + " " + request.body.time),
+									"organiser" : encodeHTML(email),
+									"description" : encodeHTML(request.body.description),
+									"type" : encodeHTML(request.body.type),
 									"popularity" : popularity
 								};
 								
@@ -891,13 +889,13 @@ function build_event(response, navbar, event, email, isAnOrganiser){
 function addEvent(request, email, event_id){
 	
 	var event = {
-		"name" : request.body.name,
-		"id" : event_id,
-		"location" : request.body.location,
-		"time" : request.body.date + " " + request.body.time,
-		"organiser" : email,
-		"description" : request.body.description,
-		"type" : request.body.type,
+		"name" : encodeHTML(request.body.name),
+		"id" : encodeHTML(event_id),
+		"location" : encodeHTML(request.body.location),
+		"time" : encodeHTML(request.body.date + " " + request.body.time),
+		"organiser" : encodeHTML(email),
+		"description" : encodeHTML(request.body.description),
+		"type" : encodeHTML(request.body.type),
 		"popularity" : 0
 	};
 
@@ -926,19 +924,19 @@ function changeEventPictures(request, event_id){
 	var files = request.files;
 	
 	if(request.body.pName0 && request.body.pName0 !== ""){
-		swapPicture(event_id, files, request.body.pName0, '0');
+		swapPicture(event_id, files, encodeHTML(request.body.pName0), '0');
 	}
 
 	if(request.body.pName1 && request.body.pName1 !== ""){
-		swapPicture(event_id, files, request.body.pName1, '1');
+		swapPicture(event_id, files, encodeHTML(request.body.pName1), '1');
 	}
 
 	if(request.body.pName2 && request.body.pName2 !== ""){
-		swapPicture(event_id, files, request.body.pName2, '2');
+		swapPicture(event_id, files, encodeHTML(request.body.pName2), '2');
 	}
 
 	if(request.body.pName3 && request.body.pName3 !== ""){
-		swapPicture(event_id, files, request.body.pName3, '3');
+		swapPicture(event_id, files, encodeHTML(request.body.pName3), '3');
 	}
 	
 }
@@ -1402,11 +1400,11 @@ function build_login(request, response, error) {
 function signup(request, response) {
 
 	var salt = generateSalt();
-	var email = request.body.email;
-	var password = request.body.password;
-	var name = request.body.name;
-	var dob = request.body.dob;
-	var telephone = request.body.telephone;
+	var email = encodeHTML(request.body.email);
+	var password = encodeHTML(request.body.password);
+	var name = encodeHTML(request.body.name);
+	var dob = encodeHTML(request.body.dob);
+	var telephone = encodeHTML(request.body.telephone);
 	var picture = "none";
 
 	var saltedPassword = MD5.hash(password + salt);
