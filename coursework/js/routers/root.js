@@ -108,6 +108,44 @@ function post(request, response){
 	
 }
 
+function updateInterest(request, email){
+	
+	var event_id = request.body.event_id;
+	var type = request.body.type;
+
+	if(event_id && type){
+		
+		if(type === "like"){
+			
+			db.run(
+				"INSERT INTO Interest(event_id, student_email) VALUES (?, ?);", 
+				[event_id, email]
+			);
+			
+			db.run(
+				"UPDATE Events SET popularity = popularity + 1  WHERE event_id = ?;",
+				[event_id]
+			);
+
+			console.log("Interest update: " + email + " liked event " + event_id);
+			
+		}else if(type === "unlike"){
+			
+			db.run(
+				"DELETE FROM Interest WHERE event_id = ? AND student_email = ?;",
+				[event_id, email]
+			);
+			
+			db.run(
+				"UPDATE Events SET popularity = popularity - 1  WHERE event_id = ?;", 
+				[event_id]
+			);
+			
+			console.log("Interest update: " + email + " unliked event " + event_id);
+		}
+	}
+}
+
 function home(request, response, user) {
 
 	// Construct the student home page
