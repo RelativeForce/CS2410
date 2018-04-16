@@ -1234,7 +1234,7 @@ function search(request, response, navbar, signedIn){
 			}else{
 				
 				queryText =  "SELECT * FROM Events ORDER BY popularity DESC;";
-				params = [minimum];
+				params = [];
 				filter = {
 					"by" : "popularity", 
 					"minimum" : ""
