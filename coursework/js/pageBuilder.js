@@ -311,10 +311,18 @@ function viewEvent(eventDetails) {
 	event += '				<label>Description:</label>';
 	event += '				<p>' + eventDetails.description + '</p>';
 	event += '			</div>';
+	
+	// Popularity
+	event += '			<div>';
+	event += '				<label>Popularity:</label>';
+	event += '				<p>' + eventDetails.popularity + '</p>';
+	event += '			</div>';
 
 	// Pictures
-	event += '			<div class="col-sm-12">';
-	event += '				<div id="pictureSection">';
+	event += '			<div>';
+	event += '				<label>Pictures:</label>';
+	event += '				<div class="col-sm-12">';
+	event += '					<div id="pictureSection">';
 
 	for (var index = 0; index < eventDetails.pictures.length; index++) {
 
@@ -326,6 +334,7 @@ function viewEvent(eventDetails) {
 		event += '</div>';
 	}
 
+	event += '					</div>';
 	event += '				</div>';
 	event += '			</div>';
 	event += '		</div>';

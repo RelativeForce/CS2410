@@ -48,7 +48,7 @@ function addSession(token, userEmail) {
 	// Add the new session to the list.
 	sessions.push(session);
 
-	console.log("New Session: " + token);
+	console.log("Session " + token + " [Start]");
 
 	return true;
 }
@@ -82,7 +82,7 @@ function contains(check) {
 			index--;
 			numberOfSessions--;
 			
-			console.log("Session Expired: " + session.token);
+			console.log("Session " + session.token + " [Expired]");
 
 		} else {
 
@@ -131,7 +131,7 @@ function endSession(token) {
 			// Remove the session
 			sessions.splice(index, 1);
 			removed = true;
-			console.log("End Session: " + token);
+			console.log("Session " + token + "  [End]");
 		}
 
 	}
@@ -247,8 +247,8 @@ function extend(token, response) {
 			response.cookie(cookieName, token, {
 				expire : expire.getTime()
 			});
-
-			console.log("Session Extended: " + token + " to " + expire);
+ 
+			console.log("Session " + token + " [Extended to " + expire.toLocaleDateString() + " " + expire.toLocaleTimeString() + "]");
 			
 			return true;
 			

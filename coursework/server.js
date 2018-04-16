@@ -282,6 +282,7 @@ function get_event(request, response){
 							"type" : eventDetails.type,
 							"time" : eventDetails.time,
 							"location" : eventDetails.location,
+							"popularity" : eventDetails.popularity,
 							"pictures" : pictures
 						};
 					
