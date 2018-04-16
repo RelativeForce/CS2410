@@ -1,3 +1,6 @@
+/**
+ * The name of the session cookie.
+ */
 const cookieName = 'AstonEvents';
 
 /**
@@ -5,7 +8,7 @@ const cookieName = 'AstonEvents';
  */
 const duration = 1;
 
-/**--
+/**
  * Holds all the valid sessions for this server.
  */
 var sessions = [];
@@ -23,9 +26,11 @@ function addSession(token, userEmail) {
 
 
 	// Check if the user is already logged in.
-	var userLoggedIn = contains(function(session) {
-		return session["email"] === userEmail;
-	});
+	var userLoggedIn = contains(
+		function(session) {
+			return session["email"] === userEmail;
+		}
+	);
 
 	// If the user is already logged in the do not add the session.
 	if (userLoggedIn) {
@@ -104,9 +109,11 @@ function contains(check) {
  * @returns Whether or not the specied token is a valid token.
  */
 function validSession(token) {
-	return contains(function(session) {
-		return session["token"] === token;
-	});
+	return contains(
+		function(session) {
+			return session["token"] === token;
+		}
+	);
 }
 
 /**
@@ -155,9 +162,11 @@ function uniqueToken() {
 		token = generateToken();
 
 		// Check if the token is already in use by another session.
-		isUnique = !contains(function(session) {
-			return session["token"] === token;
-		});
+		isUnique = !contains(
+			function(session) {
+				return session["token"] === token;
+			}
+		);
 
 	}
 
@@ -238,25 +247,30 @@ function extend(token, response) {
 	 * Iterate over all the sessions and when the session with the token is
 	 * found extend the duration.
 	 */
-	return contains(function(session) {
+	return contains(
+		function(session) {
 
-		if (session.token === token) {
-			
-			session.expires = expire.getTime();
+			// If the current session is the specied one extend it.
+			if (session.token === token) {
+				
+				// Set the expire time.
+				session.expires = expire.getTime();
+	
+				// Add the cookie to the response.
+				response.cookie(cookieName, token, {
+					expire : expire.getTime()
+				});
+	 
+				console.log("Session " + token + " [Extended to " + expire.toLocaleDateString() + " " + expire.toLocaleTimeString() + "]");
+				
+				return true;
+				
+			} else {
+				return false;
+			}
 
-			response.cookie(cookieName, token, {
-				expire : expire.getTime()
-			});
- 
-			console.log("Session " + token + " [Extended to " + expire.toLocaleDateString() + " " + expire.toLocaleTimeString() + "]");
-			
-			return true;
-			
-		} else {
-			return false;
 		}
-
-	});
+	);
 
 }
 
