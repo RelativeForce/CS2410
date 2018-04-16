@@ -1,6 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 
+/**
+ * Creates the &lt;head&gt; tag that will be used by all the pages.
+ * 
+ * @param title
+ *            The title of the page.
+ * @returns The &lt;head&gt; tag string.
+ */
 function head(title) {
 
 	var head = '';
@@ -18,6 +25,14 @@ function head(title) {
 
 }
 
+/**
+ * Creates the navbar that will be displayed at the top of all the pages.
+ * 
+ * @param navElements
+ *            A array of navbar elements generated using
+ *            <code>navbarLink(link, label)</code>
+ * @returns The navbar string.
+ */
 function navbar(navElements) {
 
 	var nav = '';
@@ -45,6 +60,13 @@ function navbar(navElements) {
 
 }
 
+/**
+ * Creates a error message box that can be placed anywhere on a page.
+ * 
+ * @param message
+ *            The error message to be displayed.
+ * @returns The error message box string.
+ */
 function error(message) {
 
 	var error = '';
@@ -56,10 +78,28 @@ function error(message) {
 	return error;
 }
 
+/**
+ * Creates a link that appears on the navbar.
+ * 
+ * @param link
+ *            The 'href' attribute of the link.
+ * @param label
+ *            The text that appears on the navbar for that link.
+ * @returns A navbar link.
+ */
 function navbarLink(link, label) {
 	return '<li><a href="' + link + '">' + label + '</a></li>';
 }
 
+/**
+ * Creates the &lt;body&gt; tag for every page.
+ * 
+ * @param navbar
+ *            The navbar of the page.
+ * @param content
+ *            The content of the page that will appear below the navbar.
+ * @returns The &lt;body&gt; tag string.
+ */
 function body(navbar, content) {
 
 	var body = '';
@@ -72,6 +112,15 @@ function body(navbar, content) {
 
 }
 
+/**
+ * Creates the page.
+ * 
+ * @param head
+ *            The &lt;head&gt; tag of the page.
+ * @param body
+ *            The &lt;body&gt; tag of the page.
+ * @returns The html page string.
+ */
 function page(head, body) {
 
 	var document = '';
@@ -87,6 +136,18 @@ function page(head, body) {
 	return document;
 }
 
+/**
+ * Creates a table that displays the details of a array of events.
+ * 
+ * @param events
+ *            An array of JSON of events with the form { "name", "id",
+ *            "location", "time", "type", "organiser", "popularity", "hasLiked" }.
+ * @param title
+ *            The title of the panel conatining the table.
+ * @param signedIn
+ *            Whether or not the current user is signed in or not.
+ * @returns A events table string.
+ */
 function eventsTable(events, title, signedIn) {
 
 	var eventsList = '';
@@ -120,8 +181,8 @@ function eventsTable(events, title, signedIn) {
 		eventsList += '		<td>' + event.type + '</td>';
 		eventsList += '		<td>' + event.location + '</td>';
 		eventsList += '		<td>' + event.time + '</td>';
-		eventsList += '		<td><a href="/CS2410/coursework/profile?email=' + event.organiser + '">' + event.organiser
-				+ '</a></td>';
+		eventsList += '		<td><a href="/CS2410/coursework/profile?email='
+				+ event.organiser + '">' + event.organiser + '</a></td>';
 		eventsList += '		<td>' + event.popularity + '</td>';
 		eventsList += '		<td>';
 
@@ -129,14 +190,21 @@ function eventsTable(events, title, signedIn) {
 			if (event.hasLiked) {
 
 				eventsList += '<input formaction="/CS2410/coursework" class="btn btn-danger btn-sm" id="interest'
-						+ event.id + '" onclick="setEvent(' + event.id + ', this);" type="submit" value="Unlike"/>';
+						+ event.id
+						+ '" onclick="setEvent('
+						+ event.id
+						+ ', this);" type="submit" value="Unlike"/>';
 			} else {
 				eventsList += '<input formaction="/CS2410/coursework" class="btn btn-success btn-sm" id="interest'
-						+ event.id + '" onclick="setEvent(' + event.id + ', this);" type="submit" value="Like"/>';
+						+ event.id
+						+ '" onclick="setEvent('
+						+ event.id
+						+ ', this);" type="submit" value="Like"/>';
 			}
 		}
 
-		eventsList += '		<a href="/CS2410/coursework/event?event_id=' + event.id
+		eventsList += '		<a href="/CS2410/coursework/event?event_id='
+				+ event.id
 				+ '"><button class="btn btn-primary btn-sm"  type="button" value="View">View</button></a>';
 
 		eventsList += '		</td>';
@@ -149,19 +217,14 @@ function eventsTable(events, title, signedIn) {
 	return eventsList;
 }
 
-function event(eventDetails, isOrganiser) {
-
-	var eventHTML = '';
-
-	if (isOrganiser) {
-		eventHTML += editEvent(eventDetails);
-	} else {
-		eventHTML += viewEvent(eventDetails);
-	}
-
-	return eventHTML;
-}
-
+/**
+ * Creates the HTML content for the edit event page using the details of the
+ * event.
+ * 
+ * @param eventDetails
+ *            The details of the event.
+ * @returns The edit event HTML string.
+ */
 function editEvent(eventDetails) {
 
 	var event = '';
@@ -173,12 +236,14 @@ function editEvent(eventDetails) {
 	event += '		</div>';
 	event += '		<div class="panel-body">';
 	event += '			<form id="event" enctype="multipart/form-data" name="event" action="/CS2410/coursework/event" onsubmit="return validateEvent()" method="post">';
-	event += '				<input hidden type="text" name="event_id" id="event_id" value="' + eventDetails.event_id + '"/>';
+	event += '				<input hidden type="text" name="event_id" id="event_id" value="'
+			+ eventDetails.event_id + '"/>';
 
 	// Name
 	event += '				<div class="form-group">';
 	event += '					<label for="name">Name:</label>';
-	event += '					<input type="text" name="name" id="name" class="form-control" value="' + eventDetails.name + '"/>';
+	event += '					<input type="text" name="name" id="name" class="form-control" value="'
+			+ eventDetails.name + '"/>';
 	event += '				</div>';
 
 	var checked = 'checked="checked"';
@@ -188,15 +253,18 @@ function editEvent(eventDetails) {
 	event += '					<label for="type">Type:</label>';
 	event += '					<div class="radio">';
 	event += '						<label><input type="radio" value="sport" name="type" '
-			+ (eventDetails.type === "sport" ? checked : '') + '/>Sport</label>';
+			+ (eventDetails.type === "sport" ? checked : '')
+			+ '/>Sport</label>';
 	event += '					</div>';
 	event += '					<div class="radio">';
 	event += '						<label><input type="radio" value="culture" name="type" '
-			+ (eventDetails.type === "culture" ? checked : '') + '/>Culture</label>';
+			+ (eventDetails.type === "culture" ? checked : '')
+			+ '/>Culture</label>';
 	event += '					</div>';
 	event += '					<div class="radio">';
 	event += '						<label><input type="radio" value="other" name="type"  '
-			+ (eventDetails.type === "other" ? checked : '') + '/>Other</label>';
+			+ (eventDetails.type === "other" ? checked : '')
+			+ '/>Other</label>';
 	event += '					</div>';
 	event += '				</div>';
 
@@ -207,7 +275,7 @@ function editEvent(eventDetails) {
 			+ eventDetails.location + '"/>';
 	event += '				</div>';
 
-	// Time
+	// Date and Time
 	var time = eventDetails.time.split(" ")[1];
 	var date = eventDetails.time.split(" ")[0];
 
@@ -215,13 +283,15 @@ function editEvent(eventDetails) {
 	event += '					<div class="col-sm-6">';
 	event += '						<div class="form-group">';
 	event += '						<label for="date">Date:</label>';
-	event += '						<input type="date" name="date" id="date" class="form-control" value="' + date + '"/>';
+	event += '						<input type="date" name="date" id="date" class="form-control" value="'
+			+ date + '"/>';
 	event += '					</div>';
 	event += '					</div>';
 	event += '					<div class="col-sm-6">';
 	event += '						<div class="form-group">';
 	event += '							<label for="time">Time:</label>';
-	event += '							<input type="time" name="time" id="time" class="form-control" value="' + time + '"/>';
+	event += '							<input type="time" name="time" id="time" class="form-control" value="'
+			+ time + '"/>';
 	event += '						</div>';
 	event += '					</div>';
 	event += '				</div>';
@@ -233,11 +303,13 @@ function editEvent(eventDetails) {
 			+ eventDetails.description + '</textarea>';
 	event += '				</div>';
 
+	// Pictures
 	event += '				<div class="col-sm-12">';
 	event += '					<div id="pictureSection" class="form-group panel panel-default">';
 	event += '						<div class="panel-heading" id="imageContainerHeader">';
 	event += '							<label>Picture:</label>';
 
+	// If there is 4 pictures dont show the 'add picture' button.
 	if (eventDetails.pictures.length < 4) {
 		event += '<button id="addPicture" class="btn btn-info" type="button" style="" onclick="addPictureInput()" value="+">+</button>';
 	}
@@ -245,16 +317,21 @@ function editEvent(eventDetails) {
 	event += '						</div>';
 	event += '						<div id="imageContainer" class="panel-body">';
 
+	// Iterate over all the event pictures
 	for (var index = 0; index < eventDetails.pictures.length; index++) {
 
 		var picture = eventDetails.pictures[index];
 
 		event += '<div class="imageInput col-sm-3">';
-		event += '		<input type="file" name="picture' + index + '" id="picture' + index
+		event += '		<input type="file" name="picture'
+				+ index
+				+ '" id="picture'
+				+ index
 				+ '" class="form-control" onchange="readURL(this)" accept=".png,.jpg"/>';
 		event += '		<img id="preview' + index + '" src="/uploaded/' + picture
 				+ '" alt="event picture" style="width: 100%; height: 100%" />';
-		event += '		<input hidden type="text" name="pName' + index + '" id="pName' + index + '" />';
+		event += '		<input hidden type="text" name="pName' + index
+				+ '" id="pName' + index + '" />';
 		event += '</div>';
 	}
 
@@ -270,6 +347,14 @@ function editEvent(eventDetails) {
 	return event;
 }
 
+/**
+ * Creates the HTML content for the view event page using the details of the
+ * event.
+ * 
+ * @param eventDetails
+ *            The details of the event.
+ * @returns The view event HTML string.
+ */
 function viewEvent(eventDetails) {
 
 	var event = '';
@@ -296,8 +381,9 @@ function viewEvent(eventDetails) {
 	// Organiser
 	event += '			<div>';
 	event += '				<label>Organiser:</label> ';
-	event += '				<p><a href="/CS2410/coursework/profile?email=' + eventDetails.organiser + '">'
-			+ eventDetails.organiser + '</a></p>';
+	event += '				<p><a href="/CS2410/coursework/profile?email='
+			+ eventDetails.organiser + '">' + eventDetails.organiser
+			+ '</a></p>';
 	event += '			</div>';
 
 	// Time
@@ -311,7 +397,7 @@ function viewEvent(eventDetails) {
 	event += '				<label>Description:</label>';
 	event += '				<p>' + eventDetails.description + '</p>';
 	event += '			</div>';
-	
+
 	// Popularity
 	event += '			<div>';
 	event += '				<label>Popularity:</label>';
@@ -344,6 +430,14 @@ function viewEvent(eventDetails) {
 	return event;
 }
 
+/**
+ * Creates the HTML content of the edit profile page using the details of the
+ * profile.
+ * 
+ * @param userDetails
+ *            The details of a user.
+ * @returns The edit profile HTML string.
+ */
 function editProfile(userDetails) {
 
 	var profile = '';
@@ -383,56 +477,89 @@ function editProfile(userDetails) {
 	return profile;
 }
 
+/**
+ * Creates the HTML for a edit picture frame.
+ * 
+ * @param picturePath
+ *            The file path of the picture that will be displayed in the frame.
+ * @returns The edit picture HTML string.
+ */
 function editPicture(picturePath) {
 
 	var picture = '';
 
-	picture += '	<input type="file" id="picture" name="picture" class="form-control" accept=".png,.jpg"/> ';
+	picture += '<input type="file" id="picture" name="picture" class="form-control" accept=".png,.jpg"/> ';
 
+	// If the picture exists
 	if (fs.existsSync(path.resolve('./public/uploaded/' + picturePath))) {
-		picture += '	<img id="preview" src="/uploaded/' + picturePath
+		picture += '<img id="preview" src="/uploaded/' + picturePath
 				+ '" alt="profile picture" style="width: 100%; height: 100%"/>';
 	} else {
-		picture += '	<img id="preview" src="No Picture" alt="profile picture" style="width: 100%; height: 100%"/>';
+		picture += '<img id="preview" src="No Picture" alt="profile picture" style="width: 100%; height: 100%"/>';
 	}
 
 	return picture;
 }
 
+/**
+ * Creates the edit profile information HTML.
+ * 
+ * @param userDetails
+ *            The user details that will populate the fields.
+ * @returns The edit information HTML string.
+ */
 function editProfileInformation(userDetails) {
 
 	var information = '';
 
+	// Full name
 	information += '	<div class="form-group">';
 	information += '		<label for="name">Full Name:</label>';
-	information += '		<input type="text"	name="name" id="name" class="form-control" value="' + userDetails.name
-			+ '" />';
+	information += '		<input type="text"	name="name" id="name" class="form-control" value="'
+			+ userDetails.name + '" />';
 	information += '	</div>';
+
+	// Password
 	information += '	<div class="form-group">';
 	information += '		<label for="password">Password:</label> ';
 	information += '		<input type="password" name="password" id="password" class="form-control"/>';
 	information += '	</div>';
+
+	// Retry Password
 	information += '	<div class="form-group">';
 	information += '		<label for="repassword">Retype Password:</label> ';
 	information += '		<input type="password" name="repassword" id="repassword" class="form-control"/>';
 	information += '	</div>';
+
+	// Telephone
 	information += '	<div class="form-group">';
 	information += '		<label for="telephone">Telephone:</label> ';
 	information += '		<input type="text" name="telephone" id="telephone" class="form-control" value="'
 			+ userDetails.telephone + '"/>';
 	information += '	</div>';
+
+	// Organiser
 	information += '	<div class="form-check">';
 	information += '		<input class="form-check-input" type="checkbox" name="organiser" id="organiser" '
-			+ (userDetails.organiser === 'true' ? 'checked' : 'unchecked') + '/>';
-
+			+ (userDetails.organiser === 'true' ? 'checked' : 'unchecked')
+			+ '/>';
 	information += '		<label for="organiser">Event Organiser</label> ';
 	information += '	</div>';
+
+	// Save button
 	information += '	<button class="btn btn-primary" type="submit" form="information" value="Save Changes">Save Changes</button>';
 
 	return information;
 
 }
 
+/**
+ * Creates the view profile HTML for a user.
+ * 
+ * @param userDetails
+ *            The details of the user.
+ * @returns The view profile HTML.
+ */
 function viewProfile(userDetails) {
 
 	var profile = "";
@@ -471,10 +598,18 @@ function viewProfile(userDetails) {
 
 }
 
+/**
+ * Creates the view picture HTML.
+ * 
+ * @param picturePath
+ *            The file name of the profile picture.
+ * @returns The view picture HTML string.
+ */
 function viewPicture(picturePath) {
 
 	var picture = '';
 
+	// If the profile picture exists.
 	if (fs.existsSync(path.resolve('./public/uploaded/' + picturePath))) {
 		picture += '<img id="preview" src="/uploaded/' + picturePath
 				+ '" alt="profile picture" style="width: 100%; height: 100%"/>';
@@ -485,6 +620,13 @@ function viewPicture(picturePath) {
 	return picture;
 }
 
+/**
+ * Creates the view profile information HTML for a user.
+ * 
+ * @param userDetails
+ *            The user details that will be displayed.
+ * @returns The view profile information HTML string.
+ */
 function viewProfileInformation(userDetails) {
 
 	var information = '';
@@ -507,13 +649,22 @@ function viewProfileInformation(userDetails) {
 	information += '	</div>';
 	information += '	<div>';
 	information += '		<label>Event Organiser</label> ';
-	information += '		<p>' + (userDetails.organiser === 'true' ? 'Yes' : 'No') + '</p>';
+	information += '		<p>' + (userDetails.organiser === 'true' ? 'Yes' : 'No')
+			+ '</p>';
 	information += '	</div>';
 
 	return information;
 
 }
 
+/**
+ * Creates a response message box the will be displayed on the page to provide
+ * feedback to the user.
+ * 
+ * @param message
+ *            The message that will be displayed.
+ * @returns The response message box HTML.
+ */
 function response(message) {
 
 	var response = '';
@@ -526,10 +677,18 @@ function response(message) {
 
 }
 
-function search(filter){
-	
+/**
+ * Creates the search filter box.
+ * 
+ * @param filter
+ *            The filter deatils that will be used to populated the filter
+ *            fields.
+ * @returns The search filter box HTML string.
+ */
+function search(filter) {
+
 	var search = '';
-	
+
 	search += '	<div class="container">';
 	search += '		<form method="GET" action="/CS2410/coursework/search" onsubmit="return validateFilter()" id="search" name="search">';
 	search += '			<div class="panel panel-default">';
@@ -540,54 +699,72 @@ function search(filter){
 	search += '							<div class="form-group">';
 	search += '								<label for="minimum">Filter:</label> ';
 	search += '								<select onchange="changeFilter()" class="form-control" id="filter" name="filter">';
-	search += '									<option ' + (filter.by === "date" ? 'selected="selected"' : '') + '>Date</option>';
-	search += '									<option ' + (filter.by === "popularity" ? 'selected="selected"' : '') + '>Popularity</option>';
-	search += '									<option ' + (filter.by === "type" ? 'selected="selected"' : '') + '>Type</option>';
+	search += '									<option '
+			+ (filter.by === "date" ? 'selected="selected"' : '')
+			+ '>Date</option>';
+	search += '									<option '
+			+ (filter.by === "popularity" ? 'selected="selected"' : '')
+			+ '>Popularity</option>';
+	search += '									<option '
+			+ (filter.by === "type" ? 'selected="selected"' : '')
+			+ '>Type</option>';
 	search += '								</select>';
 	search += '							</div>';
 	search += '						</div>';
 	search += '						<div class="col=sm-6" id="value">';
-	
+
 	// Filter params
 	if (filter.by === 'date') {
 
 		search += '		<div class="col-sm-3">';
 		search += '			<div class="form-group">';
 		search += '				<label for="from">From:</label>';
-		search += '				<input class="form-control" type="date" id="from" name="from" ' + ((filter.from !== "") ? ('value="' + filter.from + '"') : '' ) + '/>';
+		search += '				<input class="form-control" type="date" id="from" name="from" '
+				+ ((filter.from !== "") ? ('value="' + filter.from + '"') : '')
+				+ '/>';
 		search += '			</div>';
 		search += '		</div>';
 		search += '		<div class="col-sm-3 pull-right">';
 		search += '			<div class="form-group">';
 		search += '				<label for="to">To:</label>';
-		search += '				<input class="form-control" type="date" id="to" name="to" ' + ((filter.to !== "") ? ('value="' + filter.to + '"') : '' ) + '/>';
+		search += '				<input class="form-control" type="date" id="to" name="to" '
+				+ ((filter.to !== "") ? ('value="' + filter.to + '"') : '')
+				+ '/>';
 		search += '			</div>';
 		search += '		</div>';
 
 	} else if (filter.by === 'popularity') {
-		
+
 		search += '	<div class="col-sm-6 pull-right">';
 		search += '		<div class="form-group">';
 		search += '			<label for="minimum">Minimum:</label> ';
-		search += '			<input class="form-control" type="number" id="minimum" name="minimum" ' + ((filter.minimum !== "") ? ('value="' + filter.minimum + '"') : '' ) + '/>';
+		search += '			<input class="form-control" type="number" id="minimum" name="minimum" '
+				+ ((filter.minimum !== "") ? ('value="' + filter.minimum + '"')
+						: '') + '/>';
 		search += '		</div>';
 		search += '	</div>';
 
 	} else if (filter.by === 'type') {
-		
+
 		search += '	<div class="col-sm-6 pull-left">';
 		search += '		<div class="form-group">';
 		search += '			<label for="minimum">Type:</label> ';
 		search += '			<select class="form-control" id="type" name="type">';
-		search += '				<option ' + (filter.type === "sport" ? 'selected="selected"' : '') + '>sport</option>';
-		search += '				<option ' + (filter.type === "culture" ? 'selected="selected"' : '') + '>culture</option>';
-		search += '				<option ' + (filter.type === "other" ? 'selected="selected"' : '') + '>other</option>';
+		search += '				<option '
+				+ (filter.type === "sport" ? 'selected="selected"' : '')
+				+ '>sport</option>';
+		search += '				<option '
+				+ (filter.type === "culture" ? 'selected="selected"' : '')
+				+ '>culture</option>';
+		search += '				<option '
+				+ (filter.type === "other" ? 'selected="selected"' : '')
+				+ '>other</option>';
 		search += '			</select>';
 		search += '		</div>';
 		search += '	</div>';
-		
+
 	}
-		
+
 	search += '						</div>';
 	search += '					</div>';
 	search += '					<div class="row">';
@@ -599,9 +776,9 @@ function search(filter){
 	search += '			</div>';
 	search += '		</form>';
 	search += '	</div>';
-	
+
 	return search;
-	
+
 }
 
 module.exports = {
@@ -627,7 +804,12 @@ module.exports = {
 		return eventsTable(events, title, signedIn);
 	},
 	event : function(eventDetails, isOrganiser) {
-		return event(eventDetails, isOrganiser);
+
+		if (isOrganiser) {
+			return editEvent(eventDetails);
+		} else {
+			return viewEvent(eventDetails);
+		}
 	},
 	profile : function(userDetails, canEdit) {
 
