@@ -395,31 +395,13 @@ function get_events(request, response){
 					}, 
 					function(events){
 	
-						db.each(
-							"SELECT * FROM Interest WHERE student_email = ?",
-							[email], 
-							function(row) {
-	
-								for(var index = 0; index < events.length; index++){	
-									var current = events[index];
-							
-									if(row.event_id === current.id){
-										current.hasLiked = true;
-									}	
-								}
-	
-							}, 
-							function(interestCount) {
-								
-								var eventsTable = builder.eventsTable(events, "My Events", true);
-	
-								var head = builder.head("Aston Events");
-								var body = builder.body(navbar, eventsTable);
-								var page = builder.page(head, body);
-	
-								buildResponse(response, page);
-							}
-						);
+						var eventsTable = builder.eventsTable(events, "My Events", false);
+						
+						var head = builder.head("Aston Events");
+						var body = builder.body(navbar, eventsTable);
+						var page = builder.page(head, body);
+
+						buildResponse(response, page);
 					}
 				);
 
@@ -470,11 +452,11 @@ function get_search(request, response){
 							[ home, newEvent, myEvents, profile, logout ] : 
 							[ home, profile, logout ]);
 					
-						search(request, response, navbar, true);
+						search(request, response, navbar);
 					
 					}, 
 					function(count) {
-						
+						// Do nothing
 					}
 				);
 
@@ -487,7 +469,7 @@ function get_search(request, response){
 					[ home, login ]
 				);
 			
-				search(request, response, navbar, false);
+				search(request, response, navbar);
 			}
 		}
 	);
@@ -1134,7 +1116,7 @@ function landing(request, response) {
 	
 }
 
-function search(request, response, navbar, signedIn){
+function search(request, response, navbar){
 	
 	// Defalut order by date decsending 
 	var queryText =  "SELECT * FROM Events ORDER BY DATE(time) DESC";
@@ -1261,12 +1243,12 @@ function search(request, response, navbar, signedIn){
 			};
 		}, 
 		function(events){
-		
+			
 			buildPage(
 				'search', 
 				function(content) {
-			
-					var eventsTable = builder.eventsTable(events, "Results", signedIn);
+						
+					var eventsTable = builder.eventsTable(events, "Results", false);
 					var search = builder.search(filter);
 
 					var head = builder.head("Search");
@@ -1274,9 +1256,9 @@ function search(request, response, navbar, signedIn){
 					var page = builder.page(head, body);
 
 					buildResponse(response, page);
-			
+						
 				}
-			);
+			);		
 		}
 	);
 		
