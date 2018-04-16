@@ -20,12 +20,12 @@ function encodeHTML(html) {
 	return html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 }
 
-function buildResponse(response, page) {
+function buildResponse(response, text) {
 
 	response.writeHead(200, {
 		'Content-Type' : 'text/html'
 	});
-	response.write(page);
+	response.write(text);
 	response.end();
 
 }

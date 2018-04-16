@@ -10,7 +10,7 @@ const path = require('path');
 const fileUpload = require('express-fileupload');
 const cookieParser = require('cookie-parser');
 
-// My Routers
+// Routers
 const root = require('./js/routers/root.js');
 const login = require('./js/routers/login.js');
 const profile = require('./js/routers/profile.js');
@@ -19,11 +19,16 @@ const organise = require('./js/routers/organise.js');
 const logout = require('./js/routers/logout.js');
 const search = require('./js/routers/search.js');
 const events = require('./js/routers/myEvents.js');
+const interest = require('./js/routers/interest.js');
 
-
-// My modules
+// Modules
 const db = require('./js/modules/dbHelper');
 
+/**
+ * Performs the operations necessary to start the server.
+ * 
+ * @returns undefined
+ */
 function startServer() {
 
 	console.log('Listening on port ' + port);
@@ -45,19 +50,4 @@ app.use('/CS2410/coursework/organise', organise);
 app.use('/CS2410/coursework/logout', logout);
 app.use('/CS2410/coursework/search', search);
 app.use('/CS2410/coursework/events', events);
-
-
-app.post(
-	'/CS2410/coursework/interest', 
-	function(request, response){
-	
-		console.log(request.body.event_id + " " + request.body.state);
-		
-		response.writeHead(200, {
-			'Content-Type' : 'text/html'
-		});
-		response.write("I like toast");
-		response.end();
-		
-	}
-);
+app.use('/CS2410/coursework/interest', interest);

@@ -181,22 +181,23 @@ function eventsTable(events, title, signedIn) {
 		eventsList += '		<td>' + event.type + '</td>';
 		eventsList += '		<td>' + event.location + '</td>';
 		eventsList += '		<td>' + event.time + '</td>';
-		eventsList += '		<td><a href="/CS2410/coursework/profile?email='
-				+ event.organiser + '">' + event.organiser + '</a></td>';
-		eventsList += '		<td>' + event.popularity + '</td>';
+		eventsList += '		<td><a href="/CS2410/coursework/profile?email=' + event.organiser + '">' + event.organiser
+				+ '</a></td>';
+		eventsList += '		<td id="popularity' + event.id + '">' + event.popularity + '</td>';
 		eventsList += '		<td>';
 
 		if (signedIn === true) {
 			if (event.hasLiked) {
 
-				eventsList += '<button class="btn btn-danger btn-sm" id="interest' + event.id + '" onclick="changeInterest(this);" type="button" value="Unlike">Unlike</button>';
+				eventsList += '<button class="btn btn-danger btn-sm" id="interest' + event.id
+						+ '" onclick="changeInterest(this);" type="button">Unlike</button>';
 			} else {
-				eventsList += '<button class="btn btn-success btn-sm" id="interest' + event.id + '" onclick="changeInterest(this);" type="button" value="Like">Like</button>';
+				eventsList += '<button class="btn btn-success btn-sm" id="interest' + event.id
+						+ '" onclick="changeInterest(this);" type="button">Like</button>';
 			}
 		}
 
-		eventsList += '		<a href="/CS2410/coursework/event?event_id='
-				+ event.id
+		eventsList += '		<a href="/CS2410/coursework/event?event_id=' + event.id
 				+ '"><button class="btn btn-primary btn-sm"  type="button" value="View">View</button></a>';
 
 		eventsList += '		</td>';
@@ -205,6 +206,7 @@ function eventsTable(events, title, signedIn) {
 	}
 
 	eventsList += '</form></tbody></table></div></div></div>';
+	eventsList += '<script src="/scripts/changeInterest.js"></script>';
 
 	return eventsList;
 }
@@ -228,14 +230,12 @@ function editEvent(eventDetails) {
 	event += '		</div>';
 	event += '		<div class="panel-body">';
 	event += '			<form id="event" enctype="multipart/form-data" name="event" action="/CS2410/coursework/event" onsubmit="return validateEvent()" method="post">';
-	event += '				<input hidden type="text" name="event_id" id="event_id" value="'
-			+ eventDetails.event_id + '"/>';
+	event += '				<input hidden type="text" name="event_id" id="event_id" value="' + eventDetails.event_id + '"/>';
 
 	// Name
 	event += '				<div class="form-group">';
 	event += '					<label for="name">Name:</label>';
-	event += '					<input type="text" name="name" id="name" class="form-control" value="'
-			+ eventDetails.name + '"/>';
+	event += '					<input type="text" name="name" id="name" class="form-control" value="' + eventDetails.name + '"/>';
 	event += '				</div>';
 
 	var checked = 'checked="checked"';
@@ -245,18 +245,15 @@ function editEvent(eventDetails) {
 	event += '					<label for="type">Type:</label>';
 	event += '					<div class="radio">';
 	event += '						<label><input type="radio" value="sport" name="type" '
-			+ (eventDetails.type === "sport" ? checked : '')
-			+ '/>Sport</label>';
+			+ (eventDetails.type === "sport" ? checked : '') + '/>Sport</label>';
 	event += '					</div>';
 	event += '					<div class="radio">';
 	event += '						<label><input type="radio" value="culture" name="type" '
-			+ (eventDetails.type === "culture" ? checked : '')
-			+ '/>Culture</label>';
+			+ (eventDetails.type === "culture" ? checked : '') + '/>Culture</label>';
 	event += '					</div>';
 	event += '					<div class="radio">';
 	event += '						<label><input type="radio" value="other" name="type"  '
-			+ (eventDetails.type === "other" ? checked : '')
-			+ '/>Other</label>';
+			+ (eventDetails.type === "other" ? checked : '') + '/>Other</label>';
 	event += '					</div>';
 	event += '				</div>';
 
@@ -275,15 +272,13 @@ function editEvent(eventDetails) {
 	event += '					<div class="col-sm-6">';
 	event += '						<div class="form-group">';
 	event += '						<label for="date">Date:</label>';
-	event += '						<input type="date" name="date" id="date" class="form-control" value="'
-			+ date + '"/>';
+	event += '						<input type="date" name="date" id="date" class="form-control" value="' + date + '"/>';
 	event += '					</div>';
 	event += '					</div>';
 	event += '					<div class="col-sm-6">';
 	event += '						<div class="form-group">';
 	event += '							<label for="time">Time:</label>';
-	event += '							<input type="time" name="time" id="time" class="form-control" value="'
-			+ time + '"/>';
+	event += '							<input type="time" name="time" id="time" class="form-control" value="' + time + '"/>';
 	event += '						</div>';
 	event += '					</div>';
 	event += '				</div>';
@@ -315,15 +310,11 @@ function editEvent(eventDetails) {
 		var picture = eventDetails.pictures[index];
 
 		event += '<div class="imageInput col-sm-3">';
-		event += '		<input type="file" name="picture'
-				+ index
-				+ '" id="picture'
-				+ index
+		event += '		<input type="file" name="picture' + index + '" id="picture' + index
 				+ '" class="form-control" onchange="readURL(this)" accept=".png,.jpg"/>';
 		event += '		<img id="preview' + index + '" src="/uploaded/' + picture
 				+ '" alt="event picture" style="width: 100%; height: 100%" />';
-		event += '		<input hidden type="text" name="pName' + index
-				+ '" id="pName' + index + '" />';
+		event += '		<input hidden type="text" name="pName' + index + '" id="pName' + index + '" />';
 		event += '</div>';
 	}
 
@@ -373,9 +364,8 @@ function viewEvent(eventDetails) {
 	// Organiser
 	event += '			<div>';
 	event += '				<label>Organiser:</label> ';
-	event += '				<p><a href="/CS2410/coursework/profile?email='
-			+ eventDetails.organiser + '">' + eventDetails.organiser
-			+ '</a></p>';
+	event += '				<p><a href="/CS2410/coursework/profile?email=' + eventDetails.organiser + '">'
+			+ eventDetails.organiser + '</a></p>';
 	event += '			</div>';
 
 	// Time
@@ -507,8 +497,8 @@ function editProfileInformation(userDetails) {
 	// Full name
 	information += '	<div class="form-group">';
 	information += '		<label for="name">Full Name:</label>';
-	information += '		<input type="text"	name="name" id="name" class="form-control" value="'
-			+ userDetails.name + '" />';
+	information += '		<input type="text"	name="name" id="name" class="form-control" value="' + userDetails.name
+			+ '" />';
 	information += '	</div>';
 
 	// Password
@@ -533,8 +523,7 @@ function editProfileInformation(userDetails) {
 	// Organiser
 	information += '	<div class="form-check">';
 	information += '		<input class="form-check-input" type="checkbox" name="organiser" id="organiser" '
-			+ (userDetails.organiser === 'true' ? 'checked' : 'unchecked')
-			+ '/>';
+			+ (userDetails.organiser === 'true' ? 'checked' : 'unchecked') + '/>';
 	information += '		<label for="organiser">Event Organiser</label> ';
 	information += '	</div>';
 
@@ -641,8 +630,7 @@ function viewProfileInformation(userDetails) {
 	information += '	</div>';
 	information += '	<div>';
 	information += '		<label>Event Organiser</label> ';
-	information += '		<p>' + (userDetails.organiser === 'true' ? 'Yes' : 'No')
-			+ '</p>';
+	information += '		<p>' + (userDetails.organiser === 'true' ? 'Yes' : 'No') + '</p>';
 	information += '	</div>';
 
 	return information;
@@ -691,15 +679,9 @@ function search(filter) {
 	search += '							<div class="form-group">';
 	search += '								<label for="minimum">Filter:</label> ';
 	search += '								<select onchange="changeFilter()" class="form-control" id="filter" name="filter">';
-	search += '									<option '
-			+ (filter.by === "date" ? 'selected="selected"' : '')
-			+ '>Date</option>';
-	search += '									<option '
-			+ (filter.by === "popularity" ? 'selected="selected"' : '')
-			+ '>Popularity</option>';
-	search += '									<option '
-			+ (filter.by === "type" ? 'selected="selected"' : '')
-			+ '>Type</option>';
+	search += '									<option ' + (filter.by === "date" ? 'selected="selected"' : '') + '>Date</option>';
+	search += '									<option ' + (filter.by === "popularity" ? 'selected="selected"' : '') + '>Popularity</option>';
+	search += '									<option ' + (filter.by === "type" ? 'selected="selected"' : '') + '>Type</option>';
 	search += '								</select>';
 	search += '							</div>';
 	search += '						</div>';
@@ -712,16 +694,14 @@ function search(filter) {
 		search += '			<div class="form-group">';
 		search += '				<label for="from">From:</label>';
 		search += '				<input class="form-control" type="date" id="from" name="from" '
-				+ ((filter.from !== "") ? ('value="' + filter.from + '"') : '')
-				+ '/>';
+				+ ((filter.from !== "") ? ('value="' + filter.from + '"') : '') + '/>';
 		search += '			</div>';
 		search += '		</div>';
 		search += '		<div class="col-sm-3 pull-right">';
 		search += '			<div class="form-group">';
 		search += '				<label for="to">To:</label>';
 		search += '				<input class="form-control" type="date" id="to" name="to" '
-				+ ((filter.to !== "") ? ('value="' + filter.to + '"') : '')
-				+ '/>';
+				+ ((filter.to !== "") ? ('value="' + filter.to + '"') : '') + '/>';
 		search += '			</div>';
 		search += '		</div>';
 
@@ -731,8 +711,7 @@ function search(filter) {
 		search += '		<div class="form-group">';
 		search += '			<label for="minimum">Minimum:</label> ';
 		search += '			<input class="form-control" type="number" id="minimum" name="minimum" '
-				+ ((filter.minimum !== "") ? ('value="' + filter.minimum + '"')
-						: '') + '/>';
+				+ ((filter.minimum !== "") ? ('value="' + filter.minimum + '"') : '') + '/>';
 		search += '		</div>';
 		search += '	</div>';
 
@@ -742,15 +721,9 @@ function search(filter) {
 		search += '		<div class="form-group">';
 		search += '			<label for="minimum">Type:</label> ';
 		search += '			<select class="form-control" id="type" name="type">';
-		search += '				<option '
-				+ (filter.type === "sport" ? 'selected="selected"' : '')
-				+ '>sport</option>';
-		search += '				<option '
-				+ (filter.type === "culture" ? 'selected="selected"' : '')
-				+ '>culture</option>';
-		search += '				<option '
-				+ (filter.type === "other" ? 'selected="selected"' : '')
-				+ '>other</option>';
+		search += '				<option ' + (filter.type === "sport" ? 'selected="selected"' : '') + '>sport</option>';
+		search += '				<option ' + (filter.type === "culture" ? 'selected="selected"' : '') + '>culture</option>';
+		search += '				<option ' + (filter.type === "other" ? 'selected="selected"' : '') + '>other</option>';
 		search += '			</select>';
 		search += '		</div>';
 		search += '	</div>';

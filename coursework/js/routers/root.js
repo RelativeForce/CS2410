@@ -57,95 +57,6 @@ function get(request, response) {
 	}
 }
 
-/**
- * Porcesses POST requests to the primary end point which will respond with the
- * home page or landing page depending on whether the response contains valid
- * session cookie.
- * 
- * @param request
- *            The request that may contain details for updating user interest.
- * @param response
- *            The home page or the landing page
- * @returns undefined
- */
-function post(request, response){
-	
-	// Check for the session cookie and wherther it is active.
-	var sessionToken = request.cookies[cookieName];
-
-	// If there is a active session build the nav bar with the user options
-	if (sessions.validSession(sessionToken)) {
-		
-		sessions.extend(sessionToken, response);
-		
-		var email = sessions.getEmail(sessionToken);
-
-		db.each(
-			"SELECT * FROM Users WHERE email = ?",
-			[email], 
-			function(user) {
-			
-				updateInterest(request, email);
-				
-				// If there is a row send the home page of that user.
-				home(request, response, user);
-
-			}, 
-			function(count) {
-			
-				// If there is no user with that email show the landing page.
-				if (count == 0) {
-					landing(request, response);
-				}
-			}
-		);
-
-	} else {
-		
-		// If there is no valid session send the landing page.
-		landing(request, response);
-	}
-	
-}
-
-function updateInterest(request, email){
-	
-	var event_id = request.body.event_id;
-	var type = request.body.type;
-
-	if(event_id && type){
-		
-		if(type === "like"){
-			
-			db.run(
-				"INSERT INTO Interest(event_id, student_email) VALUES (?, ?);", 
-				[event_id, email]
-			);
-			
-			db.run(
-				"UPDATE Events SET popularity = popularity + 1  WHERE event_id = ?;",
-				[event_id]
-			);
-
-			console.log("Interest update: " + email + " liked event " + event_id);
-			
-		}else if(type === "unlike"){
-			
-			db.run(
-				"DELETE FROM Interest WHERE event_id = ? AND student_email = ?;",
-				[event_id, email]
-			);
-			
-			db.run(
-				"UPDATE Events SET popularity = popularity - 1  WHERE event_id = ?;", 
-				[event_id]
-			);
-			
-			console.log("Interest update: " + email + " unliked event " + event_id);
-		}
-	}
-}
-
 function home(request, response, user) {
 
 	// Construct the student home page
@@ -257,6 +168,5 @@ function landing(request, response) {
 }
 
 router.get('/', get);
-router.post('/', post);
 
 module.exports = router;
