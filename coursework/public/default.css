@@ -23,6 +23,10 @@ nav {
 	padding-bottom: 0;
 }
 
+td .btn-group a, button{
+	width: 60px;
+}
+
 section {
 	padding: 5%;
 }

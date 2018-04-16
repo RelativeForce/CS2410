@@ -186,6 +186,9 @@ function eventsTable(events, title, signedIn) {
 		eventsList += '		<td id="popularity' + event.id + '">' + event.popularity + '</td>';
 		eventsList += '		<td>';
 
+		eventsList += '			<div class="btn-group">';
+		eventsList += '				<a href="/CS2410/coursework/event?event_id=' + event.id + '"class="btn btn-primary btn-sm" role="button">View</a>';
+
 		if (signedIn === true) {
 			if (event.hasLiked) {
 
@@ -197,9 +200,7 @@ function eventsTable(events, title, signedIn) {
 			}
 		}
 
-		eventsList += '		<a href="/CS2410/coursework/event?event_id=' + event.id
-				+ '"><button class="btn btn-primary btn-sm"  type="button" value="View">View</button></a>';
-
+		eventsList += '			</div>';
 		eventsList += '		</td>';
 		eventsList += '</tr>';
 
