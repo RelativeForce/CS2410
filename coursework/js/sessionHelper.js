@@ -131,7 +131,7 @@ function endSession(token) {
 			// Remove the session
 			sessions.splice(index, 1);
 			removed = true;
-			console.log("Session " + token + "  [End]");
+			console.log("Session " + token + " [End]");
 		}
 
 	}
@@ -173,7 +173,7 @@ function uniqueToken() {
 function generateToken() {
 
 	// The length of the token.
-	const tokenLength = 30;
+	const tokenLength = 10;
 
 	var token = "";
 
