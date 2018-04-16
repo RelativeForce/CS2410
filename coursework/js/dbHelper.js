@@ -110,31 +110,35 @@ function collect(queryText, params, mapper, onComplete) {
 	// The collection of all the row mappings.
 	var collection = [];
 
-	query.each(params, function(err, row) {
+	query.each(
+		params, 
+		function(err, row) {
+	
+			// If there was an error throw it.
+			if (err) {
+				throw err;
+			}
+	
+			// The object that the row mapped to.
+			var mapped = mapper(row);
+	
+			// Store the mapped value in the collection.
+			collection.push(mapped);
 
-		// If there was an error throw it.
-		if (err) {
-			throw err;
+		}, 
+		function(err, count) {
+
+			query.finalize();
+	
+			if (err) {
+				throw err;
+			}
+	
+			// Perform the on complete function on the collection.
+			onComplete(collection);
+
 		}
-
-		// The object that the row mapped to.
-		var mapped = mapper(row);
-
-		// Store the mapped value in the collection.
-		collection.push(mapped);
-
-	}, function(err, count) {
-
-		query.finalize();
-
-		if (err) {
-			throw err;
-		}
-
-		// Perform the on complete function on the collection.
-		onComplete(collection);
-
-	});
+	);
 }
 
 /**
@@ -162,27 +166,30 @@ function each(queryText, params, action, onComplete) {
 	// Convert the query text into a sanitised SQLite query
 	var query = database.prepare(queryText);
 
-	query.each(params, function(err, row) {
+	query.each(
+		params, 
+		function(err, row) {
 
-		// If there was an error throw it.
-		if (err) {
-			throw err;
+			// If there was an error throw it.
+			if (err) {
+				throw err;
+			}
+	
+			// Perform the action on the row/
+			action(row);
+
+		}, 
+		function(err, count) {
+			query.finalize();
+	
+			if (err) {
+				throw err;
+			}
+	
+			// Perform the on complete function.
+			onComplete(count);
 		}
-
-		// Perform the action on the row/
-		action(row);
-
-	}, function(err, count) {
-		query.finalize();
-
-		if (err) {
-			throw err;
-		}
-
-		// Perform the on complete function.
-		onComplete(count);
-
-	});
+	);
 
 }
 
