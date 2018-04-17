@@ -22,7 +22,7 @@ const misc = require('./../modules/misc');
  *            response box.
  * @returns undefined
  */
-function post(request, response) {
+function post_edit(request, response) {
 
 	// The session cookie.
 	var sessionToken = request.cookies[cookieName];
@@ -31,68 +31,65 @@ function post(request, response) {
 	if (sessions.validSession(sessionToken)) {
 
 		sessions.extend(sessionToken, response);
-		
+
 		var email = sessions.getEmail(sessionToken);
 
 		// Iterate over the user's details
-		db.each(
-			"SELECT * FROM Users WHERE email = ?",
-			[email],
-			function(row) {
+		db
+				.each(
+						"SELECT * FROM Users WHERE email = ?",
+						[ email ],
+						function(row) {
 
-				// Change the profile picture
-				var newPicture = changePicure(request, response, row);
-	
-				// Updated the password if there is a new password specified
-				var password = row.password;
-				if (request.body.password !== "") {
-					password = MD5.hash(request.body.password + row.salt);
-				}
-	
-				// The updated user details
-				var newRow = {
-					"email" : row.email,
-					"name" : (row.name !== request.body.name) ? request.body.name : row.name,
-					"organiser" : request.body.organiser ? 'true' : 'false',
-					"picture" : (newPicture !== row.picture) ? newPicture : row.picture,
-					"password" : password,
-					"telephone" : (row.telephone !== request.body.telephone) ? request.body.telephone : row.telephone
-				};
-	
-				// Update the user details in the database
-				db.run(
-					"UPDATE Users SET name = ?, organiser = ?, picture = ?, password = ?, telephone = ?  WHERE email = ?;",
-					[newRow.name, newRow.organiser, newRow.picture, newRow.password,	newRow.telephone, newRow.email]
-				);
+							// Change the profile picture
+							var newPicture = changePicure(request, response,
+									row);
 
-	
-				// Build a new info box
-				var info = builder.response("Changes Updated");
-				
-				var home = builder.navbarLink("/CS2410/coursework", "Home");
-				var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
-				var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
-				var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
-				var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
-				var home = builder.navbarLink("/CS2410/coursework", "Home");
-				
-				var navbar = builder.navbar(
-					(newRow.organiser === 'true') ? 
-					[ home, newEvent, myEvents, search, logout ] : 
-					[ home, search, logout ]
-				);
-	
-				// Build the profile page with the info box at the top.
-				profile(request, response, newRow, info, true, navbar);
+							// Updated the password if there is a new password
+							// specified
+							var password = row.password;
+							if (request.body.password !== "") {
+								password = MD5.hash(request.body.password
+										+ row.salt);
+							}
 
-		}, 
-		function(count) {
-			
-			// If the user email was invalid.
-			if(count == 0){
-				response.redirect('/CS2410/coursework');
-			}
-		});
+							// The updated user details
+							var newRow = {
+								"email" : row.email,
+								"name" : (row.name !== request.body.name) ? request.body.name
+										: row.name,
+								"organiser" : request.body.organiser ? 'true'
+										: 'false',
+								"picture" : (newPicture !== row.picture) ? newPicture
+										: row.picture,
+								"password" : password,
+								"telephone" : (row.telephone !== request.body.telephone) ? request.body.telephone
+										: row.telephone
+							};
+
+							// Update the user details in the database
+							db
+									.run(
+											"UPDATE Users SET name = ?, organiser = ?, picture = ?, password = ?, telephone = ?  WHERE email = ?;",
+											[ newRow.name, newRow.organiser,
+													newRow.picture,
+													newRow.password,
+													newRow.telephone,
+													newRow.email ]);
+
+							console.log("Profile Update [" + email + "]");
+
+							response
+									.redirect('/CS2410/coursework/profile?email='
+											+ email);
+
+						}, function(count) {
+
+							// If the user email was invalid.
+							if (count == 0) {
+								response.redirect('/CS2410/coursework');
+							}
+						});
 
 	} else {
 		// If the session was invalid
@@ -100,7 +97,6 @@ function post(request, response) {
 	}
 
 }
-
 
 /**
  * Processes the GET requests to the 'profile' end point which will respond with
@@ -115,58 +111,143 @@ function post(request, response) {
  */
 function get(request, response) {
 
-	if(request.query.email){
-	
+	if (request.query.email) {
+
 		var email = request.query.email;
 
-		db.each(
-			"SELECT * FROM Users WHERE email = ?", 
-			[email], 
-			function(row) {
-				
-				// Check for the session cookie and wherther it is active.
-				var sessionToken = request.cookies[cookieName];
-	
-				if (sessions.validSession(sessionToken)) {
-					sessions.extend(sessionToken, response);
-					
-					var home = builder.navbarLink("/CS2410/coursework", "Home");
-					var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
-					var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
-					var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
-					var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
-					
-					var navbar = builder.navbar(
-						(row.organiser === 'true') ? 
-						[ home, newEvent, myEvents, search, logout ] : 
-						[ home, search, logout ]
-					);
-					
-					// If the current user owns the profile allow them to edit it.
-					profile(request, response, row, "", sessions.getEmail(sessionToken) === email, navbar);
-					
-				}else{
-					
-					var login = builder.navbarLink("/CS2410/coursework/login", "Login");
-					var home = builder.navbarLink("/CS2410/coursework", "Home");
-					var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
-					
-					var navbar = builder.navbar(
-						[ home, login, search ]
-					);
-					
-					profile(request, response, row, "", false, navbar);
-				}
+		db.each("SELECT * FROM Users WHERE email = ?", [ email ],
+				function(row) {
 
-			}, 
-			function(count) {
-			
-				// If there is no user with that email redirect to the landing page.
-				if (count == 0) {
-					response.redirect('/CS2410/coursework');
-				}
-			}
-		);
+					// Check for the session cookie and wherther it is active.
+					var sessionToken = request.cookies[cookieName];
+
+					if (sessions.validSession(sessionToken)) {
+						sessions.extend(sessionToken, response);
+
+						var sessionEmail = sessions.getEmail(sessionToken);
+
+						var home = builder.navbarLink("/CS2410/coursework",
+								"Home");
+						var logout = builder.navbarLink(
+								"/CS2410/coursework/logout", "Logout");
+						var newEvent = builder
+								.navbarLink("/CS2410/coursework/organise",
+										"Orgainse Event");
+						var search = builder.navbarLink(
+								"/CS2410/coursework/search", "Search Events");
+						var myEvents = builder.navbarLink(
+								"/CS2410/coursework/events", "My Events");
+
+						var navbar = builder
+								.navbar((row.organiser === 'true') ? [ home,
+										newEvent, myEvents, search, logout ]
+										: [ home, search, logout ]);
+
+						// If the current user owns the profile allow them to
+						// edit it.
+						viewProfile(request, response, row, "",
+								sessionEmail === email, navbar);
+
+					} else {
+
+						var login = builder.navbarLink(
+								"/CS2410/coursework/login", "Login");
+						var home = builder.navbarLink("/CS2410/coursework",
+								"Home");
+						var search = builder.navbarLink(
+								"/CS2410/coursework/search", "Search Events");
+
+						var navbar = builder.navbar([ home, login, search ]);
+
+						viewProfile(request, response, row, "", false, navbar);
+					}
+
+				}, function(count) {
+
+					// If there is no user with that email redirect to the
+					// landing page.
+					if (count == 0) {
+						response.redirect('/CS2410/coursework');
+					}
+				});
+
+	} else {
+		// No valid session redirect the user to the home screen.
+		response.redirect('/CS2410/coursework');
+	}
+
+}
+
+function get_edit(request, response) {
+
+	if (request.query.email) {
+
+		var email = request.query.email;
+
+		db
+				.each(
+						"SELECT * FROM Users WHERE email = ?",
+						[ email ],
+						function(row) {
+
+							// Check for the session cookie and wherther it is
+							// active.
+							var sessionToken = request.cookies[cookieName];
+
+							if (sessions.validSession(sessionToken)) {
+								sessions.extend(sessionToken, response);
+
+								var sessionEmail = sessions
+										.getEmail(sessionToken);
+
+								if (sessionEmail === email) {
+
+									var home = builder.navbarLink(
+											"/CS2410/coursework", "Home");
+									var logout = builder.navbarLink(
+											"/CS2410/coursework/logout",
+											"Logout");
+									var newEvent = builder.navbarLink(
+											"/CS2410/coursework/organise",
+											"Orgainse Event");
+									var search = builder.navbarLink(
+											"/CS2410/coursework/search",
+											"Search Events");
+									var myEvents = builder.navbarLink(
+											"/CS2410/coursework/events",
+											"My Events");
+
+									var navbar = builder
+											.navbar((row.organiser === 'true') ? [
+													home, newEvent, myEvents,
+													search, logout ]
+													: [ home, search, logout ]);
+
+									// If the current user owns the profile
+									// allow them to edit it.
+									editProfile(request, response, row, "",
+											navbar);
+
+								} else {
+									response
+											.redirect('/CS2410/coursework/profile?email='
+													+ email);
+								}
+
+							} else {
+								response
+										.redirect('/CS2410/coursework/profile?email='
+												+ email);
+							}
+
+						}, function(count) {
+
+							// If there is no user with that email redirect to
+							// the landing page.
+							if (count == 0) {
+								response.redirect('/CS2410/coursework');
+							}
+						});
 
 	} else {
 		// No valid session redirect the user to the home screen.
@@ -217,12 +298,12 @@ function changePicure(request, response, row) {
 
 }
 
-function profile(request, response, user, info, canEdit, navbar) {
+function viewProfile(request, response, user, info, canEdit, navbar) {
 
 	// Construct the organiser home page
 	misc.buildPage('profile', function(content) {
 
-		var profile = builder.profile(user, canEdit);
+		var profile = builder.viewProfile(user, canEdit);
 
 		var head = builder.head("Profile");
 		var body = builder.body(navbar, info + profile + content);
@@ -234,8 +315,25 @@ function profile(request, response, user, info, canEdit, navbar) {
 
 }
 
+function editProfile(request, response, user, info, navbar) {
+
+	// Construct the organiser home page
+	misc.buildPage('profile', function(content) {
+
+		var profile = builder.editProfile(user);
+
+		var head = builder.head("Profile");
+		var body = builder.body(navbar, info + profile + content);
+		var page = builder.page(head, body);
+
+		misc.buildResponse(response, page);
+
+	});
+
+}
 
 router.get('/', get);
-router.post('/', post);
+router.get('/edit', get_edit);
+router.post('/edit', post_edit);
 
 module.exports = router;

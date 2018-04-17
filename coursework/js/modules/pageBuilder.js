@@ -441,7 +441,7 @@ function editProfile(userDetails) {
 	profile += '			<h2 id="title">Profile: ' + userDetails.name + '</h2>';
 	profile += '		</div>';
 	profile += '		<div class="panel-body">';
-	profile += '			<form id="information" enctype="multipart/form-data" name="information" action="/CS2410/coursework/profile" onsubmit="return validateProfile()" method="post">';
+	profile += '			<form id="information" enctype="multipart/form-data" name="information" action="/CS2410/coursework/profile/edit" onsubmit="return validateProfile()" method="post">';
 	profile += '				<div class="col-xs-12 col-sm-5">';
 	profile += '					<div class="panel panel-default">';
 	profile += '						<div class="panel-heading">';
@@ -550,15 +550,26 @@ function editProfileInformation(userDetails) {
  * 
  * @param userDetails
  *            The details of the user.
+ * @param canEdit
+ *            If the user can edit the profile.
  * @returns The view profile HTML.
  */
-function viewProfile(userDetails) {
+function viewProfile(userDetails, canEdit) {
 
 	var profile = "";
 
 	profile += '<div class="container">';
 	profile += '	<div class="panel panel-default">';
 	profile += '		<div class="panel-heading">';
+	
+	if(canEdit){
+		
+		profile += '	<div class="btn-toolbar pull-right">';
+		profile += ' 		<a href="/CS2410/coursework/profile/edit?email=' + userDetails.email + '" class="btn btn-primary" role="button">Edit</a>';
+		profile += '	</div>';
+		
+	}
+	
 	profile += '			<h2 id="title">Profile: ' + userDetails.name + '</h2>';
 	profile += '		</div>';
 	profile += '		<div class="panel-body">';
@@ -785,13 +796,11 @@ module.exports = {
 	viewEvent : function(eventDetails, canEdit){
 		return viewEvent(eventDetails, canEdit);
 	},
-	profile : function(userDetails, canEdit) {
-
-		if (canEdit == true) {
-			return editProfile(userDetails);
-		} else {
-			return viewProfile(userDetails);
-		}
+	viewProfile : function(userDetails, canEdit) {
+		return viewProfile(userDetails, canEdit);	
+	},
+	editProfile : function(userDetails) {
+		return editProfile(userDetails);
 	},
 	response : function(message) {
 		return response(message);
