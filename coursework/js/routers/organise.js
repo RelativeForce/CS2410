@@ -131,7 +131,7 @@ function post(request, response) {
 								
 							// Add event and pictures to the database
 							addEvent(request, email, event_id);	
-							changeEventPictures(request, event_id)
+							misc.changeEventPictures(request, event_id)
 
 							response.redirect('/CS2410/coursework/event?event_id=' + event_id);
 						}
@@ -153,12 +153,11 @@ function post(request, response) {
 
 }
 
-
 function addEvent(request, email, event_id){
 	
 	var event = {
 		"name" : misc.encodeHTML(request.body.name),
-		"id" : misc.encodeHTML(event_id),
+		"id" : event_id,
 		"location" : misc.encodeHTML(request.body.location),
 		"time" : misc.encodeHTML(request.body.date + " " + request.body.time),
 		"organiser" : misc.encodeHTML(email),
@@ -173,19 +172,6 @@ function addEvent(request, email, event_id){
 	);
 	
 	console.log("New Event: " + event.name);
-	
-}
-
-
-
-function insertPicture(event_id, filename, newFilename){
-	
-	db.run(
-		"INSERT INTO Event_Pictures(picture, event_id) VALUES (?, ?);",
-		[newFilename, event_id]
-	);
-	
-	console.log('Uploaded: ' + filename + ' -> ' + newFilename);
 	
 }
 

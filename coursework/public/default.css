@@ -23,7 +23,7 @@ nav {
 	padding-bottom: 0;
 }
 
-td .btn-group a, button{
+td .btn-group a, td .btn-group button{
 	width: 60px;
 }
 

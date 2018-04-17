@@ -175,101 +175,47 @@ function get(request, response) {
 
 }
 
-function changeEventPictures(request, event_id){
-	
-	var files = request.files;
-	
-	if(request.body.pName0 && request.body.pName0 !== ""){
-		swapPicture(event_id, files, misc.encodeHTML(request.body.pName0), '0');
+function changePicure(request, response, row) {
+
+	// If no file was uploaded then there is no change.
+	if (!request.files.picture) {
+		return row.picture;
 	}
 
-	if(request.body.pName1 && request.body.pName1 !== ""){
-		swapPicture(event_id, files, misc.encodeHTML(request.body.pName1), '1');
-	}
+	var pictureName = row.email.split("@")[0];
+	var file = request.files.picture;
+	var ext = path.extname(file.name).toLowerCase();
+	var newFilename = 'pp_' + pictureName + ext;
+	var relativePath = './public/uploaded/' + newFilename;
 
-	if(request.body.pName2 && request.body.pName2 !== ""){
-		swapPicture(event_id, files, misc.encodeHTML(request.body.pName2), '2');
-	}
+	if (ext === '.png' || ext === '.jpg') {
 
-	if(request.body.pName3 && request.body.pName3 !== ""){
-		swapPicture(event_id, files, misc.encodeHTML(request.body.pName3), '3');
-	}
-	
-}
+		// If there is a current picture attempt to delete it.
+		if (row.picture !== 'none') {
 
-function swapPicture(event_id, files, specificFile, pictureNum){
-	
-	var picture = 'none';
+			var toDelete = path.resolve('./public/uploaded/' + row.picture);
 
-	// Iterate over all the pictures with the specifed event id
-	db.each(
-		"SELECT * FROM Event_Pictures WHERE event_id = ?", 
-		[event_id], 
-		function(row) {
-		
-			// If the current name is the name of the first image regardless of file
-			// extension.
-			if(row.picture.split('.')[0] === ('e_' + event_id + '_' + pictureNum)){
-				picture = row.picture;
-			}
-		}, 
-		function(count) {
-		
-			if(count != 0 && picture !== 'none' ){
-				deletePicture(picture);
-			}
-		
-			// For all of the files the user wants to input
-			for(var f in files){
-				
-				var file = files[f];	
-				var filename = file.name;
-				
-				// If the current file is the file for the current slot.
-				if(filename === specificFile){
-					
-					var ext = path.extname(filename).toLowerCase();
-					var newFilename = 'e_' + event_id + "_" + pictureNum + ext;
-					var relativePath = './public/uploaded/' + newFilename;
-	
-					// If the image is the valid file type
-					if (ext === '.png' || ext === '.jpg') {
-	
-						// Move the file
-						file.mv(relativePath, function(err) {
-							if (err) {
-								throw err;
-							}
-						});
-						
-						// Insert the entry into the database
-						insertPicture(event_id, filename, newFilename);
-						
-					}	
-				}
+			if (fs.existsSync(toDelete)) {
+
+				console.log('Exists: ' + toDelete);
+				fs.unlinkSync(toDelete);
 			}
 		}
-	);
-	
-}
 
+		file.mv(relativePath, function(err) {
+			if (err) {
+				throw err;
+			} else {
+				console.log('Uploaded: ' + file.name + ' -> ' + newFilename);
+			}
+		});
 
-function deletePicture(picture){
-	
-	var toDelete = path.resolve('./public/uploaded/' + picture);
-	if (fs.existsSync(toDelete)) {
-		fs.unlinkSync(toDelete);
+		return newFilename;
 	}
-	
-	db.run(
-		"DELETE FROM Event_Pictures WHERE picture = ?;", 
-		[picture] 
-	);
-	
-	console.log('Deleted: ' + picture);
-	
-}
 
+	return row.picture;
+
+}
 
 function profile(request, response, user, info, canEdit, navbar) {
 

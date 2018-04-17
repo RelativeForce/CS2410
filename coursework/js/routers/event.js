@@ -156,7 +156,7 @@ function post(request, response) {
 							"popularity" : popularity
 						};
 
-						changeEventPictures(request, event_id);
+						misc.changeEventPictures(request, event_id);
 						updateEvent(event);
 
 						response.redirect('/CS2410/coursework/event?event_id=' + event_id + '&type=view');
@@ -188,48 +188,6 @@ function updateEvent(event) {
 					event.popularity, event.id ]);
 
 	console.log("Updated Event: " + event.name);
-
-}
-
-function changePicure(request, response, row) {
-
-	// If no file was uploaded then there is no change.
-	if (!request.files.picture) {
-		return row.picture;
-	}
-
-	var pictureName = row.email.split("@")[0];
-	var file = request.files.picture;
-	var ext = path.extname(file.name).toLowerCase();
-	var newFilename = 'pp_' + pictureName + ext;
-	var relativePath = './public/uploaded/' + newFilename;
-
-	if (ext === '.png' || ext === '.jpg') {
-
-		// If there is a current picture attempt to delete it.
-		if (row.picture !== 'none') {
-
-			var toDelete = path.resolve('./public/uploaded/' + row.picture);
-
-			if (fs.existsSync(toDelete)) {
-
-				console.log('Exists: ' + toDelete);
-				fs.unlinkSync(toDelete);
-			}
-		}
-
-		file.mv(relativePath, function(err) {
-			if (err) {
-				throw err;
-			} else {
-				console.log('Uploaded: ' + file.name + ' -> ' + newFilename);
-			}
-		});
-
-		return newFilename;
-	}
-
-	return row.picture;
 
 }
 
