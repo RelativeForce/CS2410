@@ -187,7 +187,7 @@ function eventsTable(events, title, signedIn) {
 		eventsList += '		<td>';
 
 		eventsList += '			<div class="btn-group">';
-		eventsList += '				<a href="/CS2410/coursework/event?event_id=' + event.id + '"class="btn btn-primary btn-sm" role="button">View</a>';
+		eventsList += '				<a href="/CS2410/coursework/event?event_id=' + event.id + '" class="btn btn-primary btn-sm" role="button">View</a>';
 
 		if (signedIn === true) {
 			if (event.hasLiked) {
@@ -224,13 +224,13 @@ function editEvent(eventDetails) {
 
 	var event = '';
 
-	event += '<div class="container">';
+	event += '<div id="eventContainer" class="container">';
 	event += '	<div class="panel panel-default">';
 	event += '		<div class="panel-heading">';
 	event += '			<h2 id="title">Edit Event</h2>';
 	event += '		</div>';
 	event += '		<div class="panel-body">';
-	event += '			<form id="event" enctype="multipart/form-data" name="event" action="/CS2410/coursework/event" onsubmit="return validateEvent()" method="post">';
+	event += '			<form id="event" enctype="multipart/form-data" name="event" action="/CS2410/coursework/event/edit" onsubmit="return validateEvent()" method="post">';
 	event += '				<input hidden type="text" name="event_id" id="event_id" value="' + eventDetails.event_id + '"/>';
 
 	// Name
@@ -337,15 +337,25 @@ function editEvent(eventDetails) {
  * 
  * @param eventDetails
  *            The details of the event.
+ * @param canEdit
+ *            Whether of not the current user can edit the event.
  * @returns The view event HTML string.
  */
-function viewEvent(eventDetails) {
+function viewEvent(eventDetails, canEdit) {
 
 	var event = '';
 
-	event += '<div class="container">';
+	event += '<div id="eventContainer" class="container">';
 	event += '	<div class="panel panel-default">';
 	event += '		<div class="panel-heading">';
+	
+	if(canEdit){
+		
+		event += '	<div class="btn-toolbar pull-right">';
+		event += ' 		<a href="/CS2410/coursework/event/edit?event_id=' + eventDetails.event_id + '" class="btn btn-primary" role="button">Edit</a>';
+		event += '	</div>';
+	}
+	
 	event += '			<h2 id="title">Event: ' + eventDetails.name + '</h2>';
 	event += '		</div>';
 	event += '		<div class="panel-body">';
@@ -769,13 +779,11 @@ module.exports = {
 	eventsTable : function(events, title, signedIn) {
 		return eventsTable(events, title, signedIn);
 	},
-	event : function(eventDetails, isOrganiser) {
-
-		if (isOrganiser) {
-			return editEvent(eventDetails);
-		} else {
-			return viewEvent(eventDetails);
-		}
+	editEvent : function(eventDetails) {
+		return editEvent(eventDetails);
+	},
+	viewEvent : function(eventDetails, canEdit){
+		return viewEvent(eventDetails, canEdit);
 	},
 	profile : function(userDetails, canEdit) {
 
