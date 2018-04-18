@@ -187,7 +187,8 @@ function eventsTable(events, title, signedIn) {
 		eventsList += '		<td>';
 
 		eventsList += '			<div class="btn-group">';
-		eventsList += '				<a href="/CS2410/coursework/event?event_id=' + event.id + '" class="btn btn-primary btn-sm" role="button">View</a>';
+		eventsList += '				<a href="/CS2410/coursework/event?event_id=' + event.id
+				+ '" class="btn btn-primary btn-sm" role="button">View</a>';
 
 		if (signedIn === true) {
 			if (event.hasLiked) {
@@ -337,25 +338,49 @@ function editEvent(eventDetails) {
  * 
  * @param eventDetails
  *            The details of the event.
- * @param canEdit
- *            Whether of not the current user can edit the event.
+ * @param sessionType
+ *            Whether there is no user signed in, a student signed in or the
+ *            organiser of the event.
  * @returns The view event HTML string.
  */
-function viewEvent(eventDetails, canEdit) {
+function viewEvent(eventDetails, sessionType) {
 
 	var event = '';
 
 	event += '<div id="eventContainer" class="container">';
 	event += '	<div class="panel panel-default">';
 	event += '		<div class="panel-heading">';
+
 	
-	if(canEdit){
+	if (sessionType !== "") {
+
+		event += '<div class="btn-toolbar pull-right">';
+		event += '	<div class="btn-group">';
 		
-		event += '	<div class="btn-toolbar pull-right">';
-		event += ' 		<a href="/CS2410/coursework/event/edit?event_id=' + eventDetails.event_id + '" class="btn btn-primary" role="button">Edit</a>';
+		if (sessionType === "organiser") {
+			event += ' 		<a href="/CS2410/coursework/event/edit?event_id=' + eventDetails.event_id
+					+ '" class="btn btn-primary" role="button">Edit</a>';
+		}
+
+		if (eventDetails.hasLiked) {
+
+			event += '<button class="btn btn-danger" id="interest' + eventDetails.event_id
+					+ '" onclick="changeInterest(this);" type="button">Unlike</button>';
+		} else {
+			event += '<button class="btn btn-success" id="interest' + eventDetails.event_id
+					+ '" onclick="changeInterest(this);" type="button">Like</button>';
+		}
+		
+		
 		event += '	</div>';
+		event += '</div>';
+		event += '<script src="/scripts/changeInterest.js"></script>';
+		
+
 	}
+
 	
+
 	event += '			<h2 id="title">Event: ' + eventDetails.name + '</h2>';
 	event += '		</div>';
 	event += '		<div class="panel-body">';
@@ -561,15 +586,16 @@ function viewProfile(userDetails, canEdit) {
 	profile += '<div class="container">';
 	profile += '	<div class="panel panel-default">';
 	profile += '		<div class="panel-heading">';
-	
-	if(canEdit){
-		
+
+	if (canEdit) {
+
 		profile += '	<div class="btn-toolbar pull-right">';
-		profile += ' 		<a href="/CS2410/coursework/profile/edit?email=' + userDetails.email + '" class="btn btn-primary" role="button">Edit</a>';
+		profile += ' 		<a href="/CS2410/coursework/profile/edit?email=' + userDetails.email
+				+ '" class="btn btn-primary" role="button">Edit</a>';
 		profile += '	</div>';
-		
+
 	}
-	
+
 	profile += '			<h2 id="title">Profile: ' + userDetails.name + '</h2>';
 	profile += '		</div>';
 	profile += '		<div class="panel-body">';
@@ -793,11 +819,11 @@ module.exports = {
 	editEvent : function(eventDetails) {
 		return editEvent(eventDetails);
 	},
-	viewEvent : function(eventDetails, canEdit){
+	viewEvent : function(eventDetails, canEdit) {
 		return viewEvent(eventDetails, canEdit);
 	},
 	viewProfile : function(userDetails, canEdit) {
-		return viewProfile(userDetails, canEdit);	
+		return viewProfile(userDetails, canEdit);
 	},
 	editProfile : function(userDetails) {
 		return editProfile(userDetails);

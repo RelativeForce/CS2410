@@ -9,45 +9,56 @@ const cookieName = sessions.cookieName;
 
 function get(request, response) {
 
-	misc.buildPage('search', function(content) {
+	misc.buildPage(
+		'search', 
+		function(content) {
 
-		// Check for the session cookie and wherther it is active.
-		var sessionToken = request.cookies[cookieName];
-
-		// If there is a active session build the nav bar with the user
-		// options
-		if (sessions.validSession(sessionToken)) {
-			sessions.extend(sessionToken, response);
-
-			var email = sessions.getEmail(sessionToken);
-
-			db.each("SELECT * FROM Users WHERE email = ?", [ email ], function(user) {
-
-				var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
-				var profile = builder.navbarLink("/CS2410/coursework/profile?email=" + user.email, "My Profile");
-				var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
+			// Check for the session cookie and wherther it is active.
+			var sessionToken = request.cookies[cookieName];
+	
+			// If there is a active session build the nav bar with the user
+			// options
+			if (sessions.validSession(sessionToken)) {
+				sessions.extend(sessionToken, response);
+	
+				var email = sessions.getEmail(sessionToken);
+	
+				db.each(
+					"SELECT * FROM Users WHERE email = ?", 
+					[ email ], 
+					function(user) {
+	
+						var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
+						var profile = builder.navbarLink("/CS2410/coursework/profile?email=" + user.email, "My Profile");
+						var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
+						var home = builder.navbarLink("/CS2410/coursework", "Home");
+						var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
+		
+						var navbar = builder.navbar(
+							(user.organiser === 'true') ? 
+							[ home, newEvent, myEvents, profile, logout ] : 
+							[ home, profile, logout ]
+						);
+		
+						filterEvents(request, response, navbar, email);
+	
+					}, 
+					function(count) {
+						// Do nothing
+					}
+				);
+	
+			} else {
+	
+				var login = builder.navbarLink("/CS2410/coursework/login", "Login");
 				var home = builder.navbarLink("/CS2410/coursework", "Home");
-				var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
-
-				var navbar = builder.navbar((user.organiser === 'true') ? [ home, newEvent, myEvents, profile, logout ]
-						: [ home, profile, logout ]);
-
-				filterEvents(request, response, navbar, email);
-
-			}, function(count) {
-				// Do nothing
-			});
-
-		} else {
-
-			var login = builder.navbarLink("/CS2410/coursework/login", "Login");
-			var home = builder.navbarLink("/CS2410/coursework", "Home");
-
-			var navbar = builder.navbar([ home, login ]);
-
-			filterEvents(request, response, navbar, "");
+	
+				var navbar = builder.navbar([ home, login ]);
+	
+				filterEvents(request, response, navbar, "");
+			}
 		}
-	});
+	);
 }
 
 function getDefaultSearch() {
