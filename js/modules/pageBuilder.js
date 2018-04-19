@@ -662,7 +662,7 @@ function viewProfileInformation(userDetails) {
 
 	information += '	<div>';
 	information += '		<label>Email:</label>';
-	information += '		<a href="mailto:' + userDetails.email + '">' + userDetails.email + '</a>';
+	information += '		<p><a href="mailto:' + userDetails.email + '">' + userDetails.email + '</a></p>';
 	information += '	</div>';
 	information += '	<div>';
 	information += '		<label>Full Name:</label>';
