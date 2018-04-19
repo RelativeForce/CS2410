@@ -379,8 +379,6 @@ function viewEvent(eventDetails, sessionType) {
 
 	}
 
-	
-
 	event += '			<h2 id="title">Event: ' + eventDetails.name + '</h2>';
 	event += '		</div>';
 	event += '		<div class="panel-body">';
@@ -419,7 +417,7 @@ function viewEvent(eventDetails, sessionType) {
 	// Popularity
 	event += '			<div>';
 	event += '				<label>Popularity:</label>';
-	event += '				<p>' + eventDetails.popularity + '</p>';
+	event += '				<p id="popularity' + eventDetails.event_id + '">' + eventDetails.popularity + '</p>';
 	event += '			</div>';
 
 	// Pictures
