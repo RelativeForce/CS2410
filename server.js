@@ -1,4 +1,4 @@
-const port = proces.env.PORT || 3000;
+const port = 80;
 
 // Imported modules
 const express = require('express');
