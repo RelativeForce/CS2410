@@ -25,7 +25,7 @@ function get(request, response){
 			function(user) {
 			
 				var logout = builder.navbarLink("/logout", "Logout");
-				var home = builder.navbarLink("", "Home");
+				var home = builder.navbarLink("/", "Home");
 				var newEvent = builder.navbarLink("/organise", "Orgainse Event");
 				var search = builder.navbarLink("/search", "Search Events");
 				var profile = builder.navbarLink("/profile?email=" + email, "My Profile");

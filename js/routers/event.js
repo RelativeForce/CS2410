@@ -62,7 +62,7 @@ function get(request, response) {
 									var profile = builder.navbarLink("/profile?email=" + user.email, "My Profile");
 									var newEvent = builder.navbarLink("/organise", "Orgainse Event");
 									var search = builder.navbarLink("/search", "Search Events");
-									var home = builder.navbarLink("", "Home");
+									var home = builder.navbarLink("/", "Home");
 	
 									var navbar = builder.navbar(
 										isOrganiser ? 
@@ -95,7 +95,7 @@ function get(request, response) {
 						} else {
 
 							var login = builder.navbarLink("/login", "Login");
-							var home = builder.navbarLink("", "Home");
+							var home = builder.navbarLink("/", "Home");
 
 							var navbar = builder.navbar([ home, login ]);
 
@@ -251,7 +251,7 @@ function get_edit(request, response) {
 									var profile = builder.navbarLink("/profile?email=" + user.email, "My Profile");
 									var newEvent = builder.navbarLink("/organise","Orgainse Event");
 									var search = builder.navbarLink("/search", "Search Events");
-									var home = builder.navbarLink("", "Home");
+									var home = builder.navbarLink("/", "Home");
 
 									if (event.organiser === email) {
 

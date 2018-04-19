@@ -151,7 +151,7 @@ function build_login(request, response, error) {
 	// Builds the student login page
 	misc.buildPage('login', function(content) {
 
-		var home = builder.navbarLink("", "Home");
+		var home = builder.navbarLink("/", "Home");
 		var search = builder.navbarLink("/search", "Search Events");
 		
 		var navbar = builder.navbar([ home, search ]);

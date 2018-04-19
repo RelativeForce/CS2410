@@ -49,7 +49,7 @@ function get(request, response) {
 						function(content) {
 
 							// The elements of the organise page.
-							var home = builder.navbarLink("", "Home");
+							var home = builder.navbarLink("/", "Home");
 							var logout = builder.navbarLink("/logout", "Logout");
 							var profile = builder.navbarLink("/profile?email=" + email,"My Profile");
 							var search = builder.navbarLink("/search","Search Events");

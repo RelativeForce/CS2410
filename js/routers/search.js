@@ -31,7 +31,7 @@ function get(request, response) {
 						var logout = builder.navbarLink("/logout", "Logout");
 						var profile = builder.navbarLink("/profile?email=" + user.email, "My Profile");
 						var newEvent = builder.navbarLink("/organise", "Orgainse Event");
-						var home = builder.navbarLink("", "Home");
+						var home = builder.navbarLink("/", "Home");
 						var myEvents = builder.navbarLink("/events", "My Events");
 		
 						var navbar = builder.navbar(
@@ -51,7 +51,7 @@ function get(request, response) {
 			} else {
 	
 				var login = builder.navbarLink("/login", "Login");
-				var home = builder.navbarLink("", "Home");
+				var home = builder.navbarLink("/", "Home");
 	
 				var navbar = builder.navbar([ home, login ]);
 	
