@@ -126,8 +126,7 @@ function get(request, response) {
 
 						var sessionEmail = sessions.getEmail(sessionToken);
 
-						var home = builder.navbarLink("",
-								"Home");
+						var home = builder.navbarLink("/", "Home");
 						var logout = builder.navbarLink(
 								"/logout", "Logout");
 						var newEvent = builder
@@ -152,7 +151,7 @@ function get(request, response) {
 
 						var login = builder.navbarLink(
 								"/login", "Login");
-						var home = builder.navbarLink("",
+						var home = builder.navbarLink("/",
 								"Home");
 						var search = builder.navbarLink(
 								"/search", "Search Events");
@@ -203,7 +202,7 @@ function get_edit(request, response) {
 								if (sessionEmail === email) {
 
 									var home = builder.navbarLink(
-											"", "Home");
+											"/", "Home");
 									var logout = builder.navbarLink(
 											"/logout",
 											"Logout");
