@@ -17,8 +17,8 @@ function head(title) {
 	head += '	<link href="/default.css" rel="stylesheet" type="text/css" />';
 	head += '	<script src="/MD5.js"></script>';
 	head += '	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>';
-	head += '	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" />';
-	head += '	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>';
+	head += '	<link rel="stylesheet" href="/bootstrap-3-3-5.css" />';
+	head += '	<script src="/bootstrap-3-3-5.js"></script>';
 	head += '</head>';
 
 	return head;
