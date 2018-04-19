@@ -24,11 +24,11 @@ function get(request, response){
 			[email], 
 			function(user) {
 			
-				var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
-				var home = builder.navbarLink("/CS2410/coursework", "Home");
-				var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
-				var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
-				var profile = builder.navbarLink("/CS2410/coursework/profile?email=" + email, "My Profile");
+				var logout = builder.navbarLink("/logout", "Logout");
+				var home = builder.navbarLink("", "Home");
+				var newEvent = builder.navbarLink("/organise", "Orgainse Event");
+				var search = builder.navbarLink("/search", "Search Events");
+				var profile = builder.navbarLink("/profile?email=" + email, "My Profile");
 	
 				var navbar = builder.navbar([ home, newEvent, search, profile, logout ]);
 	
@@ -65,13 +65,13 @@ function get(request, response){
 			
 				// If there is no user with that email show the landing page.
 				if (count == 0) {
-					response.redirect('/CS2410/coursework');
+					response.redirect('/');
 				}
 			}
 		);
 
 	} else {
-		response.redirect('/CS2410/coursework');
+		response.redirect('/');
 	}
 	
 	

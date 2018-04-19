@@ -49,7 +49,7 @@ function post(request, response) {
 	
 	// Invalid request.
 	else{
-		response.redirect('/CS2410/coursework');
+		response.redirect('/');
 	}
 }
 
@@ -73,7 +73,7 @@ function login(request, response) {
 				// If the session is added redirct the client.
 				if (sessions.addSession(token, email)) {
 					sessions.extend(token, response);
-					response.redirect('/CS2410/coursework');
+					response.redirect('/');
 				} else {
 					// Session alread exists.
 					var error = builder.error("Session exists elsewhere. Please sign out in the other location.");
@@ -133,7 +133,7 @@ function signup(request, response) {
 	
 				sessions.addSession(token, email);
 				sessions.extend(token, response);
-				response.redirect('/CS2410/coursework');
+				response.redirect('/');
 	
 			} else {
 	
@@ -151,8 +151,8 @@ function build_login(request, response, error) {
 	// Builds the student login page
 	misc.buildPage('login', function(content) {
 
-		var home = builder.navbarLink("/CS2410/coursework", "Home");
-		var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
+		var home = builder.navbarLink("", "Home");
+		var search = builder.navbarLink("/search", "Search Events");
 		
 		var navbar = builder.navbar([ home, search ]);
 		var head = builder.head("Login");

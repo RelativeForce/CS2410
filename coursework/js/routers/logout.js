@@ -25,7 +25,7 @@ function logout(request, response) {
 	}
 
 	response.clearCookie(cookieName);
-	response.redirect('/CS2410/coursework');
+	response.redirect('/');
 
 }
 

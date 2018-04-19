@@ -181,13 +181,13 @@ function eventsTable(events, title, signedIn) {
 		eventsList += '		<td>' + event.type + '</td>';
 		eventsList += '		<td>' + event.location + '</td>';
 		eventsList += '		<td>' + event.time + '</td>';
-		eventsList += '		<td><a href="/CS2410/coursework/profile?email=' + event.organiser + '">' + event.organiser
+		eventsList += '		<td><a href="/profile?email=' + event.organiser + '">' + event.organiser
 				+ '</a></td>';
 		eventsList += '		<td id="popularity' + event.id + '">' + event.popularity + '</td>';
 		eventsList += '		<td>';
 
 		eventsList += '			<div class="btn-group">';
-		eventsList += '				<a href="/CS2410/coursework/event?event_id=' + event.id
+		eventsList += '				<a href="/event?event_id=' + event.id
 				+ '" class="btn btn-primary btn-sm" role="button">View</a>';
 
 		if (signedIn === true) {
@@ -231,7 +231,7 @@ function editEvent(eventDetails) {
 	event += '			<h2 id="title">Edit Event</h2>';
 	event += '		</div>';
 	event += '		<div class="panel-body">';
-	event += '			<form id="event" enctype="multipart/form-data" name="event" action="/CS2410/coursework/event/edit" onsubmit="return validateEvent()" method="post">';
+	event += '			<form id="event" enctype="multipart/form-data" name="event" action="/event/edit" onsubmit="return validateEvent()" method="post">';
 	event += '				<input hidden type="text" name="event_id" id="event_id" value="' + eventDetails.event_id + '"/>';
 
 	// Name
@@ -358,7 +358,7 @@ function viewEvent(eventDetails, sessionType) {
 		event += '	<div class="btn-group">';
 		
 		if (sessionType === "organiser") {
-			event += ' 		<a href="/CS2410/coursework/event/edit?event_id=' + eventDetails.event_id
+			event += ' 		<a href="/event/edit?event_id=' + eventDetails.event_id
 					+ '" class="btn btn-primary" role="button">Edit</a>';
 		}
 
@@ -400,7 +400,7 @@ function viewEvent(eventDetails, sessionType) {
 	// Organiser
 	event += '			<div>';
 	event += '				<label>Organiser:</label> ';
-	event += '				<p><a href="/CS2410/coursework/profile?email=' + eventDetails.organiser + '">'
+	event += '				<p><a href="/profile?email=' + eventDetails.organiser + '">'
 			+ eventDetails.organiser + '</a></p>';
 	event += '			</div>';
 
@@ -466,7 +466,7 @@ function editProfile(userDetails) {
 	profile += '			<h2 id="title">Profile: ' + userDetails.name + '</h2>';
 	profile += '		</div>';
 	profile += '		<div class="panel-body">';
-	profile += '			<form id="information" enctype="multipart/form-data" name="information" action="/CS2410/coursework/profile/edit" onsubmit="return validateProfile()" method="post">';
+	profile += '			<form id="information" enctype="multipart/form-data" name="information" action="/profile/edit" onsubmit="return validateProfile()" method="post">';
 	profile += '				<div class="col-xs-12 col-sm-5">';
 	profile += '					<div class="panel panel-default">';
 	profile += '						<div class="panel-heading">';
@@ -590,7 +590,7 @@ function viewProfile(userDetails, canEdit) {
 	if (canEdit) {
 
 		profile += '	<div class="btn-toolbar pull-right">';
-		profile += ' 		<a href="/CS2410/coursework/profile/edit?email=' + userDetails.email
+		profile += ' 		<a href="/profile/edit?email=' + userDetails.email
 				+ '" class="btn btn-primary" role="button">Edit</a>';
 		profile += '	</div>';
 
@@ -718,7 +718,7 @@ function search(filter) {
 	var search = '';
 
 	search += '	<div class="container">';
-	search += '		<form method="GET" action="/CS2410/coursework/search" onsubmit="return validateFilter()" id="search" name="search">';
+	search += '		<form method="GET" action="/search" onsubmit="return validateFilter()" id="search" name="search">';
 	search += '			<div class="panel panel-default">';
 	search += '				<div class="panel-heading">Filter Search</div>';
 	search += '				<div class="panel-body">';

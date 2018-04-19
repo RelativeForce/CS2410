@@ -58,11 +58,11 @@ function get(request, response) {
 	
 									var isOrganiser = event.organiser === email;
 	
-									var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
-									var profile = builder.navbarLink("/CS2410/coursework/profile?email=" + user.email, "My Profile");
-									var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
-									var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
-									var home = builder.navbarLink("/CS2410/coursework", "Home");
+									var logout = builder.navbarLink("/logout", "Logout");
+									var profile = builder.navbarLink("/profile?email=" + user.email, "My Profile");
+									var newEvent = builder.navbarLink("/organise", "Orgainse Event");
+									var search = builder.navbarLink("/search", "Search Events");
+									var home = builder.navbarLink("", "Home");
 	
 									var navbar = builder.navbar(
 										isOrganiser ? 
@@ -94,8 +94,8 @@ function get(request, response) {
 
 						} else {
 
-							var login = builder.navbarLink("/CS2410/coursework/login", "Login");
-							var home = builder.navbarLink("/CS2410/coursework", "Home");
+							var login = builder.navbarLink("/login", "Login");
+							var home = builder.navbarLink("", "Home");
 
 							var navbar = builder.navbar([ home, login ]);
 
@@ -109,13 +109,13 @@ function get(request, response) {
 
 				// If there is no event with that id show the landing page.
 				if (eventCount == 0) {
-					response.redirect('/CS2410/coursework');
+					response.redirect('/');
 				}
 			}
 		);
 
 	} else {
-		response.redirect('/CS2410/coursework');
+		response.redirect('/');
 	}
 
 }
@@ -139,7 +139,7 @@ function post_edit(request, response) {
 
 				// If the user is not a organiser.
 				if (user.organiser !== 'true') {
-					response.redirect('/CS2410/coursework');
+					response.redirect('/');
 				} else {
 
 					var isOrganiser = false;
@@ -178,10 +178,10 @@ function post_edit(request, response) {
 								misc.changeEventPictures(request, event_id);
 								updateEvent(event);
 
-								response.redirect('/CS2410/coursework/event?event_id=' + event_id);
+								response.redirect('/event?event_id=' + event_id);
 
 							} else {
-								response.redirect('/CS2410/coursework');
+								response.redirect('/');
 							}
 						}
 					);
@@ -190,13 +190,13 @@ function post_edit(request, response) {
 
 				// If there is no user with that email.
 				if (count == 0) {
-					response.redirect('/CS2410/coursework');
+					response.redirect('/');
 				}
 			}
 		);
 
 	} else {
-		response.redirect('/CS2410/coursework');
+		response.redirect('/');
 	}
 
 }
@@ -247,11 +247,11 @@ function get_edit(request, response) {
 								[ email ],
 								function(user) {
 
-									var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
-									var profile = builder.navbarLink("/CS2410/coursework/profile?email=" + user.email, "My Profile");
-									var newEvent = builder.navbarLink("/CS2410/coursework/organise","Orgainse Event");
-									var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
-									var home = builder.navbarLink("/CS2410/coursework", "Home");
+									var logout = builder.navbarLink("/logout", "Logout");
+									var profile = builder.navbarLink("/profile?email=" + user.email, "My Profile");
+									var newEvent = builder.navbarLink("/organise","Orgainse Event");
+									var search = builder.navbarLink("/search", "Search Events");
+									var home = builder.navbarLink("", "Home");
 
 									if (event.organiser === email) {
 
@@ -261,7 +261,7 @@ function get_edit(request, response) {
 										build_EditEvent(response, navbar, event);
 
 									} else {
-										response.redirect('/CS2410/coursework/event?event_id=' + event_id);
+										response.redirect('/event?event_id=' + event_id);
 									}
 
 								},
@@ -272,7 +272,7 @@ function get_edit(request, response) {
 							);
 
 						} else {
-							response.redirect('/CS2410/coursework/event?event_id=' + event_id);
+							response.redirect('/event?event_id=' + event_id);
 						}
 					}
 				);
@@ -281,13 +281,13 @@ function get_edit(request, response) {
 
 				// If there is no event with that id show the landing page.
 				if (eventCount == 0) {
-					response.redirect('/CS2410/coursework');
+					response.redirect('/');
 				}
 			}
 		);
 
 	} else {
-		response.redirect('/CS2410/coursework');
+		response.redirect('/');
 	}
 
 }

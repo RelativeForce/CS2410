@@ -80,20 +80,20 @@ function post_edit(request, response) {
 							console.log("Profile Update [" + email + "]");
 
 							response
-									.redirect('/CS2410/coursework/profile?email='
+									.redirect('/profile?email='
 											+ email);
 
 						}, function(count) {
 
 							// If the user email was invalid.
 							if (count == 0) {
-								response.redirect('/CS2410/coursework');
+								response.redirect('/');
 							}
 						});
 
 	} else {
 		// If the session was invalid
-		response.redirect('/CS2410/coursework');
+		response.redirect('/');
 	}
 
 }
@@ -126,17 +126,17 @@ function get(request, response) {
 
 						var sessionEmail = sessions.getEmail(sessionToken);
 
-						var home = builder.navbarLink("/CS2410/coursework",
+						var home = builder.navbarLink("",
 								"Home");
 						var logout = builder.navbarLink(
-								"/CS2410/coursework/logout", "Logout");
+								"/logout", "Logout");
 						var newEvent = builder
-								.navbarLink("/CS2410/coursework/organise",
+								.navbarLink("/organise",
 										"Orgainse Event");
 						var search = builder.navbarLink(
-								"/CS2410/coursework/search", "Search Events");
+								"/search", "Search Events");
 						var myEvents = builder.navbarLink(
-								"/CS2410/coursework/events", "My Events");
+								"/events", "My Events");
 
 						var navbar = builder
 								.navbar((row.organiser === 'true') ? [ home,
@@ -151,11 +151,11 @@ function get(request, response) {
 					} else {
 
 						var login = builder.navbarLink(
-								"/CS2410/coursework/login", "Login");
-						var home = builder.navbarLink("/CS2410/coursework",
+								"/login", "Login");
+						var home = builder.navbarLink("",
 								"Home");
 						var search = builder.navbarLink(
-								"/CS2410/coursework/search", "Search Events");
+								"/search", "Search Events");
 
 						var navbar = builder.navbar([ home, login, search ]);
 
@@ -167,13 +167,13 @@ function get(request, response) {
 					// If there is no user with that email redirect to the
 					// landing page.
 					if (count == 0) {
-						response.redirect('/CS2410/coursework');
+						response.redirect('/');
 					}
 				});
 
 	} else {
 		// No valid session redirect the user to the home screen.
-		response.redirect('/CS2410/coursework');
+		response.redirect('/');
 	}
 
 }
@@ -203,18 +203,18 @@ function get_edit(request, response) {
 								if (sessionEmail === email) {
 
 									var home = builder.navbarLink(
-											"/CS2410/coursework", "Home");
+											"", "Home");
 									var logout = builder.navbarLink(
-											"/CS2410/coursework/logout",
+											"/logout",
 											"Logout");
 									var newEvent = builder.navbarLink(
-											"/CS2410/coursework/organise",
+											"/organise",
 											"Orgainse Event");
 									var search = builder.navbarLink(
-											"/CS2410/coursework/search",
+											"/search",
 											"Search Events");
 									var myEvents = builder.navbarLink(
-											"/CS2410/coursework/events",
+											"/events",
 											"My Events");
 
 									var navbar = builder
@@ -230,13 +230,13 @@ function get_edit(request, response) {
 
 								} else {
 									response
-											.redirect('/CS2410/coursework/profile?email='
+											.redirect('/profile?email='
 													+ email);
 								}
 
 							} else {
 								response
-										.redirect('/CS2410/coursework/profile?email='
+										.redirect('/profile?email='
 												+ email);
 							}
 
@@ -245,13 +245,13 @@ function get_edit(request, response) {
 							// If there is no user with that email redirect to
 							// the landing page.
 							if (count == 0) {
-								response.redirect('/CS2410/coursework');
+								response.redirect('/');
 							}
 						});
 
 	} else {
 		// No valid session redirect the user to the home screen.
-		response.redirect('/CS2410/coursework');
+		response.redirect('/');
 	}
 
 }

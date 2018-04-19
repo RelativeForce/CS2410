@@ -64,11 +64,11 @@ function home(request, response, user) {
 		'home', 
 		function(content) {
 
-			var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
-			var profile = builder.navbarLink("/CS2410/coursework/profile?email=" + user.email, "My Profile");
-			var newEvent = builder.navbarLink("/CS2410/coursework/organise", "Orgainse Event");
-			var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
-			var myEvents = builder.navbarLink("/CS2410/coursework/events", "My Events");
+			var logout = builder.navbarLink("/logout", "Logout");
+			var profile = builder.navbarLink("/profile?email=" + user.email, "My Profile");
+			var newEvent = builder.navbarLink("/organise", "Orgainse Event");
+			var search = builder.navbarLink("/search", "Search Events");
+			var myEvents = builder.navbarLink("/events", "My Events");
 
 			var navbar = builder.navbar((user.organiser === 'true') ? 
 				[ newEvent, myEvents, search, profile, logout ] : 
@@ -149,8 +149,8 @@ function landing(request, response) {
 
 		}, function(events){
 			
-			var search = builder.navbarLink("/CS2410/coursework/search", "Search Events");
-			var login = builder.navbarLink("/CS2410/coursework/login", "Login");
+			var search = builder.navbarLink("/search", "Search Events");
+			var login = builder.navbarLink("/login", "Login");
 			var navbar = builder.navbar([ login, search ]);
 			
 			var eventsTable = builder.eventsTable(events, "All Events", false);

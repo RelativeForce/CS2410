@@ -40,7 +40,7 @@ function get(request, response) {
 
 				// If the user is not an organiser redirect them to the home page.
 				if (row.organiser !== 'true') {
-					response.redirect('/CS2410/coursework');
+					response.redirect('/');
 				} else {
 				
 					// Construct the organiser home page
@@ -49,11 +49,11 @@ function get(request, response) {
 						function(content) {
 
 							// The elements of the organise page.
-							var home = builder.navbarLink("/CS2410/coursework", "Home");
-							var logout = builder.navbarLink("/CS2410/coursework/logout", "Logout");
-							var profile = builder.navbarLink("/CS2410/coursework/profile?email=" + email,"My Profile");
-							var search = builder.navbarLink("/CS2410/coursework/search","Search Events");
-							var myEvents = builder.navbarLink("/CS2410/coursework/events","My Events");
+							var home = builder.navbarLink("", "Home");
+							var logout = builder.navbarLink("/logout", "Logout");
+							var profile = builder.navbarLink("/profile?email=" + email,"My Profile");
+							var search = builder.navbarLink("/search","Search Events");
+							var myEvents = builder.navbarLink("/events","My Events");
 							var navbar = builder.navbar([ home, profile, myEvents, search, logout ]);
 							var head = builder.head("Aston Events");
 							var body = builder.body(navbar, content);
@@ -72,13 +72,13 @@ function get(request, response) {
 	
 				// If there is no user with that email.
 				if (count == 0) {
-					response.redirect('/CS2410/coursework');
+					response.redirect('/');
 				}
 			}
 		);
 
 	} else {
-		response.redirect('/CS2410/coursework');
+		response.redirect('/');
 	}
 
 }
@@ -115,7 +115,7 @@ function post(request, response) {
 
 				// If the user is not a organiser.
 				if (user.organiser !== 'true') {
-					response.redirect('/CS2410/coursework');
+					response.redirect('/');
 				} else {
 
 					db.each(
@@ -133,7 +133,7 @@ function post(request, response) {
 							addEvent(request, email, event_id);	
 							misc.changeEventPictures(request, event_id)
 
-							response.redirect('/CS2410/coursework/event?event_id=' + event_id);
+							response.redirect('/event?event_id=' + event_id);
 						}
 					);
 				}
@@ -142,13 +142,13 @@ function post(request, response) {
 
 				// If there is no user with that email.
 				if (count == 0) {
-					response.redirect('/CS2410/coursework');
+					response.redirect('/');
 				}
 			}
 		);
 
 	} else {
-		response.redirect('/CS2410/coursework');
+		response.redirect('/');
 	}
 
 }
