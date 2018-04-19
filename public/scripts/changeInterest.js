@@ -6,7 +6,7 @@ function changeInterest(button) {
 	// Send an AJAX call to the interest end point to change the interest state
 	// of the currently signed in user.
 	$.ajax({
-		url : "/CS2410/coursework/interest",
+		url : "/interest",
 		data : {
 			"event_id" : event_id,
 			"state" : currentValue
