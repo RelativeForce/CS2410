@@ -1,4 +1,4 @@
-const port = 80;
+const port = 3000;
 
 // Imported modules
 const express = require('express');
