@@ -9,56 +9,47 @@ const cookieName = sessions.cookieName;
 
 function get(request, response) {
 
-	misc.buildPage(
-		'search', 
-		function(content) {
+	// Check for the session cookie and wherther it is active.
+	var sessionToken = request.cookies[cookieName];
 
-			// Check for the session cookie and wherther it is active.
-			var sessionToken = request.cookies[cookieName];
-	
-			// If there is a active session build the nav bar with the user
-			// options
-			if (sessions.validSession(sessionToken)) {
-				sessions.extend(sessionToken, response);
-	
-				var email = sessions.getEmail(sessionToken);
-	
-				db.each(
-					"SELECT * FROM Users WHERE email = ?", 
-					[ email ], 
-					function(user) {
-	
-						var logout = builder.navbarLink("/logout", "Logout");
-						var profile = builder.navbarLink("/profile?email=" + user.email, "My Profile");
-						var newEvent = builder.navbarLink("/organise", "Orgainse Event");
-						var home = builder.navbarLink("/", "Home");
-						var myEvents = builder.navbarLink("/events", "My Events");
-		
-						var navbar = builder.navbar(
-							(user.organiser === 'true') ? 
-							[ home, newEvent, myEvents, profile, logout ] : 
-							[ home, profile, logout ]
-						);
-		
-						filterEvents(request, response, navbar, email);
-	
-					}, 
-					function(count) {
-						// Do nothing
-					}
-				);
-	
-			} else {
-	
-				var login = builder.navbarLink("/login", "Login");
-				var home = builder.navbarLink("/", "Home");
-	
-				var navbar = builder.navbar([ home, login ]);
-	
-				filterEvents(request, response, navbar, "");
-			}
-		}
-	);
+	// If there is a active session build the nav bar with the user
+	// options
+	if (sessions.validSession(sessionToken)) {
+		sessions.extend(sessionToken, response);
+
+		var email = sessions.getEmail(sessionToken);
+
+		db.each("SELECT * FROM Users WHERE email = ?", [ email ],
+				function(user) {
+
+					var logout = builder.navbarLink("/logout", "Logout");
+					var profile = builder.navbarLink("/profile?email="
+							+ user.email, "My Profile");
+					var newEvent = builder.navbarLink("/organise",
+							"Orgainse Event");
+					var home = builder.navbarLink("/", "Home");
+					var myEvents = builder.navbarLink("/events", "My Events");
+
+					var navbar = builder.navbar((user.organiser === 'true') ? [
+							home, newEvent, myEvents, profile, logout ] : [
+							home, profile, logout ]);
+
+					filterEvents(request, response, navbar, email);
+
+				}, function(count) {
+					// Do nothing
+				});
+
+	} else {
+
+		var login = builder.navbarLink("/login", "Login");
+		var home = builder.navbarLink("/", "Home");
+
+		var navbar = builder.navbar([ home, login ]);
+
+		filterEvents(request, response, navbar, "");
+	}
+
 }
 
 function getDefaultSearch() {
@@ -234,21 +225,24 @@ function filterEvents(request, response, navbar, email) {
 		// events that will be displayed.
 		if (email !== "") {
 
-			db.each("SELECT * FROM Interest WHERE student_email = ?", [ email ], function(row) {
+			db.each("SELECT * FROM Interest WHERE student_email = ?",
+					[ email ], function(row) {
 
-				// Check if the current event is in the events list and if so
-				// then it has been liked by the user.
-				for (var index = 0; index < events.length; index++) {
-					var current = events[index];
+						// Check if the current event is in the events list and
+						// if so
+						// then it has been liked by the user.
+						for (var index = 0; index < events.length; index++) {
+							var current = events[index];
 
-					if (row.event_id === current.id) {
-						current.hasLiked = true;
-					}
-				}
+							if (row.event_id === current.id) {
+								current.hasLiked = true;
+							}
+						}
 
-			}, function(interestCount) {
-				build_search(response, events, navbar, search.filter, true)
-			});
+					}, function(interestCount) {
+						build_search(response, events, navbar, search.filter,
+								true)
+					});
 
 		} else {
 			build_search(response, events, navbar, search.filter, false)
@@ -260,18 +254,14 @@ function filterEvents(request, response, navbar, email) {
 
 function build_search(response, events, navbar, filter, signedIn) {
 
-	misc.buildPage('search', function(content) {
+	var eventsTable = builder.eventsTable(events, "Results", signedIn);
+	var search = builder.search(filter);
 
-		var eventsTable = builder.eventsTable(events, "Results", signedIn);
-		var search = builder.search(filter);
+	var head = builder.head("Search");
+	var body = builder.body(navbar, search + eventsTable);
+	var page = builder.page(head, body);
 
-		var head = builder.head("Search");
-		var body = builder.body(navbar, content + search + eventsTable);
-		var page = builder.page(head, body);
-
-		misc.buildResponse(response, page);
-
-	});
+	misc.buildResponse(response, page);
 
 }
 

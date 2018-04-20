@@ -787,6 +787,7 @@ function search(filter) {
 	search += '			</div>';
 	search += '		</form>';
 	search += '	</div>';
+	search += '	<script src="/scripts/filterSwitcher.js"></script>';
 
 	return search;
 
