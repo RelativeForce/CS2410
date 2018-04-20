@@ -14,11 +14,11 @@ function head(title) {
 	head += '<head>';
 	head += '	<meta charset="utf-8" />';
 	head += '	<title>' + title + '</title>';
-	head += '	<link href="/default.css" rel="stylesheet" type="text/css" />';
-	head += '	<script src="/MD5.js"></script>';
+	head += '	<script src="/scripts/MD5.js"></script>';
 	head += '	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>';
-	head += '	<link rel="stylesheet" href="/bootstrap-3-3-5.css" />';
-	head += '	<script src="/bootstrap-3-3-5.js"></script>';
+	head += '	<link href="/styles/default.css" rel="stylesheet" type="text/css" />';
+	head += '	<link rel="stylesheet" href="/styles/bootstrap-3-3-5.css" />';
+	head += '	<script src="/scripts/bootstrap-3-3-5.js"></script>';
 	head += '</head>';
 
 	return head;
