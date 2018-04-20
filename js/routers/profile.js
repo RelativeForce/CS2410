@@ -79,9 +79,7 @@ function post_edit(request, response) {
 
 							console.log("Profile Update [" + email + "]");
 
-							response
-									.redirect('/profile?email='
-											+ email);
+							response.redirect('/profile?email=' + email);
 
 						}, function(count) {
 
@@ -127,15 +125,13 @@ function get(request, response) {
 						var sessionEmail = sessions.getEmail(sessionToken);
 
 						var home = builder.navbarLink("/", "Home");
-						var logout = builder.navbarLink(
-								"/logout", "Logout");
-						var newEvent = builder
-								.navbarLink("/organise",
-										"Orgainse Event");
-						var search = builder.navbarLink(
-								"/search", "Search Events");
-						var myEvents = builder.navbarLink(
-								"/events", "My Events");
+						var logout = builder.navbarLink("/logout", "Logout");
+						var newEvent = builder.navbarLink("/organise",
+								"Orgainse Event");
+						var search = builder.navbarLink("/search",
+								"Search Events");
+						var myEvents = builder.navbarLink("/events",
+								"My Events");
 
 						var navbar = builder
 								.navbar((row.organiser === 'true') ? [ home,
@@ -149,12 +145,10 @@ function get(request, response) {
 
 					} else {
 
-						var login = builder.navbarLink(
-								"/login", "Login");
-						var home = builder.navbarLink("/",
-								"Home");
-						var search = builder.navbarLink(
-								"/search", "Search Events");
+						var login = builder.navbarLink("/login", "Login");
+						var home = builder.navbarLink("/", "Home");
+						var search = builder.navbarLink("/search",
+								"Search Events");
 
 						var navbar = builder.navbar([ home, login, search ]);
 
@@ -201,20 +195,15 @@ function get_edit(request, response) {
 
 								if (sessionEmail === email) {
 
-									var home = builder.navbarLink(
-											"/", "Home");
-									var logout = builder.navbarLink(
-											"/logout",
+									var home = builder.navbarLink("/", "Home");
+									var logout = builder.navbarLink("/logout",
 											"Logout");
 									var newEvent = builder.navbarLink(
-											"/organise",
-											"Orgainse Event");
-									var search = builder.navbarLink(
-											"/search",
+											"/organise", "Orgainse Event");
+									var search = builder.navbarLink("/search",
 											"Search Events");
 									var myEvents = builder.navbarLink(
-											"/events",
-											"My Events");
+											"/events", "My Events");
 
 									var navbar = builder
 											.navbar((row.organiser === 'true') ? [
@@ -229,14 +218,11 @@ function get_edit(request, response) {
 
 								} else {
 									response
-											.redirect('/profile?email='
-													+ email);
+											.redirect('/profile?email=' + email);
 								}
 
 							} else {
-								response
-										.redirect('/profile?email='
-												+ email);
+								response.redirect('/profile?email=' + email);
 							}
 
 						}, function(count) {
@@ -299,35 +285,25 @@ function changePicure(request, response, row) {
 
 function viewProfile(request, response, user, info, canEdit, navbar) {
 
-	// Construct the organiser home page
-	misc.buildPage('profile', function(content) {
+	var profile = builder.viewProfile(user, canEdit);
 
-		var profile = builder.viewProfile(user, canEdit);
+	var head = builder.head("Profile");
+	var body = builder.body(navbar, info + profile);
+	var page = builder.page(head, body);
 
-		var head = builder.head("Profile");
-		var body = builder.body(navbar, info + profile + content);
-		var page = builder.page(head, body);
-
-		misc.buildResponse(response, page);
-
-	});
+	misc.buildResponse(response, page);
 
 }
 
 function editProfile(request, response, user, info, navbar) {
 
-	// Construct the organiser home page
-	misc.buildPage('profile', function(content) {
+	var profile = builder.editProfile(user);
 
-		var profile = builder.editProfile(user);
+	var head = builder.head("Profile");
+	var body = builder.body(navbar, info + profile);
+	var page = builder.page(head, body);
 
-		var head = builder.head("Profile");
-		var body = builder.body(navbar, info + profile + content);
-		var page = builder.page(head, body);
-
-		misc.buildResponse(response, page);
-
-	});
+	misc.buildResponse(response, page);
 
 }
 

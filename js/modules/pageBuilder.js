@@ -491,6 +491,7 @@ function editProfile(userDetails) {
 	profile += '		</div>';
 	profile += '	</div>';
 	profile += '</div>';
+	profile += '<script src="/scripts/profileValidator.js"></script>';
 
 	return profile;
 }
