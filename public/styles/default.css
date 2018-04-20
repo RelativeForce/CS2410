@@ -43,7 +43,7 @@ header {
 	text-align: center;
 	vertical-align: middle;
 	background-size: cover;
-	background-image: url("assets/aston.jpg");
+	background-image: url("../assets/aston.jpg");
 	background-repeat: no-repeat;
 	background-attachment: fixed;
 	background-position: center;
