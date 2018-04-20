@@ -328,6 +328,7 @@ function editEvent(eventDetails) {
 	event += '		</div>';
 	event += '	</div>';
 	event += '</div>';
+	event += '<script src="/scripts/previewImage.js"></script>';
 	event += '<script src="/scripts/eventValidator.js"></script>';
 
 	return event;
@@ -505,7 +506,7 @@ function editPicture(picturePath) {
 
 	var picture = '';
 
-	picture += '<input type="file" id="picture" name="picture" class="form-control" accept=".png,.jpg"/> ';
+	picture += '<input type="file" id="picture" onchange="readURL(this)" name="picture" class="form-control" accept=".png,.jpg"/> ';
 
 	// If the picture exists
 	if (fs.existsSync(path.resolve('./public/uploaded/' + picturePath))) {
@@ -514,6 +515,8 @@ function editPicture(picturePath) {
 	} else {
 		picture += '<img id="preview" src="No Picture" alt="profile picture" style="width: 100%; height: 100%"/>';
 	}
+	
+	picture += '<script src="/scripts/previewImage.js"></script>';
 
 	return picture;
 }

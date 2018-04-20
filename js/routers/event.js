@@ -15,104 +15,182 @@ function get(request, response) {
 
 		var event_id = request.query.event_id;
 
-		db.each(
-			"SELECT * FROM Events WHERE event_id = ?",
-			[ event_id ],
-			function(eventDetails) {
+		db
+				.each(
+						"SELECT * FROM Events WHERE event_id = ?",
+						[ event_id ],
+						function(eventDetails) {
 
-				db.collect(
-					"SELECT * FROM Event_Pictures WHERE event_id = ?",
-					[ event_id ],
-					function(pictureEntry) {
-						return pictureEntry.picture;
-					},
-					function(pictures) {
+							db
+									.collect(
+											"SELECT * FROM Event_Pictures WHERE event_id = ?",
+											[ event_id ],
+											function(pictureEntry) {
+												return pictureEntry.picture;
+											},
+											function(pictures) {
 
-						var event = {
-							"event_id" : eventDetails.event_id,
-							"name" : eventDetails.name,
-							"description" : eventDetails.description,
-							"organiser" : eventDetails.organiser,
-							"type" : eventDetails.type,
-							"time" : eventDetails.time,
-							"location" : eventDetails.location,
-							"popularity" : eventDetails.popularity,
-							"pictures" : pictures,
-							"hasLiked" : false
-						};
+												var event = {
+													"event_id" : eventDetails.event_id,
+													"name" : eventDetails.name,
+													"description" : eventDetails.description,
+													"organiser" : eventDetails.organiser,
+													"type" : eventDetails.type,
+													"time" : eventDetails.time,
+													"location" : eventDetails.location,
+													"popularity" : eventDetails.popularity,
+													"pictures" : pictures,
+													"hasLiked" : false
+												};
 
-						// Check for the session cookie and wherther it is active.
-						var sessionToken = request.cookies[cookieName];
+												// Check for the session cookie
+												// and wherther it is active.
+												var sessionToken = request.cookies[cookieName];
 
-						// If there is a active session display the event as editable
-						if (sessions.validSession(sessionToken)) {
+												// If there is a active session
+												// display the event as editable
+												if (sessions
+														.validSession(sessionToken)) {
 
-							sessions.extend(sessionToken, response);
-	
-							var email = sessions.getEmail(sessionToken);
-	
-							db.each(
-								"SELECT * FROM Users WHERE email = ?",
-								[ email ],
-								function(user) {
-	
-									var isOrganiser = event.organiser === email;
-	
-									var logout = builder.navbarLink("/logout", "Logout");
-									var profile = builder.navbarLink("/profile?email=" + user.email, "My Profile");
-									var newEvent = builder.navbarLink("/organise", "Orgainse Event");
-									var search = builder.navbarLink("/search", "Search Events");
-									var home = builder.navbarLink("/", "Home");
-	
-									var navbar = builder.navbar(
-										isOrganiser ? 
-										[ home, newEvent, search, profile, logout ] : 
-										[ home, search, profile, logout ]
-									);
-									
-									// Check if the current user has liked the event.
-									db.each(
-										"SELECT * FROM Interest WHERE student_email = ? AND event_id = ?",
-										[ email, event.event_id ], 
-										function(row) {
-											// If there is a entry then the user has liked the event.
-											event.hasLiked = true;	
-										}, 
-										function(interestCount) {
+													sessions.extend(
+															sessionToken,
+															response);
 
-											// Pass an whether the current user is the event organiser.
-											build_ViewEvent(response, navbar, event, isOrganiser ? "organiser" : "student");
-												
-										}
-									);
-									
-								},
-								function(userCount) {
-									// Do  nothing
-								}
-							);
+													var email = sessions
+															.getEmail(sessionToken);
 
-						} else {
+													db
+															.each(
+																	"SELECT * FROM Users WHERE email = ?",
+																	[ email ],
+																	function(
+																			user) {
 
-							var login = builder.navbarLink("/login", "Login");
-							var home = builder.navbarLink("/", "Home");
+																		var isOrganiser = event.organiser === email;
 
-							var navbar = builder.navbar([ home, login ]);
+																		var logout = builder
+																				.navbarLink(
+																						"/logout",
+																						"Logout");
+																		var profile = builder
+																				.navbarLink(
+																						"/profile?email="
+																								+ user.email,
+																						"My Profile");
+																		var newEvent = builder
+																				.navbarLink(
+																						"/organise",
+																						"Orgainse Event");
+																		var search = builder
+																				.navbarLink(
+																						"/search",
+																						"Search Events");
+																		var home = builder
+																				.navbarLink(
+																						"/",
+																						"Home");
 
-							// Pass an false as the user  is not signed in.
-							build_ViewEvent(response, navbar, event, "");
-						}
-					}
-				);
+																		var navbar = builder
+																				.navbar(isOrganiser ? [
+																						home,
+																						newEvent,
+																						search,
+																						profile,
+																						logout ]
+																						: [
+																								home,
+																								search,
+																								profile,
+																								logout ]);
 
-			}, function(eventCount) {
+																		// Check
+																		// if
+																		// the
+																		// current
+																		// user
+																		// has
+																		// liked
+																		// the
+																		// event.
+																		db
+																				.each(
+																						"SELECT * FROM Interest WHERE student_email = ? AND event_id = ?",
+																						[
+																								email,
+																								event.event_id ],
+																						function(
+																								row) {
+																							// If
+																							// there
+																							// is a
+																							// entry
+																							// then
+																							// the
+																							// user
+																							// has
+																							// liked
+																							// the
+																							// event.
+																							event.hasLiked = true;
+																						},
+																						function(
+																								interestCount) {
 
-				// If there is no event with that id show the landing page.
-				if (eventCount == 0) {
-					response.redirect('/');
-				}
-			}
-		);
+																							// Pass
+																							// an
+																							// whether
+																							// the
+																							// current
+																							// user
+																							// is
+																							// the
+																							// event
+																							// organiser.
+																							build_ViewEvent(
+																									response,
+																									navbar,
+																									event,
+																									isOrganiser ? "organiser"
+																											: "student");
+
+																						});
+
+																	},
+																	function(
+																			userCount) {
+																		// Do
+																		// nothing
+																	});
+
+												} else {
+
+													var login = builder
+															.navbarLink(
+																	"/login",
+																	"Login");
+													var home = builder
+															.navbarLink("/",
+																	"Home");
+
+													var navbar = builder
+															.navbar([ home,
+																	login ]);
+
+													// Pass an false as the user
+													// is not signed in.
+													build_ViewEvent(response,
+															navbar, event, "");
+												}
+											});
+
+						}, function(eventCount) {
+
+							// If there is no event with that id show the
+							// landing page.
+							if (eventCount == 0) {
+								response.redirect('/');
+							}
+						});
 
 	} else {
 		response.redirect('/');
@@ -132,68 +210,84 @@ function post_edit(request, response) {
 
 		var email = sessions.getEmail(sessionToken);
 
-		db.each(
-			"SELECT * FROM Users WHERE email = ?",
-			[ email ],
-			function(user) {
+		db
+				.each(
+						"SELECT * FROM Users WHERE email = ?",
+						[ email ],
+						function(user) {
 
-				// If the user is not a organiser.
-				if (user.organiser !== 'true') {
-					response.redirect('/');
-				} else {
-
-					var isOrganiser = false;
-					var event_id = request.body.event_id;
-					var popularity = 0;
-
-					db.each(
-						"SELECT * FROM Events WHERE event_id = ?",
-						[ event_id ],
-						function(row) {
-
-							// If the event is owned by the current user.
-							if (row.organiser === email) {
-								isOrganiser = true;
-							}
-
-							popularity = row.popularity;
-
-						},
-						function(count) {
-
-							// If the user has the right to update the event.
-							if (isOrganiser) {
-
-								var event = {
-									"name" : misc.encodeHTML(request.body.name),
-									"id" : misc.encodeHTML(request.body.event_id),
-									"location" : misc.encodeHTML(request.body.location),
-									"time" : misc.encodeHTML(request.body.date + " " + request.body.time),
-									"organiser" : misc.encodeHTML(email),
-									"description" : misc.encodeHTML(request.body.description),
-									"type" : misc.encodeHTML(request.body.type),
-									"popularity" : popularity
-								};
-
-								misc.changeEventPictures(request, event_id);
-								updateEvent(event);
-
-								response.redirect('/event?event_id=' + event_id);
-
+							// If the user is not a organiser.
+							if (user.organiser !== 'true') {
+								response.redirect('/');
 							} else {
+
+								var isOrganiser = false;
+								var event_id = request.body.event_id;
+								var popularity = 0;
+
+								db
+										.each(
+												"SELECT * FROM Events WHERE event_id = ?",
+												[ event_id ],
+												function(row) {
+
+													// If the event is owned by
+													// the current user.
+													if (row.organiser === email) {
+														isOrganiser = true;
+													}
+
+													popularity = row.popularity;
+
+												},
+												function(count) {
+
+													// If the user has the right
+													// to update the event.
+													if (isOrganiser) {
+
+														var event = {
+															"name" : misc
+																	.encodeHTML(request.body.name),
+															"id" : misc
+																	.encodeHTML(request.body.event_id),
+															"location" : misc
+																	.encodeHTML(request.body.location),
+															"time" : misc
+																	.encodeHTML(request.body.date
+																			+ " "
+																			+ request.body.time),
+															"organiser" : misc
+																	.encodeHTML(email),
+															"description" : misc
+																	.encodeHTML(request.body.description),
+															"type" : misc
+																	.encodeHTML(request.body.type),
+															"popularity" : popularity
+														};
+
+														misc
+																.changeEventPictures(
+																		request,
+																		event_id);
+														updateEvent(event);
+
+														response
+																.redirect('/event?event_id='
+																		+ event_id);
+
+													} else {
+														response.redirect('/');
+													}
+												});
+							}
+						}, function(count) {
+
+							// If there is no user with that email.
+							if (count == 0) {
 								response.redirect('/');
 							}
-						}
-					);
-				}
-			}, function(count) {
-
-				// If there is no user with that email.
-				if (count == 0) {
-					response.redirect('/');
-				}
-			}
-		);
+						});
 
 	} else {
 		response.redirect('/');
@@ -207,84 +301,134 @@ function get_edit(request, response) {
 
 		var event_id = request.query.event_id;
 
-		db.each(
-			"SELECT * FROM Events WHERE event_id = ?",
-			[ event_id ],
-			function(eventDetails) {
+		db
+				.each(
+						"SELECT * FROM Events WHERE event_id = ?",
+						[ event_id ],
+						function(eventDetails) {
 
-				db.collect(
-					"SELECT * FROM Event_Pictures WHERE event_id = ?",
-					[ event_id ],
-					function(pictureEntry) {
-						return pictureEntry.picture;
-					},
-					function(pictures) {
+							db
+									.collect(
+											"SELECT * FROM Event_Pictures WHERE event_id = ?",
+											[ event_id ],
+											function(pictureEntry) {
+												return pictureEntry.picture;
+											},
+											function(pictures) {
 
-						var event = {
-							"event_id" : eventDetails.event_id,
-							"name" : eventDetails.name,
-							"description" : eventDetails.description,
-							"organiser" : eventDetails.organiser,
-							"type" : eventDetails.type,
-							"time" : eventDetails.time,
-							"location" : eventDetails.location,
-							"popularity" : eventDetails.popularity,
-							"pictures" : pictures
-						};
+												var event = {
+													"event_id" : eventDetails.event_id,
+													"name" : eventDetails.name,
+													"description" : eventDetails.description,
+													"organiser" : eventDetails.organiser,
+													"type" : eventDetails.type,
+													"time" : eventDetails.time,
+													"location" : eventDetails.location,
+													"popularity" : eventDetails.popularity,
+													"pictures" : pictures
+												};
 
-						// Check for the session cookie and wherther it is active.
-						var sessionToken = request.cookies[cookieName];
+												// Check for the session cookie
+												// and wherther it is active.
+												var sessionToken = request.cookies[cookieName];
 
-						// If there is a active session display the event as editable
-						if (sessions.validSession(sessionToken)) {
+												// If there is a active session
+												// display the event as editable
+												if (sessions
+														.validSession(sessionToken)) {
 
-							sessions.extend(sessionToken, response);
+													sessions.extend(
+															sessionToken,
+															response);
 
-							var email = sessions.getEmail(sessionToken);
+													var email = sessions
+															.getEmail(sessionToken);
 
-							db.each(
-								"SELECT * FROM Users WHERE email = ?",
-								[ email ],
-								function(user) {
+													db
+															.each(
+																	"SELECT * FROM Users WHERE email = ?",
+																	[ email ],
+																	function(
+																			user) {
 
-									var logout = builder.navbarLink("/logout", "Logout");
-									var profile = builder.navbarLink("/profile?email=" + user.email, "My Profile");
-									var newEvent = builder.navbarLink("/organise","Orgainse Event");
-									var search = builder.navbarLink("/search", "Search Events");
-									var home = builder.navbarLink("/", "Home");
+																		var logout = builder
+																				.navbarLink(
+																						"/logout",
+																						"Logout");
+																		var profile = builder
+																				.navbarLink(
+																						"/profile?email="
+																								+ user.email,
+																						"My Profile");
+																		var newEvent = builder
+																				.navbarLink(
+																						"/organise",
+																						"Orgainse Event");
+																		var search = builder
+																				.navbarLink(
+																						"/search",
+																						"Search Events");
+																		var home = builder
+																				.navbarLink(
+																						"/",
+																						"Home");
 
-									if (event.organiser === email) {
+																		if (event.organiser === email) {
 
-										var navbar = builder.navbar([ home, newEvent, search, profile, logout ]);
+																			var navbar = builder
+																					.navbar([
+																							home,
+																							newEvent,
+																							search,
+																							profile,
+																							logout ]);
 
-										// Pass an whether or not the current user is the event organiser.
-										build_EditEvent(response, navbar, event);
+																			// Pass
+																			// an
+																			// whether
+																			// or
+																			// not
+																			// the
+																			// current
+																			// user
+																			// is
+																			// the
+																			// event
+																			// organiser.
+																			build_EditEvent(
+																					response,
+																					navbar,
+																					event);
 
-									} else {
-										response.redirect('/event?event_id=' + event_id);
-									}
+																		} else {
+																			response
+																					.redirect('/event?event_id='
+																							+ event_id);
+																		}
 
-								},
-								function(userCount) {
-									// Do nothing
+																	},
+																	function(
+																			userCount) {
+																		// Do
+																		// nothing
 
-								}
-							);
+																	});
 
-						} else {
-							response.redirect('/event?event_id=' + event_id);
-						}
-					}
-				);
+												} else {
+													response
+															.redirect('/event?event_id='
+																	+ event_id);
+												}
+											});
 
-			}, function(eventCount) {
+						}, function(eventCount) {
 
-				// If there is no event with that id show the landing page.
-				if (eventCount == 0) {
-					response.redirect('/');
-				}
-			}
-		);
+							// If there is no event with that id show the
+							// landing page.
+							if (eventCount == 0) {
+								response.redirect('/');
+							}
+						});
 
 	} else {
 		response.redirect('/');
@@ -294,33 +438,23 @@ function get_edit(request, response) {
 
 function build_ViewEvent(response, navbar, event, canEdit) {
 
-	// Builds the student login page
-	misc.buildPage('event', function(content) {
+	var head = builder.head("Event");
+	var eventHTML = builder.viewEvent(event, canEdit);
+	var body = builder.body(navbar, eventHTML);
+	var page = builder.page(head, body);
 
-		var head = builder.head("Event");
-		var eventHTML = builder.viewEvent(event, canEdit);
-		var body = builder.body(navbar, eventHTML + content);
-		var page = builder.page(head, body);
-
-		misc.buildResponse(response, page);
-
-	});
+	misc.buildResponse(response, page);
 
 }
 
 function build_EditEvent(response, navbar, event) {
 
-	// Builds the student login page
-	misc.buildPage('event', function(content) {
+	var head = builder.head("Event");
+	var eventHTML = builder.editEvent(event);
+	var body = builder.body(navbar, eventHTML);
+	var page = builder.page(head, body);
 
-		var head = builder.head("Event");
-		var eventHTML = builder.editEvent(event);
-		var body = builder.body(navbar, eventHTML + content);
-		var page = builder.page(head, body);
-
-		misc.buildResponse(response, page);
-
-	});
+	misc.buildResponse(response, page);
 
 }
 

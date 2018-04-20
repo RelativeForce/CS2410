@@ -1,3 +1,40 @@
+function validateEvent() {
+
+	var name = document.getElementById("name").value;
+	var description = document.getElementById("description").value;
+	var time = document.getElementById("time").value;
+	var location = document.getElementById("location").value;
+	var date = document.getElementById("date").value;
+
+	if (name == "") {
+		alert("Name must be filled out");
+		return false;
+	}
+
+	if (description == "") {
+		alert("Description must be filled out");
+		return false;
+	}
+
+	if (time == "") {
+		alert("Time must be filled out");
+		return false;
+	}
+
+	if (date == "") {
+		alert("Date must be filled out");
+		return false;
+	}
+
+	if (location == "") {
+		alert("Location must be filled out");
+		return false;
+	}
+
+	return true;
+
+}
+
 var numberOfPictures = document.getElementById("imageContainer").childElementCount - 1;
 
 function addPictureInput() {
@@ -39,24 +76,4 @@ function addPictureInput() {
 				document.getElementById("addPicture"));
 	}
 
-}
-
-function readURL(input) {
-
-	if (input.files && input.files[0]) {
-
-		var reader = new FileReader();
-		var number = input.name.replace('picture', '');
-		var filename = input.value.split(/(\\|\/)/g).pop();
-
-		reader.onload = function(e) {
-
-			document.getElementById("pName" + number).value = filename;
-
-			var id = '#preview' + number;
-
-			$(id).attr('src', e.target.result);
-		}
-		reader.readAsDataURL(input.files[0]);
-	}
 }
