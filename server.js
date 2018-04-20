@@ -33,7 +33,7 @@ function startServer() {
 
 	console.log('Listening on port ' + port);
 
-	db.connect();
+	db.connect('./db/aston_events.sqlite3');
 
 }
 

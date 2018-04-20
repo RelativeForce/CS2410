@@ -5,6 +5,7 @@ var database;
 
 /**
  * Creates the 'Users' table.
+ * 
  * @returns undefined
  */
 function users() {
@@ -49,7 +50,7 @@ function events() {
 
 /**
  * Creates the 'Interest' table.
- *
+ * 
  * @returns undefined
  */
 function interest() {
@@ -89,7 +90,8 @@ function pictures() {
  * which is then passed to the onComplete function.
  * 
  * @param queryText
- *            An SQLite query on the Events table that will return a list of rows.
+ *            An SQLite query on the Events table that will return a list of
+ *            rows.
  * @param params
  *            An array of parameters for the SQLite query text which should be
  *            in the sanitised form.
@@ -110,35 +112,31 @@ function collect(queryText, params, mapper, onComplete) {
 	// The collection of all the row mappings.
 	var collection = [];
 
-	query.each(
-		params, 
-		function(err, row) {
-	
-			// If there was an error throw it.
-			if (err) {
-				throw err;
-			}
-	
-			// The object that the row mapped to.
-			var mapped = mapper(row);
-	
-			// Store the mapped value in the collection.
-			collection.push(mapped);
+	query.each(params, function(err, row) {
 
-		}, 
-		function(err, count) {
-
-			query.finalize();
-	
-			if (err) {
-				throw err;
-			}
-	
-			// Perform the on complete function on the collection.
-			onComplete(collection);
-
+		// If there was an error throw it.
+		if (err) {
+			throw err;
 		}
-	);
+
+		// The object that the row mapped to.
+		var mapped = mapper(row);
+
+		// Store the mapped value in the collection.
+		collection.push(mapped);
+
+	}, function(err, count) {
+
+		query.finalize();
+
+		if (err) {
+			throw err;
+		}
+
+		// Perform the on complete function on the collection.
+		onComplete(collection);
+
+	});
 }
 
 /**
@@ -147,7 +145,8 @@ function collect(queryText, params, mapper, onComplete) {
  * afterwards.
  * 
  * @param queryText
- *            An SQLite query on the Events table that will return a list of rows.
+ *            An SQLite query on the Events table that will return a list of
+ *            rows.
  * @param params
  *            An array of parameters for the SQLite query text which should be
  *            in the sanitised form.
@@ -166,49 +165,46 @@ function each(queryText, params, action, onComplete) {
 	// Convert the query text into a sanitised SQLite query
 	var query = database.prepare(queryText);
 
-	query.each(
-		params, 
-		function(err, row) {
+	query.each(params, function(err, row) {
 
-			// If there was an error throw it.
-			if (err) {
-				throw err;
-			}
-	
-			// Perform the action on the row/
-			action(row);
-
-		}, 
-		function(err, count) {
-			query.finalize();
-	
-			if (err) {
-				throw err;
-			}
-	
-			// Perform the on complete function.
-			onComplete(count);
+		// If there was an error throw it.
+		if (err) {
+			throw err;
 		}
-	);
+
+		// Perform the action on the row/
+		action(row);
+
+	}, function(err, count) {
+		query.finalize();
+
+		if (err) {
+			throw err;
+		}
+
+		// Perform the on complete function.
+		onComplete(count);
+	});
 
 }
 
 /**
- * Connects to the SQLite database file and if the file cannot be found then it is created.
+ * Connects to the SQLite database file and if the file cannot be found then it
+ * is created.
+ * 
+ * @param filename
+ *            The file path of database file from this module.
  * @returns undefined
  */
-function connect() {
+function connect(filename) {
 
 	// Connect to the database.
-	database = new sqlite3.Database(
-		'./db/aston_events.sqlite3',
-		sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, 
-		function(err) {
-			if (err) {
-				console.log(err.message);
-			}
+	database = new sqlite3.Database(filename, sqlite3.OPEN_READWRITE
+			| sqlite3.OPEN_CREATE, function(err) {
+		if (err) {
+			console.log(err.message);
 		}
-	);
+	});
 
 	// users(database);
 	// events(database);
@@ -222,7 +218,8 @@ function connect() {
 /**
  * 
  * @param queryText
- *            An SQLite query on the Events table that will not return any thing.
+ *            An SQLite query on the Events table that will not return any
+ *            thing.
  * @param params
  *            An array of parameters for the SQLite query text which should be
  *            in the sanitised form.
@@ -235,8 +232,8 @@ function run(queryText, params) {
 }
 
 module.exports = {
-	connect : function() {
-		connect();
+	connect : function(filename) {
+		connect(filename);
 	},
 	collect : function(queryText, params, mapper, onComplete) {
 		collect(queryText, params, mapper, onComplete);
