@@ -328,6 +328,7 @@ function editEvent(eventDetails) {
 	event += '		</div>';
 	event += '	</div>';
 	event += '</div>';
+	event += '<script src="/scripts/eventValidator.js"></script>';
 
 	return event;
 }
