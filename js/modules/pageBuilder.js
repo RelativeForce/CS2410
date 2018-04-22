@@ -1,3 +1,12 @@
+/**
+ * This is a Module which is used to constructs components of the HTML pages for
+ * the site.
+ * 
+ * @author Joshua Eddy 159029448
+ * @since 2018-04-22
+ */
+
+// NPM Modules
 const fs = require('fs');
 const path = require('path');
 
@@ -181,8 +190,7 @@ function eventsTable(events, title, signedIn) {
 		eventsList += '		<td>' + event.type + '</td>';
 		eventsList += '		<td>' + event.location + '</td>';
 		eventsList += '		<td>' + event.time + '</td>';
-		eventsList += '		<td><a href="/profile?email=' + event.organiser + '">' + event.organiser
-				+ '</a></td>';
+		eventsList += '		<td><a href="/profile?email=' + event.organiser + '">' + event.organiser + '</a></td>';
 		eventsList += '		<td id="popularity' + event.id + '">' + event.popularity + '</td>';
 		eventsList += '		<td>';
 
@@ -353,12 +361,11 @@ function viewEvent(eventDetails, sessionType) {
 	event += '	<div class="panel panel-default">';
 	event += '		<div class="panel-heading">';
 
-	
 	if (sessionType !== "") {
 
 		event += '<div class="btn-toolbar pull-right">';
 		event += '	<div class="btn-group">';
-		
+
 		if (sessionType === "organiser") {
 			event += ' 		<a href="/event/edit?event_id=' + eventDetails.event_id
 					+ '" class="btn btn-primary" role="button">Edit</a>';
@@ -372,12 +379,10 @@ function viewEvent(eventDetails, sessionType) {
 			event += '<button class="btn btn-success" id="interest' + eventDetails.event_id
 					+ '" onclick="changeInterest(this);" type="button">Like</button>';
 		}
-		
-		
+
 		event += '	</div>';
 		event += '</div>';
 		event += '<script src="/scripts/changeInterest.js"></script>';
-		
 
 	}
 
@@ -400,8 +405,7 @@ function viewEvent(eventDetails, sessionType) {
 	// Organiser
 	event += '			<div>';
 	event += '				<label>Organiser:</label> ';
-	event += '				<p><a href="/profile?email=' + eventDetails.organiser + '">'
-			+ eventDetails.organiser + '</a></p>';
+	event += '				<p><a href="/profile?email=' + eventDetails.organiser + '">' + eventDetails.organiser + '</a></p>';
 	event += '			</div>';
 
 	// Time
@@ -516,7 +520,7 @@ function editPicture(picturePath) {
 	} else {
 		picture += '<img id="preview" src="No Picture" alt="profile picture" style="width: 100%; height: 100%"/>';
 	}
-	
+
 	picture += '<script src="/scripts/previewImage.js"></script>';
 
 	return picture;

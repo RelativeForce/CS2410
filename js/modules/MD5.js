@@ -13,8 +13,7 @@ var hex_chr = "0123456789abcdef";
 function rhex(num) {
 	str = "";
 	for (j = 0; j <= 3; j++)
-		str += hex_chr.charAt((num >> (j * 8 + 4)) & 0x0F)
-				+ hex_chr.charAt((num >> (j * 8)) & 0x0F);
+		str += hex_chr.charAt((num >> (j * 8 + 4)) & 0x0F) + hex_chr.charAt((num >> (j * 8)) & 0x0F);
 	return str;
 }
 
@@ -58,15 +57,19 @@ function rol(num, cnt) {
 function cmn(q, a, b, x, s, t) {
 	return add(rol(add(add(a, q), add(x, t)), s), b);
 }
+
 function ff(a, b, c, d, x, s, t) {
 	return cmn((b & c) | ((~b) & d), a, b, x, s, t);
 }
+
 function gg(a, b, c, d, x, s, t) {
 	return cmn((b & d) | (c & (~d)), a, b, x, s, t);
 }
+
 function hh(a, b, c, d, x, s, t) {
 	return cmn(b ^ c ^ d, a, b, x, s, t);
 }
+
 function ii(a, b, c, d, x, s, t) {
 	return cmn(c ^ (b | (~d)), a, b, x, s, t);
 }
@@ -163,7 +166,7 @@ function calcMD5(str) {
 	return rhex(a) + rhex(b) + rhex(c) + rhex(d);
 }
 module.exports = {
-		
+
 	hash : function(text) {
 		return calcMD5(text);
 	}
