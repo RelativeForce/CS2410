@@ -107,7 +107,7 @@ function contains(check) {
  */
 function validSession(token) {
 	return contains(function(session) {
-		return session["token"] === token;
+		return session.token === token;
 	});
 }
 

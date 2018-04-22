@@ -92,6 +92,7 @@ function login(request, response) {
 
 				// If the session is added redirct the client.
 				if (sessions.addSession(token, user)) {
+					sessions.extend(token, response);
 					response.redirect('/');
 				}
 				// Session already exists.
@@ -177,6 +178,7 @@ function signup(request, response) {
 					var token = sessions.uniqueToken();
 
 					sessions.addSession(token, newUser);
+					sessions.extend(token, response);
 					response.redirect('/');
 
 				} else {
