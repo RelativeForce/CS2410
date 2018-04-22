@@ -277,7 +277,7 @@ function filterEvents(query, response, navbar, email) {
 				for (var index = 0; index < events.length; index++) {
 					var current = events[index];
 
-					if (row.event_id === current.id) {
+					if (row.event_id === current.event_id) {
 						current.hasLiked = true;
 					}
 				}

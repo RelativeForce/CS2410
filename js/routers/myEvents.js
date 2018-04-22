@@ -61,15 +61,38 @@ function get(request, response) {
 			
 			}, 
 			function(events) {
-
-				// Build the events page
-				var eventsTable = builder.eventsTable(events, "My Events", false);
+				
+				// Check if the current user has liked any of the events.
+				db.each(
+					"SELECT * FROM Interest WHERE student_email = ?", 
+					[ user.email ], 
+					function(row) {
 	
-				var head = builder.head("Aston Events");
-				var body = builder.body(navbar, eventsTable);
-				var page = builder.page(head, body);
+						/*
+						 * Iterate over all the events and if the current user has shown
+						 * interest oin the event set the event as liked.
+						 */
+						for (var index = 0; index < events.length; index++) {
+							var current = events[index];
+		
+							if (row.event_id === current.event_id) {
+								current.hasLiked = true;
+							}
+						}
 	
-				misc.buildResponse(response, page);
+					}, 
+					function(interestCount) {
+		
+						// Build the events page
+						var eventsTable = builder.eventsTable(events, "My Events", true);
+			
+						var head = builder.head("Aston Events");
+						var body = builder.body(navbar, eventsTable);
+						var page = builder.page(head, body);
+			
+						misc.buildResponse(response, page);
+					}
+				);
 			}
 		);
 
