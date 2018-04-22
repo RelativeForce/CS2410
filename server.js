@@ -1,3 +1,9 @@
+/**
+ * @author Joshua Eddy 159029448
+ * @since 2018-04-22
+ */
+
+// The port this node.js app will listen to.
 const port = process.env.PORT || 3000;
 
 // Imported modules
@@ -42,6 +48,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(fileUpload());
 
+// Set routers
 app.use('/', root);
 app.use('/login', login);
 app.use('/profile', profile);

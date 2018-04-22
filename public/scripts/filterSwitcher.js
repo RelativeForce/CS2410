@@ -1,3 +1,13 @@
+/**
+ * @author Joshua Eddy 159029448
+ * @since 2018-04-22
+ */
+
+/**
+ * Changes the type of filter that is dsiplayed on the search page.
+ * 
+ * @returns undefined
+ */
 function changeFilter() {
 
 	var filter = document.getElementById("filter").value;
@@ -55,10 +65,17 @@ function changeFilter() {
 	}
 }
 
+/**
+ * Validates the filter values that the user has selected.
+ * 
+ * @returns
+ */
 function validateFilter() {
 
 	var filter = document.getElementById("filter").value;
 
+	// If its a date filter chack that the 'from' and 'to' dates are not the
+	// wrong way around.
 	if (filter === 'Date') {
 
 		var from = document.getElementById("from").value;
@@ -77,7 +94,9 @@ function validateFilter() {
 
 		return true;
 
-	} else if (filter === 'Popularity') {
+	}
+	// If its a popularity filter chack the popularity is not less than zero.
+	else if (filter === 'Popularity') {
 
 		var min = document.getElementById("minimum").value;
 
@@ -90,13 +109,16 @@ function validateFilter() {
 
 		return true;
 
-	} else if (filter === 'Type') {
+	}
+	// If its not a type filter then its invalid.
+	else if (filter !== 'Type') {
+		alert("Invalid filter value");
+		return false;
+
+	} else {
 
 		// No need to check type filter because it has a value automatically.
 		return true;
 	}
-
-	alert("Invalid filter value");
-	return false;
 
 }

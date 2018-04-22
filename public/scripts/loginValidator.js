@@ -1,3 +1,8 @@
+/**
+ * Checks that the fields from the login form are populated and valid.
+ * 
+ * @returns Whether of not the form can be submitted in its current state.
+ */
 function validateLogin() {
 
 	var email = document.getElementById("login_email").value;
@@ -28,6 +33,11 @@ function validateLogin() {
 	return true;
 }
 
+/**
+ * Checks that all the fields of the sign up form are valid and populated.
+ * 
+ * @returns Whether or not the form can be submitted in its current state.
+ */
 function validateSignup() {
 
 	var email = document.getElementById("signup_email").value;
