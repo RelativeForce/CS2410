@@ -46,7 +46,7 @@ function get(request, response) {
 	} else {
 
 		// If there is no valid session send the landing page.
-		landing(request, response);
+		landing(response);
 	}
 }
 
