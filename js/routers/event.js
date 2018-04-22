@@ -443,7 +443,7 @@ function build_ViewEvent(response, navbar, event, canEdit) {
 function build_EditEvent(response, event) {
 
 	var logout = builder.navbarLink("/logout", "Logout");
-	var profile = builder.navbarLink("/profile?email=" + user.email, "My Profile");
+	var profile = builder.navbarLink("/profile?email=" + event.organiser, "My Profile");
 	var newEvent = builder.navbarLink("/organise", "Orgainse Event");
 	var search = builder.navbarLink("/search", "Search Events");
 	var home = builder.navbarLink("/", "Home");
