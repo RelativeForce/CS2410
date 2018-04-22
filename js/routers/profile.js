@@ -209,6 +209,8 @@ function post_edit(request, response) {
 			"organiser" : request.body.organiser ? 'true' : 'false',
 			"picture" : (newPicture !== user.picture) ? newPicture : user.picture,
 			"password" : password,
+			"salt" : user.salt,
+			"dob" : user.dob,
 			"telephone" : (user.telephone !== request.body.telephone) ? request.body.telephone : user.telephone
 		};
 
@@ -217,6 +219,9 @@ function post_edit(request, response) {
 			"UPDATE Users SET name = ?, organiser = ?, picture = ?, password = ?, telephone = ?  WHERE email = ?;", 
 			[newRow.name, newRow.organiser, newRow.picture, newRow.password, newRow.telephone, newRow.email ]
 		);
+		
+		// Update the user's deatils that are stored in the session.
+		sessions.updateUser(sessionToken, newRow)
 
 		console.log("Profile Update [" + user.email + "]");
 

@@ -1,16 +1,18 @@
 /**
- * The name of the session cookie.
+ * This is a Module which tracks all of the currently signed in users as
+ * sessions. Sessions expire after a fixed period of time and can be extended.
+ * 
+ * @author Joshua Eddy 159029448
+ * @since 2018-04-22
  */
+
+// The name of the session cookie.
 const cookieName = 'AstonEvents';
 
-/**
- * The number of hours that a session will remain active for.
- */
+// The number of hours that a session will remain active for.
 const duration = 1;
 
-/**
- * Holds all the valid sessions for this server.
- */
+// Holds all the valid sessions for this server.
 var sessions = [];
 
 /**
@@ -24,13 +26,10 @@ var sessions = [];
  */
 function addSession(token, user) {
 
-
 	// Check if the user is already logged in.
-	var userLoggedIn = contains(
-		function(session) {
-			return session.user.email === user.email;
-		}
-	);
+	var userLoggedIn = contains(function(session) {
+		return session.user.email === user.email;
+	});
 
 	// If the user is already logged in the do not add the session.
 	if (userLoggedIn) {
@@ -41,7 +40,8 @@ function addSession(token, user) {
 
 	// Set the session cookie to expire at the end of its duration
 	var expire = new Date();
-	expire.setTime(expire.getTime() + (duration * 3600000)); // 60 * 60 * 1000
+	expire.setTime(expire.getTime() + (duration * 3600000)); // 60 * 60 *
+	// 1000
 
 	// Constuct the new session
 	var session = {
@@ -69,10 +69,8 @@ function addSession(token, user) {
  */
 function contains(check) {
 
-	var numberOfSessions = sessions.length;
-
 	// Iterate over all the sessions.
-	for (var index = 0; index < numberOfSessions; index++) {
+	for (var index = 0; index < sessions.length; index++) {
 
 		// The current session
 		var session = sessions[index];
@@ -82,11 +80,10 @@ function contains(check) {
 
 		// If the session has expired remove it.
 		if (session.expires < now.getTime()) {
-			
+
 			sessions.splice(index, 1);
 			index--;
-			numberOfSessions--;
-			
+
 			console.log("Session " + session.token + " [Expired]");
 
 		} else {
@@ -109,11 +106,9 @@ function contains(check) {
  * @returns Whether or not the specied token is a valid token.
  */
 function validSession(token) {
-	return contains(
-		function(session) {
-			return session["token"] === token;
-		}
-	);
+	return contains(function(session) {
+		return session["token"] === token;
+	});
 }
 
 /**
@@ -162,11 +157,9 @@ function uniqueToken() {
 		token = generateToken();
 
 		// Check if the token is already in use by another session.
-		isUnique = !contains(
-			function(session) {
-				return session["token"] === token;
-			}
-		);
+		isUnique = !contains(function(session) {
+			return session["token"] === token;
+		});
 
 	}
 
@@ -201,12 +194,13 @@ function generateToken() {
 }
 
 /**
- * Retreives the user details. that is assigned to the session with the specified token.
+ * Retreives the user details. that is assigned to the session with the
+ * specified token.
  * 
  * @param token
  *            The token assigned to a currently valid session.
- * @returns The user details that are assigned to the specifed token.
- *          if there is no session with that token then return null.
+ * @returns The user details that are assigned to the specifed token. if there
+ *          is no session with that token then return null.
  */
 function getDetails(token) {
 
@@ -241,36 +235,75 @@ function extend(token, response) {
 
 	// Set the session cookie to expire at the end of its duration
 	var expire = new Date();
-	expire.setTime(expire.getTime() + (duration * 3600000)); // 60 * 60 * 1000
+	expire.setTime(expire.getTime() + (duration * 3600000)); // 60 * 60 *
+	// 1000
 
 	/*
 	 * Iterate over all the sessions and when the session with the token is
 	 * found extend the duration.
 	 */
-	return contains(
-		function(session) {
+	return contains(function(session) {
 
-			// If the current session is the specied one extend it.
-			if (session.token === token) {
-				
-				// Set the expire time.
-				session.expires = expire.getTime();
-	
-				// Add the cookie to the response.
-				response.cookie(cookieName, token, {
-					expire : expire.getTime()
-				});
-	 
-				console.log("Session " + token + " [Extended to " + expire.toLocaleDateString() + " " + expire.toLocaleTimeString() + "]");
-				
-				return true;
-				
-			} else {
-				return false;
-			}
+		// If the current session is the specied one extend it.
+		if (session.token === token) {
 
+			// Set the expire time.
+			session.expires = expire.getTime();
+
+			// Add the cookie to the response.
+			response.cookie(cookieName, token, {
+				expire : expire.getTime()
+			});
+
+			console.log("Session " + token + " [Extended to " + expire.toLocaleDateString() + " "
+					+ expire.toLocaleTimeString() + "]");
+
+			return true;
+
+		} else {
+			return false;
 		}
-	);
+
+	});
+
+}
+
+/**
+ * Updates the user details for a specific session.
+ * 
+ * @param token
+ *            The session token.
+ * @param newUser
+ *            The new user that will replace the old one.
+ * @returns undefined
+ */
+function updateUser(token, newUser) {
+
+	// Iterate over all the sessions.
+	for (var index = 0; index < sessions.length; index++) {
+
+		// The current session
+		var session = sessions[index];
+
+		// The current date time
+		var now = new Date();
+
+		// If the session has expired remove it.
+		if (session.expires < now.getTime()) {
+
+			sessions.splice(index, 1);
+			index--;
+
+			console.log("Session " + session.token + " [Expired]");
+
+		} else {
+
+			// Preform the check on the current session.
+			if (session.token === token) {
+				session.user = newUser;
+			}
+		}
+	}
 
 }
 
@@ -292,6 +325,9 @@ module.exports = {
 	},
 	validSession : function(token) {
 		return validSession(token);
+	},
+	updateUser : function(token, newUser) {
+		updateUser(token, newUser);
 	},
 	extend : function(token, response) {
 		return extend(token, response);
