@@ -191,20 +191,20 @@ function eventsTable(events, title, signedIn) {
 		eventsList += '		<td>' + event.location + '</td>';
 		eventsList += '		<td>' + event.time + '</td>';
 		eventsList += '		<td><a href="/profile?email=' + event.organiser + '">' + event.organiser + '</a></td>';
-		eventsList += '		<td id="popularity' + event.id + '">' + event.popularity + '</td>';
+		eventsList += '		<td id="popularity' + event.event_id + '">' + event.popularity + '</td>';
 		eventsList += '		<td>';
 
 		eventsList += '			<div class="btn-group">';
-		eventsList += '				<a href="/event?event_id=' + event.id
+		eventsList += '				<a href="/event?event_id=' + event.event_id
 				+ '" class="btn btn-primary btn-sm" role="button">View</a>';
 
 		if (signedIn === true) {
 			if (event.hasLiked) {
 
-				eventsList += '<button class="btn btn-danger btn-sm" id="interest' + event.id
+				eventsList += '<button class="btn btn-danger btn-sm" id="interest' + event.event_id
 						+ '" onclick="changeInterest(this);" type="button">Unlike</button>';
 			} else {
-				eventsList += '<button class="btn btn-success btn-sm" id="interest' + event.id
+				eventsList += '<button class="btn btn-success btn-sm" id="interest' + event.event_id
 						+ '" onclick="changeInterest(this);" type="button">Like</button>';
 			}
 		}

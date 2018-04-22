@@ -80,42 +80,47 @@ function login(request, response) {
 		 * Iterate over all the users with the specifed email. There should only
 		 * be one as the user email is unique.
 		 */
-		db.each("SELECT * FROM Users WHERE email = ?", [ email ], function(user) {
+		db.each(
+			"SELECT * FROM Users WHERE email = ?", 
+			[ email ], 
+			function(user) {
 
-			var salted = MD5.hash(password + user.salt);
-
-			// If the password created from the request fields is the same as
-			// the password stored in the database.
-			if (salted === user.password) {
-
-				var token = sessions.uniqueToken();
-
-				// If the session is added redirct the client.
-				if (sessions.addSession(token, user)) {
-					sessions.extend(token, response);
-					response.redirect('/');
-				}
-				// Session already exists.
-				else {
-
-					var error = builder.error("Session exists elsewhere. Please sign out in the other location.");
+				var salted = MD5.hash(password + user.salt);
+	
+				// If the password created from the request fields is the same as
+				// the password stored in the database.
+				if (salted === user.password) {
+	
+					var token = sessions.uniqueToken();
+	
+					// If the session is added redirct the client.
+					if (sessions.addSession(token, user)) {
+						sessions.extend(token, response);
+						response.redirect('/');
+					}
+					// Session already exists.
+					else {
+	
+						var error = builder.error("Session exists elsewhere. Please sign out in the other location.");
+						build_login(response, error);
+					}
+				} else {
+	
+					// Invalid password
+					var error = builder.error("Password is incorrect.");
 					build_login(response, error);
 				}
-			} else {
 
-				// Invalid password
-				var error = builder.error("Password is incorrect.");
-				build_login(response, error);
+			}, 
+			function(count) {
+	
+				// Invalid email
+				if (count == 0) {
+					var error = builder.error("<strong>" + email + "</strong> is not a valid email.");
+					build_login(response, error);
+				}
 			}
-
-		}, function(count) {
-
-			// Invalid email
-			if (count == 0) {
-				var error = builder.error("<strong>" + email + "</strong> is not a valid email.");
-				build_login(response, error);
-			}
-		});
+		);
 	} else {
 
 		// Email or passowrd missing.
