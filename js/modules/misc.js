@@ -9,8 +9,7 @@ const db = require('./dbHelper');
  */
 function buildPage(contentFile, callback) {
 
-	fs.readFile(path.join(__dirname, '../../components/' + contentFile
-			+ '.html'), function(err, content) {
+	fs.readFile(path.join(__dirname, '../../components/' + contentFile + '.html'), function(err, content) {
 		if (err) {
 			throw err;
 		}
@@ -19,8 +18,7 @@ function buildPage(contentFile, callback) {
 }
 
 function encodeHTML(html) {
-	return html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g,
-			'&quot;');
+	return html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 }
 
 function buildResponse(response, text) {
@@ -60,57 +58,51 @@ function swapPicture(event_id, files, specificFile, pictureNum) {
 	var picture = 'none';
 
 	// Iterate over all the pictures with the specifed event id
-	db
-			.each("SELECT * FROM Event_Pictures WHERE event_id = ?",
-					[ event_id ], function(row) {
+	db.each("SELECT * FROM Event_Pictures WHERE event_id = ?", [ event_id ], function(row) {
 
-						// If the current name is the name of the first image
-						// regardless of file
-						// extension.
-						if (row.picture.split('.')[0] === ('e_' + event_id
-								+ '_' + pictureNum)) {
-							picture = row.picture;
-						}
-					}, function(count) {
+		// If the current name is the name of the first image
+		// regardless of file
+		// extension.
+		if (row.picture.split('.')[0] === ('e_' + event_id + '_' + pictureNum)) {
+			picture = row.picture;
+		}
+	}, function(count) {
 
-						if (count != 0 && picture !== 'none') {
-							deletePicture(picture);
-						}
+		if (count != 0 && picture !== 'none') {
+			deletePicture(picture);
+		}
 
-						// For all of the files the user wants to input
-						for ( var f in files) {
+		// For all of the files the user wants to input
+		for ( var f in files) {
 
-							var file = files[f];
-							var filename = file.name;
+			var file = files[f];
+			var filename = file.name;
 
-							// If the current file is the file for the current
-							// slot.
-							if (filename === specificFile) {
+			// If the current file is the file for the current
+			// slot.
+			if (filename === specificFile) {
 
-								var ext = path.extname(filename).toLowerCase();
-								var newFilename = 'e_' + event_id + "_"
-										+ pictureNum + ext;
-								var relativePath = './public/uploaded/'
-										+ newFilename;
+				var ext = path.extname(filename).toLowerCase();
+				var newFilename = 'e_' + event_id + "_" + pictureNum + ext;
+				var relativePath = './public/uploaded/' + newFilename;
 
-								// If the image is the valid file type
-								if (ext === '.png' || ext === '.jpg') {
+				// If the image is the valid file type
+				if (ext === '.png' || ext === '.jpg') {
 
-									// Move the file
-									file.mv(relativePath, function(err) {
-										if (err) {
-											throw err;
-										}
-									});
-
-									// Insert the entry into the database
-									insertPicture(event_id, filename,
-											newFilename);
-
-								}
-							}
+					// Move the file
+					file.mv(relativePath, function(err) {
+						if (err) {
+							throw err;
 						}
 					});
+
+					// Insert the entry into the database
+					insertPicture(event_id, filename, newFilename);
+
+				}
+			}
+		}
+	});
 
 }
 
@@ -129,8 +121,7 @@ function deletePicture(picture) {
 
 function insertPicture(event_id, filename, newFilename) {
 
-	db.run("INSERT INTO Event_Pictures(picture, event_id) VALUES (?, ?);", [
-			newFilename, event_id ]);
+	db.run("INSERT INTO Event_Pictures(picture, event_id) VALUES (?, ?);", [ newFilename, event_id ]);
 
 	console.log('Uploaded: ' + filename + ' -> ' + newFilename);
 

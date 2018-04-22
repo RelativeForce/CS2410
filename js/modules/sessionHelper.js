@@ -18,17 +18,17 @@ var sessions = [];
  * 
  * @param token
  *            The token to be added. This should be unique.
- * @param userEmail
- *            The email of the user that the session will be created for.
+ * @param user
+ *            The user that the session will be created for.
  * @returns Whether or not the session was added.
  */
-function addSession(token, userEmail) {
+function addSession(token, user) {
 
 
 	// Check if the user is already logged in.
 	var userLoggedIn = contains(
 		function(session) {
-			return session["email"] === userEmail;
+			return session.user.email === user.email;
 		}
 	);
 
@@ -46,7 +46,7 @@ function addSession(token, userEmail) {
 	// Constuct the new session
 	var session = {
 		"token" : token,
-		"email" : userEmail,
+		"user" : user,
 		"expires" : expire.getTime()
 	};
 
@@ -201,14 +201,14 @@ function generateToken() {
 }
 
 /**
- * Retreives the email that is assigned to the session with the specified token.
+ * Retreives the user details. that is assigned to the session with the specified token.
  * 
  * @param token
  *            The token assigned to a currently valid session.
- * @returns The email that is assigned to the session with the specified token
+ * @returns The user details that are assigned to the specifed token.
  *          if there is no session with that token then return null.
  */
-function getEmail(token) {
+function getDetails(token) {
 
 	// Iterate over all the sessions.
 	for (var index = 0; index < sessions.length; index++) {
@@ -218,7 +218,7 @@ function getEmail(token) {
 
 		// Check if the current session has the specifed token.
 		if (session.token === token) {
-			return session.email;
+			return session.user;
 		}
 
 	}
@@ -287,8 +287,8 @@ module.exports = {
 	endSession : function(token) {
 		return endSession(token);
 	},
-	getEmail : function(token) {
-		return getEmail(token);
+	getDetails : function(token) {
+		return getDetails(token);
 	},
 	validSession : function(token) {
 		return validSession(token);

@@ -62,17 +62,16 @@ function login(request, response) {
 	db.each(
 		"SELECT * FROM Users WHERE email = ?",
 		[email], 
-		function(row) {
+		function(user) {
 
-			var salted = MD5.hash(password + row.salt);
+			var salted = MD5.hash(password + user.salt);
 	
-			if (salted === row.password) {
+			if (salted === user.password) {
 	
 				var token = sessions.uniqueToken();
 	
 				// If the session is added redirct the client.
-				if (sessions.addSession(token, email)) {
-					sessions.extend(token, response);
+				if (sessions.addSession(token, user)) {
 					response.redirect('/');
 				} else {
 					// Session alread exists.
@@ -102,14 +101,21 @@ function login(request, response) {
 function signup(request, response) {
 
 	var salt = generateSalt();
-	var email = misc.encodeHTML(request.body.email);
 	var password = misc.encodeHTML(request.body.password);
-	var name = misc.encodeHTML(request.body.name);
-	var dob = misc.encodeHTML(request.body.dob);
-	var telephone = misc.encodeHTML(request.body.telephone);
-	var picture = "none";
-
 	var saltedPassword = MD5.hash(password + salt);
+	
+	var newUser = {
+			
+			"email" : misc.encodeHTML(request.body.email),
+			"name" : misc.encodeHTML(request.body.name),
+			"dob" : misc.encodeHTML(request.body.dob),
+			"organiser" : "false",
+			"picture"  : "none",
+			"password"  : saltedPassword,
+			"salt" : salt,
+			"telephone" : misc.encodeHTML(request.body.telephone)
+					
+		};
 
 	db.each(
 		"SELECT * FROM Users WHERE email = ?",
@@ -124,20 +130,19 @@ function signup(request, response) {
 	
 				db.run(
 					"INSERT INTO Users('email', 'name', 'dob', 'organiser' ,'picture','password', 'salt', 'telephone') VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
-					[email, name, dob, 'false', picture, saltedPassword, salt, telephone]
+					[newUser.email, newUser.name, newUser.dob, newUser.organiser, newUser.picture, newUser.password, newUser.salt, newUser.telephone]
 				);
 	
-				console.log("User created: [" + email + ", " + name + ", " + dob + ", false, " + picture + ", " + saltedPassword + ", " + salt + ", " + telephone + "]");
+				console.log("User created: " + newUser);
 	
 				var token = sessions.uniqueToken();
 	
-				sessions.addSession(token, email);
-				sessions.extend(token, response);
+				sessions.addSession(token, newUser);
 				response.redirect('/');
 	
 			} else {
 	
-				var error = builder.error("A user with Email: <strong>"+ email+ "</strong> already exists.");
+				var error = builder.error("A user with Email: <strong>" + newUser.email + "</strong> already exists.");
 				build_login(request, response, error);
 	
 			}
