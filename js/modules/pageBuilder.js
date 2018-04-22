@@ -169,10 +169,8 @@ function eventsTable(events, title, signedIn) {
 	eventsList += '					<thead>';
 	eventsList += '						<tr>';
 	eventsList += '							<th>Name</th>';
-	eventsList += '							<th>Type</th>';
 	eventsList += '							<th>Location</th>';
 	eventsList += '							<th>Time</th>';
-	eventsList += '							<th>Organiser Email</th>';
 	eventsList += '							<th>Popularity</th>';
 	eventsList += '						</tr>';
 	eventsList += '					</thead>';
@@ -187,10 +185,8 @@ function eventsTable(events, title, signedIn) {
 
 		eventsList += '<tr>';
 		eventsList += '		<td>' + event.name + '</td>';
-		eventsList += '		<td>' + event.type + '</td>';
 		eventsList += '		<td>' + event.location + '</td>';
 		eventsList += '		<td>' + event.time + '</td>';
-		eventsList += '		<td><a href="/profile?email=' + event.organiser + '">' + event.organiser + '</a></td>';
 		eventsList += '		<td id="popularity' + event.event_id + '">' + event.popularity + '</td>';
 		eventsList += '		<td>';
 
