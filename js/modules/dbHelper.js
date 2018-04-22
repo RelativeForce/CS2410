@@ -1,3 +1,12 @@
+/**
+ * This is a Module which handles queries to the database and holds the set
+ * queries for rebuilding the database.
+ * 
+ * @author Joshua Eddy 159029448
+ * @since 2018-04-22
+ */
+
+// NPM Modules
 const sqlite3 = require('sqlite3').verbose();
 
 // Holds the connection to the SQLite database.
@@ -199,8 +208,7 @@ function each(queryText, params, action, onComplete) {
 function connect(filename) {
 
 	// Connect to the database.
-	database = new sqlite3.Database(filename, sqlite3.OPEN_READWRITE
-			| sqlite3.OPEN_CREATE, function(err) {
+	database = new sqlite3.Database(filename, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, function(err) {
 		if (err) {
 			console.log(err.message);
 		}
