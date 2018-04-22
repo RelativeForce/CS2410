@@ -229,7 +229,7 @@ function get_edit(request, response) {
 						 */
 						if (event.organiser === user.email) {
 	
-							build_EditEvent(response, navbar, event);
+							build_EditEvent(response, event);
 	
 						} else {
 							response.redirect('/event?event_id=' + event_id);
