@@ -1,3 +1,12 @@
+/**
+ * @author Joshua Eddy 159029448
+ * @since 2018-04-22
+ */
+
+/**
+ * Validates the event form fileds before thy can submit.
+ * @returns undefined
+ */
 function validateEvent() {
 
 	var name = document.getElementById("name").value;
@@ -6,26 +15,31 @@ function validateEvent() {
 	var location = document.getElementById("location").value;
 	var date = document.getElementById("date").value;
 
+	// If the user a has not inputted an event name.
 	if (name == "") {
 		alert("Name must be filled out");
 		return false;
 	}
 
+	// If the user a has not inputted an event description.
 	if (description == "") {
 		alert("Description must be filled out");
 		return false;
 	}
 
+	// If the user a has not inputted an event time.
 	if (time == "") {
 		alert("Time must be filled out");
 		return false;
 	}
 
+	// If the user a has not inputted an event date.
 	if (date == "") {
 		alert("Date must be filled out");
 		return false;
 	}
 
+	// If the user a has not inputted an event location.
 	if (location == "") {
 		alert("Location must be filled out");
 		return false;
@@ -37,6 +51,12 @@ function validateEvent() {
 
 var numberOfPictures = document.getElementById("imageContainer").childElementCount - 1;
 
+/**
+ * Adds a picture input field to the current form.
+ * 
+ * @returns undefined
+ * 
+ */
 function addPictureInput() {
 
 	numberOfPictures++;
