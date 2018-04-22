@@ -1,3 +1,13 @@
+/**
+ * @author Joshua Eddy 159029448
+ * @since 2018-04-22
+ */
+
+/**
+ * Checks that all the fields of the edit profile fomr are populated and valid.
+ * 
+ * @returns Whether of not the form can be submitted in its current state.
+ */
 function validateProfile() {
 
 	var password = document.getElementById("password").value;
