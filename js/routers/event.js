@@ -359,7 +359,7 @@ function post_edit(request, response) {
 				/*
 				 * If there is no event with that id.
 				 */
-				if (count == 0) 
+				if (count == 0){
 					response.redirect('/');
 				}
 			}
