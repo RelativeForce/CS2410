@@ -1,8 +1,18 @@
+/**
+ * This is a Router which handles requests to the 'organise' end point. This end
+ * point handles creating new events.
+ * 
+ * @author Joshua Eddy 159029448
+ * @since 2018-04-22
+ */
+
+// NPM Modules
 const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 
+// My Modules
 const db = require('./../modules/dbHelper');
 const builder = require('./../modules/pageBuilder');
 const sessions = require('./../modules/sessionHelper');
@@ -10,72 +20,53 @@ const cookieName = sessions.cookieName;
 const misc = require('./../modules/misc');
 
 /**
- * Processes the GET requests to the 'organise' end point which will respond
- * with the organise page provided that the request contains a valid session
- * cookie.
+ * Processes the GET requests to / and will respond with the organise page
+ * provided that the request contains a valid session cookie.
  * 
  * @param request
- *            The request from the client that should contain the session
- *            cookie.
+ *            The GET request from the client.
  * @param response
  *            The reponse that will be sent to the client.
  * @returns undefined
  */
 function get(request, response) {
 
-	// Check for the session cookie and wherther it is active.
+	// Get the session token.
 	var sessionToken = request.cookies[cookieName];
 
-	// If there is a active session build the nav bar with the user options
+	// If there is a user siogned in.
 	if (sessions.validSession(sessionToken)) {
-		
+
+		// Extend the user session.
 		sessions.extend(sessionToken, response);
-		
-		var email = sessions.getEmail(sessionToken);
 
-		db.each(
-			"SELECT * FROM Users WHERE email = ?", 
-			[email], 
-			function(row) {
+		var user = sessions.getDetails(sessionToken);
 
-				// If the user is not an organiser redirect them to the home page.
-				if (row.organiser !== 'true') {
-					response.redirect('/');
-				} else {
-				
-					// Construct the organiser home page
-					misc.buildPage(
-						'organise', 
-						function(content) {
+		// If the user is an organiser redirect them to the home page.
+		if (user.organiser === 'true') {
 
-							// The elements of the organise page.
-							var home = builder.navbarLink("/", "Home");
-							var logout = builder.navbarLink("/logout", "Logout");
-							var profile = builder.navbarLink("/profile?email=" + email,"My Profile");
-							var search = builder.navbarLink("/search","Search Events");
-							var myEvents = builder.navbarLink("/events","My Events");
-							var navbar = builder.navbar([ home, profile, myEvents, search, logout ]);
-							var head = builder.head("Aston Events");
-							var body = builder.body(navbar, content);
-						
-							// The string representation of the page as HTML
-							var page = builder.page(head, body);
-		
-							misc.buildResponse(response, page);
-						}
-					);
+			// Construct the organiser home page
+			misc.buildPage('organise', function(content) {
 
-				}
+				// The elements of the organise page.
+				var home = builder.navbarLink("/", "Home");
+				var logout = builder.navbarLink("/logout", "Logout");
+				var profile = builder.navbarLink("/profile?email=" + user.email, "My Profile");
+				var search = builder.navbarLink("/search", "Search Events");
+				var myEvents = builder.navbarLink("/events", "My Events");
+				var navbar = builder.navbar([ home, profile, myEvents, search, logout ]);
+				var head = builder.head("Aston Events");
+				var body = builder.body(navbar, content);
 
-			}, 
-			function(count) {
-	
-				// If there is no user with that email.
-				if (count == 0) {
-					response.redirect('/');
-				}
-			}
-		);
+				// The string representation of the page as HTML
+				var page = builder.page(head, body);
+
+				misc.buildResponse(response, page);
+			});
+
+		} else {
+			response.redirect('/');
+		}
 
 	} else {
 		response.redirect('/');
@@ -89,63 +80,51 @@ function get(request, response) {
  * then the client will be redirected to the home page.
  * 
  * @param request
- *            Must contain a valid session from a user that is a organiser.
+ *            The POST request to the serevr.
  * @param response
- *            Either a redirect the event view for the new event that has been
- *            created or a redirect to the home page if the request is not
- *            valid.
+ *            The response that will be sent to the client.
  * @returns undefined
  */
 function post(request, response) {
 
-	// Check for the session cookie and wherther it is active.
+	// Get the session token.
 	var sessionToken = request.cookies[cookieName];
 
-	// If there is a active session build the nav bar with the user options
+	// If there is a user signed in.
 	if (sessions.validSession(sessionToken)) {
 
+		// Extend the user session.
 		sessions.extend(sessionToken, response);
-		
-		var email = sessions.getEmail(sessionToken);
 
-		db.each(
-			"SELECT * FROM Users WHERE email = ?",
-			[email],
-			function(user) {
+		var user = sessions.getDetails(sessionToken);
 
-				// If the user is not a organiser.
-				if (user.organiser !== 'true') {
-					response.redirect('/');
-				} else {
+		// If the user is a organiser.
+		if (user.organiser === 'true') {
 
-					db.each(
-						"SELECT * FROM Events",
-						[],
-						function(row) {
-							// Count the results
-						},
-						function(count) {
-							
-							// TEMP ID GENTERATION!!!!!
-							var event_id = count;
-								
-							// Add event and pictures to the database
-							addEvent(request, email, event_id);	
-							misc.changeEventPictures(request, event_id)
+			db.each(
+				"SELECT * FROM Events",
+				[], 
+				function(row) {
+					// Count the results
+				}, function(count) {
 
-							response.redirect('/event?event_id=' + event_id);
-						}
-					);
+					/*
+					 * This is only used as the way to make a new ID as there is no
+					 * wa to delete them.
+					 */
+					var event_id = count;
+	
+					// Add event and pictures to the database
+					addEvent(request, user.email, event_id);
+					misc.changeEventPictures(request, event_id)
+	
+					response.redirect('/event?event_id=' + event_id);
 				}
-			}, 
-			function(count) {
+			);
 
-				// If there is no user with that email.
-				if (count == 0) {
-					response.redirect('/');
-				}
-			}
-		);
+		} else {
+			response.redirect('/');
+		}
 
 	} else {
 		response.redirect('/');
@@ -153,8 +132,19 @@ function post(request, response) {
 
 }
 
-function addEvent(request, email, event_id){
-	
+/**
+ * Add the event specifed by the request to the database.
+ * 
+ * @param request
+ *            The POST request that was sent to the server.
+ * @param email
+ *            The email of the organiser.
+ * @param event_id
+ *            The id of the new event.
+ * @returns undefined
+ */
+function addEvent(request, email, event_id) {
+
 	var event = {
 		"name" : misc.encodeHTML(request.body.name),
 		"id" : event_id,
@@ -166,13 +156,14 @@ function addEvent(request, email, event_id){
 		"popularity" : 0
 	};
 
+	// Add the event to the database.
 	db.run(
 		"INSERT INTO Events (event_id, name, description, organiser, type, time, location, popularity) VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
-		[event.id, event.name, event.description, event.organiser, event.type, event.time, event.location, event.popularity]
+		[event.id, event.name, event.description, event.organiser, event.type, event.time, event.location, event.popularity ]
 	);
-	
+
 	console.log("New Event: " + event.name);
-	
+
 }
 
 router.get('/', get);
