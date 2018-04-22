@@ -1,12 +1,22 @@
+/**
+ * This is a Router which handles requests to the 'logout' end point. This end
+ * point logs a user out.
+ * 
+ * @author Joshua Eddy 159029448
+ * @since 2018-04-22
+ */
+
+// NPM Modules
 const express = require('express');
 const router = express.Router();
 
+// My Modules
 const sessions = require('./../modules/sessionHelper');
 const cookieName = sessions.cookieName;
 
 /**
- * Processes the GET requests to the 'logout' end point which will redirect to
- * the landing page and end the users session.
+ * Handles the GET and POST requests to / which will redirect to the landing
+ * page and end the users session.
  * 
  * @param request
  *            The request from the client that may contain the session cookie.
