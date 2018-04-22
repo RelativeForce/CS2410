@@ -1,5 +1,5 @@
 /**
- * This is Router which handles requests to the 'event' end point. This end
+ * This is a Router which handles requests to the 'event' end point. This end
  * point is responsible for displaying the information of a event and also
  * allowing organisers that are signed in to modify an event provided they
  * organised it.
@@ -265,7 +265,7 @@ function get_edit(request, response) {
  * Handles POST requests to /edit and update the event details.
  * 
  * @param request
- *            The GET request sent to the router.
+ *            The POST request sent to the router.
  * @param response
  *            The response that will be sent back to the client.
  * @returns undefined
