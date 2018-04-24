@@ -86,7 +86,7 @@ function get(request, response) {
 						// Build the events page
 						var eventsTable = builder.eventsTable(events, "My Events", true);
 			
-						var head = builder.head("Aston Events");
+						var head = builder.head("My Events");
 						var body = builder.body(navbar, eventsTable);
 						var page = builder.page(head, body);
 			
