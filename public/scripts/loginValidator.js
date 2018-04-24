@@ -79,7 +79,7 @@ function validateSignup() {
 
 	var phoneRegex = /^[0-9]{11}$/;
 
-	if (telephone.toString().test(phoneRegex) !== true) {
+	if (!phoneRegex.test(telephone.toString())) {
 		alert("Telephone number must be valid.");
 		return false;
 	}
