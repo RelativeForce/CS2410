@@ -178,7 +178,7 @@ function signup(request, response) {
 						[newUser.email, newUser.name, newUser.dob, newUser.organiser, newUser.picture, newUser.password, newUser.salt, newUser.telephone ]
 					);
 
-					console.log("User created: " + newUser);
+					console.log("User created: " + newUser.email);
 
 					var token = sessions.uniqueToken();
 
