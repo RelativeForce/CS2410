@@ -54,8 +54,10 @@ function get(request, response) {
 				var profile = builder.navbarLink("/profile?email=" + user.email, "My Profile");
 				var search = builder.navbarLink("/search", "Search Events");
 				var myEvents = builder.navbarLink("/events", "My Events");
+				
 				var navbar = builder.navbar([ home, profile, myEvents, search, logout ]);
-				var head = builder.head("Aston Events");
+				
+				var head = builder.head("Organise Event");
 				var body = builder.body(navbar, content);
 
 				// The string representation of the page as HTML

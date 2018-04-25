@@ -69,6 +69,8 @@ function addPictureInput() {
 	input.setAttribute("type", "file");
 	input.setAttribute("name", "picture" + numberOfPictures);
 	input.setAttribute("id", "picture" + numberOfPictures);
+	input.setAttribute("accept", ".png,.jpg");
+
 	input.onchange = function() {
 		readURL(input);
 	};
