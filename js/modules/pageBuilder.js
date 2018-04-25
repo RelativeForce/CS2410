@@ -543,13 +543,13 @@ function editProfileInformation(userDetails) {
 	// Password
 	information += '	<div class="form-group">';
 	information += '		<label for="password">Password:</label> ';
-	information += '		<input type="password" name="password" id="password" class="form-control"/>';
+	information += '		<input type="password" placeholder="New password" name="password" id="password" class="form-control"/>';
 	information += '	</div>';
 
 	// Retry Password
 	information += '	<div class="form-group">';
 	information += '		<label for="repassword">Retype Password:</label> ';
-	information += '		<input type="password" name="repassword" id="repassword" class="form-control"/>';
+	information += '		<input type="password" placeholder="New password" name="repassword" id="repassword" class="form-control"/>';
 	information += '	</div>';
 
 	// Telephone
